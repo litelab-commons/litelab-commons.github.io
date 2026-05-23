@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Packet Wiring Lab</title>
+  <link rel="stylesheet" href="./app.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Network Wiring Simulator</p>
+        <h1>Packet Wiring Lab</h1>
+      </div>
+      <nav class="difficulty" aria-label="difficulty">
+        <button class="active" type="button">初級</button>
+        <button type="button">中級</button>
+        <button type="button">上級</button>
+      </nav>
+      <section class="meters" aria-label="status">
+        <div><span>Stage</span><strong id="stageValue">1/4</strong></div>
+        <div><span>Cables</span><strong id="cableValue">0本</strong></div>
+        <div><span>Stable</span><strong id="stableValue">100%</strong></div>
+      </section>
+    </header>
+
+    <section class="layout">
+      <aside class="panel mission">
+        <div class="section-head">
+          <h2>ミッション</h2>
+          <span class="badge" id="stageBadge">初級 1</span>
+        </div>
+        <h3 id="missionTitle">PCから社内Webサーバーへ通信できるようにしよう</h3>
+        <p id="missionText"></p>
+        <div class="checklist" id="checklist"></div>
+        <div class="lesson">
+          <span>今回のポイント</span>
+          <p id="lessonText">スイッチは同じLANを広げる機器です。IPアドレスのネットワーク部が同じなら、ルーターなしで通信できます。</p>
+        </div>
+        <div class="stage-actions">
+          <button id="prevStageBtn" type="button">前へ</button>
+          <button id="nextStageBtn" type="button">次へ</button>
+        </div>
+      </aside>
+
+      <section class="canvas-panel" aria-label="network canvas">
+        <div class="toolrow">
+          <span>機器はドラッグで移動、2台をクリックでケーブル接続/解除</span>
+        </div>
+
+        <div class="canvas" id="canvas">
+          <svg id="wireLayer" class="wires" viewBox="0 0 900 560" preserveAspectRatio="none" aria-hidden="true"></svg>
+
+          <button class="device pc selected" style="left: 10%; top: 54%;" type="button" data-device="PC-1">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <rect x="6" y="7" width="20" height="14" rx="2"></rect>
+                <path d="M13 25h6M16 21v4"></path>
+              </svg>
+              <b>PC</b>
+            </span>
+            <strong>PC-1</strong>
+            <small>192.168.1.10</small>
+          </button>
+          <button class="device switch" style="left: 42%; top: 45%;" type="button" data-device="Switch-A">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <rect x="5" y="10" width="22" height="12" rx="2"></rect>
+                <path d="M9 15h2M15 15h2M21 15h2M10 22v4M16 22v4M22 22v4"></path>
+              </svg>
+              <b>SW</b>
+            </span>
+            <strong>Switch-A</strong>
+            <small>0/4 ports</small>
+          </button>
+          <button class="device switch compact" style="left: 45%; top: 70%;" type="button" data-device="Switch-B">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <rect x="5" y="10" width="22" height="12" rx="2"></rect>
+                <path d="M9 15h2M15 15h2M21 15h2M10 22v4M16 22v4M22 22v4"></path>
+              </svg>
+              <b>SW</b>
+            </span>
+            <strong>Switch-B</strong>
+            <small>0/4 ports</small>
+          </button>
+          <button class="device switch compact" style="left: 62%; top: 70%;" type="button" data-device="Switch-C">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <rect x="5" y="10" width="22" height="12" rx="2"></rect>
+                <path d="M9 15h2M15 15h2M21 15h2M10 22v4M16 22v4M22 22v4"></path>
+              </svg>
+              <b>SW</b>
+            </span>
+            <strong>Switch-C</strong>
+            <small>0/4 ports</small>
+          </button>
+          <button class="device server" style="left: 78%; top: 54%;" type="button" data-device="Web-Server">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <rect x="8" y="5" width="16" height="22" rx="2"></rect>
+                <path d="M12 10h8M12 15h8M12 20h5"></path>
+                <path d="M21 23h.1"></path>
+              </svg>
+              <b>WEB</b>
+            </span>
+            <strong>Web Server</strong>
+            <small>192.168.1.20</small>
+          </button>
+          <button class="device dhcp" style="left: 69%; top: 24%;" type="button" data-device="DHCP">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <path d="M16 5v6M16 21v6M7 16h6M19 16h6"></path>
+                <circle cx="16" cy="16" r="5"></circle>
+                <path d="M11 8l2 3M21 8l-2 3M11 24l2-3M21 24l-2-3"></path>
+              </svg>
+              <b>DHCP</b>
+            </span>
+            <strong>DHCP</strong>
+            <small>pool .30-.80</small>
+          </button>
+          <button class="device router" style="left: 54%; top: 42%;" type="button" data-device="Router">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="8"></circle>
+                <path d="M16 8v16M8 16h16M11 11l-3-3M21 11l3-3M11 21l-3 3M21 21l3 3"></path>
+              </svg>
+              <b>RT</b>
+            </span>
+            <strong>Router</strong>
+            <small>gateway</small>
+          </button>
+          <button class="device dns" style="left: 34%; top: 22%;" type="button" data-device="DNS">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <circle cx="16" cy="16" r="10"></circle>
+                <path d="M8 16h16M16 6c3 3 3 17 0 20M16 6c-3 3-3 17 0 20"></path>
+              </svg>
+              <b>DNS</b>
+            </span>
+            <strong>DNS</strong>
+            <small>192.168.1.53</small>
+          </button>
+          <button class="device firewall" style="left: 68%; top: 42%;" type="button" data-device="Firewall">
+            <span class="node-icon" aria-hidden="true">
+              <svg viewBox="0 0 32 32">
+                <path d="M16 4l10 4v7c0 7-4 11-10 13C10 26 6 22 6 15V8l10-4z"></path>
+                <path d="M12 16l3 3 6-7"></path>
+              </svg>
+              <b>FW</b>
+            </span>
+            <strong>Firewall</strong>
+            <small>TCP 443 block</small>
+          </button>
+
+          <div class="packet packet-one"></div>
+          <div class="packet packet-two"></div>
+          <div class="packet reply-one"></div>
+          <div class="packet reply-two"></div>
+          <div class="packet dns-query"></div>
+          <div class="packet dns-reply"></div>
+          <div class="packet blocked-packet"></div>
+          <div class="storm-dot dot-a"></div>
+          <div class="storm-dot dot-b"></div>
+          <div class="storm-dot dot-c"></div>
+
+          <div class="floating-tip">
+            <strong>通信テスト</strong>
+            <span id="tipText">Cableモードで機器を2つ選ぶと、ケーブルを接続または解除できます。</span>
+          </div>
+
+          <aside class="device-popover" id="devicePopover" aria-live="polite">
+            <button id="devicePopoverClose" type="button" aria-label="閉じる">×</button>
+            <div class="device-photo" id="devicePhoto"></div>
+            <div>
+              <span id="deviceTypeLabel">Device</span>
+              <h3 id="deviceInfoTitle">Device</h3>
+              <p id="deviceInfoText"></p>
+              <dl id="deviceSpecs"></dl>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <aside class="panel inspector">
+        <div class="section-head">
+          <h2>機器設定</h2>
+          <span class="badge blue" id="selectedName">PC-1</span>
+        </div>
+
+        <div class="tabs">
+          <button id="manualTab" class="active" type="button">手動</button>
+          <button id="dhcpTab" type="button">DHCP</button>
+        </div>
+
+        <label>
+          IPアドレス
+          <select id="ipSelect">
+            <option>192.168.1.10</option>
+            <option>192.168.1.20</option>
+            <option>192.168.2.10</option>
+            <option>10.0.0.10</option>
+          </select>
+        </label>
+        <label>
+          サブネット
+          <select id="subnetSelect">
+            <option>/24 - 255.255.255.0</option>
+            <option>/16 - 255.255.0.0</option>
+            <option>/30 - point to point</option>
+          </select>
+        </label>
+        <label>
+          ゲートウェイ
+          <select id="gatewaySelect">
+            <option>なし</option>
+            <option>192.168.1.1</option>
+            <option>192.168.2.1</option>
+          </select>
+        </label>
+        <label>
+          DNS
+          <select id="dnsSelect">
+            <option>なし</option>
+            <option>192.168.1.53</option>
+            <option>8.8.8.8</option>
+          </select>
+        </label>
+        <label>
+          Firewall
+          <select id="firewallSelect">
+            <option>TCP 443 を遮断</option>
+            <option>TCP 443 を許可</option>
+            <option>すべて許可</option>
+          </select>
+        </label>
+        <div class="router-panel" id="routerPanel">
+          <span>Router Interfaces</span>
+          <label>
+            LAN側
+            <select id="routerLanSelect">
+              <option>192.168.1.1/24</option>
+              <option>192.168.2.1/24</option>
+              <option>10.0.0.1/24</option>
+            </select>
+          </label>
+          <label>
+            Web側
+            <select id="routerWanSelect">
+              <option>10.0.0.1/24</option>
+              <option>192.168.1.1/24</option>
+              <option>172.16.0.1/24</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="dhcp-flow" id="dhcpFlow" aria-label="dhcp flow">
+          <span>Discover</span>
+          <span>Offer</span>
+          <span>Request</span>
+          <span>Ack</span>
+        </div>
+
+        <div class="actions">
+          <button id="testBtn" type="button">通信テスト</button>
+          <button id="stormBtn" class="danger" type="button">ループ例を作る</button>
+        </div>
+      </aside>
+    </section>
+
+    <footer class="logbar" aria-label="simulation log">
+      <div class="log-head">
+        <strong>通信ログ</strong>
+        <span id="modeLabel">normal</span>
+      </div>
+      <div class="logs" id="logs">
+        <p><span>OK</span> PC-1 から Switch-A へリンク確認。</p>
+        <p><span>OK</span> Switch-A から Web Server へリンク確認。</p>
+        <p><span>INFO</span> 通信テスト待機中。</p>
+      </div>
+    </footer>
+  </main>
+
+  <script src="./app.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ネットワークラーニング</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <main class="app" aria-label="ネットワークラーニング">
+    <header class="topbar">
+      <div class="logo" aria-label="ネットワークラーニング">
+        <span class="logo-mark"></span>
+        <div>
+          <strong>ネットワーク</strong>
+          <b>ラーニング</b>
+        </div>
+      </div>
+
+      <section class="stage-title" aria-label="現在のステージ">
+        <span class="flag">⚑</span>
+        <h1 id="stageTitle">ステージ1: IPアドレスを合わせよう</h1>
+      </section>
+
+      <div class="stepper" id="stageStepper" aria-label="ステージ進行">
+        <button type="button" data-stage="0">1</button>
+        <button type="button" data-stage="1">2</button>
+        <button type="button" data-stage="2">3</button>
+        <button type="button" data-stage="3">4</button>
+        <button type="button" data-stage="4">5</button>
+      </div>
+
+      <nav class="top-actions" aria-label="メニュー">
+        <button id="hintButton" type="button"><span>☼</span>ヒント</button>
+        <button id="noteButton" type="button"><span>▤</span>学習ノート</button>
+        <button id="settingsButton" type="button"><span>⚙</span>設定</button>
+        <button id="menuButton" class="square" type="button" aria-label="メニュー">☰</button>
+      </nav>
+    </header>
+
+    <section class="layout">
+      <aside class="side-panel mission-panel">
+        <div class="panel-title">
+          <span>★</span>
+          <h2>ミッション</h2>
+        </div>
+
+        <p class="mission-copy" id="missionCopy">PC1を同じLANに参加させて、スイッチまで通信できるようにしよう！</p>
+
+        <ol class="mission-list" id="missionList"></ol>
+
+        <section class="point-card">
+          <h3><span>☼</span>ポイント</h3>
+          <p id="pointText">名前でアクセスするには、DNSで名前がIPアドレスに変換される必要があるよ！</p>
+        </section>
+
+        <button id="resetMission" class="reset-button" type="button">↻ ミッションをリセット</button>
+
+        <div class="coach">
+          <img class="coach-avatar" src="./assets/learning-coach-dog-clean.png" alt="">
+          <p id="coachText">ナイス！あと少し！<br>ルーターの設定を見直そう！</p>
+        </div>
+      </aside>
+
+      <section class="main-area">
+        <section class="network-board" aria-label="ネットワーク図">
+          <div class="grid"></div>
+
+          <div class="warning-bubble" id="warningBubble">
+            <strong><span>!</span><b id="warningTitle">ルーターでパケットが止まっています</b></strong>
+            <p id="warningText">ルーターの設定を確認して、先に進めるようにしよう！</p>
+          </div>
+
+          <button class="node pc selected" style="left: 10%; top: 50%;" type="button" data-device="pc">
+            <img src="./assets/learning-pc-clean.png" alt="">
+            <strong>PC1</strong>
+            <small id="pcLabel" class="green">192.168.1.10</small>
+          </button>
+
+          <button class="node switch" style="left: 26%; top: 50%;" type="button" data-device="switch">
+            <img src="./assets/learning-switch-clean.png" alt="">
+            <strong>スイッチ</strong>
+            <small>L2スイッチ</small>
+          </button>
+
+          <button class="node router unhappy" style="left: 48%; top: 50%;" type="button" data-device="router">
+            <img src="./assets/learning-router-clean.png" alt="">
+            <strong>ルーター</strong>
+            <small id="routerLabel">192.168.1.1</small>
+          </button>
+
+          <div class="internet-cloud" style="left: 66%; top: 50%;">
+            <img src="./assets/learning-internet-clean.png" alt="">
+            <strong>インターネット</strong>
+          </div>
+
+          <button class="node dns small" style="left: 84%; top: 26%;" type="button" data-device="dns">
+            <img src="./assets/learning-dns-clean.png" alt="">
+            <strong>DNSサーバー</strong>
+            <small id="dnsLabel">8.8.8.8</small>
+          </button>
+
+          <button class="node web small" style="left: 84%; top: 68%;" type="button" data-device="web">
+            <img src="./assets/learning-web-clean.png" alt="">
+            <strong>Webサーバー</strong>
+            <small id="webLabel">93.184.216.34<br>(www.example.com)</small>
+          </button>
+
+          <div class="status-card" id="routerStatus">
+            <h3>ルーターの状態</h3>
+            <p class="bad">✕ インターネット側へのルートがありません</p>
+            <p class="warn">△ NATは設定されています</p>
+            <p class="ok">● DNS問い合わせは転送されています</p>
+          </div>
+
+          <div class="cable pc-switch"></div>
+          <div class="cable switch-router"></div>
+          <div class="cable router-net blocked"></div>
+          <div class="cable net-dns"></div>
+          <div class="cable net-web"></div>
+
+          <div class="packets pc-to-switch"><span></span><span></span><span></span><span></span></div>
+          <div class="packets switch-to-router yellow"><span></span><span></span><span></span><span></span></div>
+          <div class="packets router-to-net red"><span></span><span></span><span></span></div>
+          <div class="packets net-to-dns green"><span></span><span></span></div>
+          <div class="packets net-to-web blue"><span></span><span></span></div>
+          <div class="break-mark" id="breakMark">×</div>
+        </section>
+
+        <section class="packet-log">
+          <div class="log-toolbar">
+            <h2>パケットログ</h2>
+            <div class="filters">
+              <span>フィルター:</span>
+              <button class="active" type="button" data-filter="all">すべて</button>
+              <button type="button" data-filter="dns">DNS</button>
+              <button type="button" data-filter="http">HTTP</button>
+              <button type="button" data-filter="icmp">ICMP</button>
+              <button id="clearLog" type="button">♲ ログをクリア</button>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>時刻</th>
+                <th>送信元</th>
+                <th>送信先</th>
+                <th>プロトコル</th>
+                <th>内容</th>
+                <th>状態</th>
+              </tr>
+            </thead>
+            <tbody id="packetRows"></tbody>
+          </table>
+        </section>
+      </section>
+
+      <aside class="side-panel settings-panel">
+        <div class="panel-title">
+          <h2>デバイス設定</h2>
+        </div>
+
+        <div class="selected-device" id="selectedDevice">
+          <img src="./assets/learning-pc-clean.png" alt="">
+          <strong>PC1 が選択されています</strong>
+        </div>
+
+        <form id="settingsForm">
+          <section class="setting-card pc-settings">
+            <h3>IPアドレス設定</h3>
+            <label>
+              IPアドレス
+              <span class="input-row"><input id="ipAddress" value="192.168.1.10"><b>✓</b></span>
+            </label>
+            <label>
+              サブネットマスク
+              <span class="input-row"><input id="subnetMask" value="255.255.255.0"><b>✓</b></span>
+            </label>
+            <label>
+              デフォルトゲートウェイ
+              <span class="input-row"><input id="gateway" value="192.168.1.1"><b>✓</b></span>
+            </label>
+          </section>
+
+          <section class="setting-card pc-settings">
+            <h3>DNS設定</h3>
+            <label class="radio-line">
+              <input type="radio" name="dnsMode" checked>
+              DNSサーバーのIPアドレスを指定
+            </label>
+            <span class="input-row"><input id="dnsAddress" value="8.8.8.8"><b>✓</b></span>
+            <label class="radio-line muted">
+              <input type="radio" name="dnsMode">
+              自動的にDNSを取得（DHCP）
+            </label>
+          </section>
+
+          <section class="setting-card router-settings" hidden>
+            <h3>IPアドレス設定</h3>
+            <label>
+              LAN側IPアドレス
+              <span class="input-row"><input id="routerLanIp" value="192.168.1.1" readonly><b>✓</b></span>
+            </label>
+            <label>
+              インターネット側IPアドレス
+              <span class="input-row"><input id="routerWanIp" value="203.0.113.1" readonly><b>✓</b></span>
+            </label>
+          </section>
+
+          <section class="setting-card router-settings" hidden>
+            <h3>ルーティング設定</h3>
+            <label>
+              インターネット側ルート
+              <select id="routeSelect">
+                <option value="missing">未設定</option>
+                <option value="default">0.0.0.0/0 → Internet</option>
+              </select>
+            </label>
+            <label>
+              NAT
+              <select id="natSelect">
+                <option value="on">有効</option>
+                <option value="off">無効</option>
+              </select>
+            </label>
+            <p class="mini-help">Webサーバーへ進むには、ルーターがインターネット側の道を知っている必要があります。</p>
+          </section>
+
+          <button id="applyButton" class="apply-button" type="submit">✓ 設定を適用</button>
+          <button id="nextStageButton" class="next-button" type="button" hidden>次のステージへ →</button>
+          <button id="undoButton" class="undo-button" type="button">↶ 元に戻す</button>
+        </form>
+      </aside>
+    </section>
+
+    <dialog id="noteDialog">
+      <article class="note-book">
+        <button id="closeNote" class="note-close" type="button" aria-label="閉じる">×</button>
+        <header class="note-header">
+          <div>
+            <span>Learning Notebook</span>
+            <h2>学習ノート</h2>
+          </div>
+          <strong id="noteProgress">0/5</strong>
+        </header>
+        <nav class="note-tabs" aria-label="学習ノートのタブ">
+          <button class="active" type="button" data-note-tab="today">今回</button>
+          <button type="button" data-note-tab="terms">用語</button>
+          <button type="button" data-note-tab="flow">通信の流れ</button>
+          <button type="button" data-note-tab="mistakes">ミス集</button>
+          <button type="button" data-note-tab="quiz">復習</button>
+        </nav>
+        <section class="note-content" id="noteContent"></section>
+      </article>
+    </dialog>
+  </main>
+
+  <script src="./game.js"></script>
+</body>
+</html>
