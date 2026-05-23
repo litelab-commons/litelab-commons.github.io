@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Code Atelier | プログラミング体験ラボ</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Code Atelier">
+        <span class="brand-mark">{ }</span>
+        <span>Code Atelier</span>
+      </a>
+      <nav class="nav" aria-label="サイト内ナビゲーション">
+        <a href="#lessons">レッスン</a>
+        <a href="#challenges">問題</a>
+        <a href="#playground">実行ラボ</a>
+        <a href="#quests">クエスト</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="kicker">ブラウザだけで始める</p>
+          <h1>プログラミングを、書いて動かして覚える。</h1>
+          <p class="lead">
+            JavaScriptの小さなコードを編集して、結果を見ながら「変数」「条件分岐」「関数」の考え方を体験できます。
+          </p>
+          <div class="hero-actions">
+            <a class="primary-link" href="#playground">すぐ試す</a>
+            <a class="secondary-link" href="#lessons">レッスンを見る</a>
+          </div>
+        </div>
+        <div class="hero-visual" aria-label="コードのサンプル画面">
+          <div class="code-window">
+            <div class="window-dots" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </div>
+            <pre><code>const name = "Mika";
+const level = 2;
+
+if (level >= 2) {
+  console.log(`${name} unlocked loops`);
+}</code></pre>
+          </div>
+          <div class="terminal-preview">
+            <span class="terminal-label">OUTPUT</span>
+            <p>Mika unlocked loops</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="progress-band" aria-label="学習の進み具合">
+        <div>
+          <span class="stat" id="completedCount">0/9</span>
+          <span class="stat-label">達成クエスト</span>
+        </div>
+        <div>
+          <span class="stat" id="solvedCount">0/20</span>
+          <span class="stat-label">自動判定クリア</span>
+        </div>
+        <div>
+          <span class="stat">1</span>
+          <span class="stat-label">自由実行ラボ</span>
+        </div>
+      </section>
+
+      <section class="section" id="lessons">
+        <div class="section-heading">
+          <p class="kicker">LESSONS</p>
+          <h2>手を動かすためのミニレッスン</h2>
+        </div>
+        <div class="lesson-grid">
+          <article class="lesson-card" data-template="variables">
+            <div class="lesson-icon">x=</div>
+            <h3>変数</h3>
+            <p>値に名前をつけて、あとから使えるようにします。</p>
+            <button class="ghost-button" type="button">読み込む</button>
+          </article>
+          <article class="lesson-card" data-template="condition">
+            <div class="lesson-icon">?</div>
+            <h3>条件分岐</h3>
+            <p>条件によって、実行する処理を変えます。</p>
+            <button class="ghost-button" type="button">読み込む</button>
+          </article>
+          <article class="lesson-card" data-template="function">
+            <div class="lesson-icon">fn</div>
+            <h3>関数</h3>
+            <p>まとまった処理に名前をつけて、何度も使います。</p>
+            <button class="ghost-button" type="button">読み込む</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="section" id="challenges">
+        <div class="section-heading">
+          <p class="kicker">CHALLENGES</p>
+          <h2>問題カード</h2>
+        </div>
+        <div class="stage-tabs" aria-label="問題ステージ">
+          <button class="chip active" type="button" data-stage="all">すべて</button>
+          <button class="chip" type="button" data-stage="intro">入門</button>
+          <button class="chip" type="button" data-stage="branch">条件</button>
+          <button class="chip" type="button" data-stage="function">関数</button>
+          <button class="chip" type="button" data-stage="data">データ</button>
+          <button class="chip" type="button" data-stage="dom">DOM</button>
+          <button class="chip" type="button" data-stage="mini">制作</button>
+        </div>
+        <div class="challenge-grid" id="challengeGrid"></div>
+      </section>
+
+      <section class="lab-layout" id="playground">
+        <div class="lab-main">
+          <div class="lab-header">
+            <div>
+              <p class="kicker">PLAYGROUND</p>
+              <h2 id="activeChallengeTitle">コード実行ラボ</h2>
+            </div>
+            <div class="toolbar" aria-label="コード操作">
+              <button class="icon-button" id="runButton" type="button" title="実行" aria-label="実行">▶</button>
+              <button class="icon-button" id="checkButton" type="button" title="判定" aria-label="判定">✓</button>
+              <button class="icon-button" id="resetButton" type="button" title="リセット" aria-label="リセット">↺</button>
+            </div>
+          </div>
+          <div class="assignment-panel">
+            <span class="challenge-meta" id="activeChallengeMeta">01 / 入門</span>
+            <p id="activeChallengeGoal">問題を選ぶと、ここにゴールが表示されます。</p>
+            <div class="assignment-actions">
+              <button class="small-button" id="hintButton" type="button">ヒント</button>
+              <button class="small-button" id="nextButton" type="button">次の問題</button>
+              <span class="status-pill" id="judgeStatus">未判定</span>
+            </div>
+            <p class="hint-box" id="hintBox" hidden></p>
+          </div>
+          <textarea id="codeEditor" spellcheck="false" aria-label="JavaScriptコード入力"></textarea>
+          <div class="hint-row">
+            <button class="chip active" type="button" data-template="variables">変数</button>
+            <button class="chip" type="button" data-template="condition">条件分岐</button>
+            <button class="chip" type="button" data-template="function">関数</button>
+          </div>
+        </div>
+
+        <aside class="output-panel" aria-label="実行結果">
+          <div class="panel-header">
+            <p class="kicker">OUTPUT</p>
+            <button class="small-button" id="clearButton" type="button">消去</button>
+          </div>
+          <pre id="output" class="output-box">ここに実行結果が表示されます。</pre>
+          <div class="judge-panel">
+            <p class="kicker">CHECK</p>
+            <p id="judgeMessage">実行後に判定すると、結果がここに表示されます。</p>
+            <p id="explanationBox" class="explanation-box" hidden></p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section" id="quests">
+        <div class="section-heading">
+          <p class="kicker">QUESTS</p>
+          <h2>問題クリアで達成</h2>
+        </div>
+        <div class="quest-list">
+          <label class="quest-item">
+            <input type="checkbox" data-quest="console" disabled>
+            <span>console.logで結果を表示した</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="intro" disabled>
+            <span>入門ステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="branch" disabled>
+            <span>条件ステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="function" disabled>
+            <span>関数ステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="data" disabled>
+            <span>データステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="dom" disabled>
+            <span>DOMステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="mini" disabled>
+            <span>制作ステージを1問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="five" disabled>
+            <span>5問クリアした</span>
+          </label>
+          <label class="quest-item">
+            <input type="checkbox" data-quest="ten" disabled>
+            <span>10問クリアした</span>
+          </label>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Code Atelierは、はじめての一歩を小さく試すための学習サイトです。</p>
+    </footer>
+
+    <script src="app.js"></script>
+  </body>
+</html>

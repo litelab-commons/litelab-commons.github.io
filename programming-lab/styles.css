@@ -1,0 +1,665 @@
+:root {
+  --ink: #17202a;
+  --muted: #596575;
+  --paper: #f7f5ef;
+  --panel: #ffffff;
+  --line: #d9d6ca;
+  --mint: #28a989;
+  --coral: #e86f57;
+  --amber: #f4b942;
+  --teal-dark: #123c46;
+  --shadow: 0 18px 48px rgba(23, 32, 42, 0.14);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
+  line-height: 1.6;
+}
+
+button,
+textarea,
+a {
+  font: inherit;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 68px;
+  padding: 0 32px;
+  border-bottom: 1px solid rgba(23, 32, 42, 0.1);
+  background: rgba(247, 245, 239, 0.92);
+  backdrop-filter: blur(16px);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 2px solid var(--ink);
+  background: var(--amber);
+  font-family: Consolas, monospace;
+  font-weight: 900;
+}
+
+.nav {
+  display: flex;
+  gap: 18px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.nav a:hover,
+.nav a:focus {
+  color: var(--ink);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.9fr);
+  gap: 44px;
+  align-items: center;
+  min-height: calc(100vh - 112px);
+  padding: 64px 6vw 28px;
+}
+
+.hero-copy {
+  max-width: 680px;
+}
+
+.kicker {
+  margin: 0 0 10px;
+  color: var(--coral);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  margin-bottom: 18px;
+  font-size: 5.2rem;
+  line-height: 0.98;
+  letter-spacing: 0;
+}
+
+h2 {
+  margin-bottom: 0;
+  font-size: 3.1rem;
+  line-height: 1.08;
+  letter-spacing: 0;
+}
+
+h3 {
+  margin-bottom: 8px;
+  font-size: 1.25rem;
+}
+
+.lead {
+  max-width: 620px;
+  color: var(--muted);
+  font-size: 1.13rem;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.primary-link,
+.secondary-link,
+.ghost-button,
+.small-button,
+.chip,
+.icon-button {
+  border: 1px solid var(--ink);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.primary-link,
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: 0 20px;
+}
+
+.primary-link {
+  background: var(--ink);
+  color: #fff;
+}
+
+.secondary-link {
+  background: var(--panel);
+}
+
+.hero-visual {
+  display: grid;
+  gap: 16px;
+}
+
+.code-window,
+.terminal-preview,
+.output-panel,
+.lab-main,
+.lesson-card,
+.challenge-card,
+.quest-item {
+  border: 1px solid var(--line);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.code-window {
+  overflow: hidden;
+}
+
+.window-dots {
+  display: flex;
+  gap: 8px;
+  padding: 14px 16px;
+  border-bottom: 1px solid #2d3a42;
+  background: var(--teal-dark);
+}
+
+.window-dots span {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--amber);
+}
+
+.window-dots span:nth-child(2) {
+  background: var(--coral);
+}
+
+.window-dots span:nth-child(3) {
+  background: var(--mint);
+}
+
+.code-window pre {
+  margin: 0;
+  padding: 28px;
+  overflow: auto;
+  background: #18242b;
+  color: #f8f4df;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 1rem;
+}
+
+.terminal-preview {
+  padding: 22px;
+  background: var(--teal-dark);
+  color: #f2fbf7;
+}
+
+.terminal-label {
+  color: var(--amber);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.terminal-preview p {
+  margin: 8px 0 0;
+  font-family: Consolas, "Courier New", monospace;
+}
+
+.progress-band {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  margin: 0 6vw;
+  border: 1px solid var(--line);
+  background: var(--line);
+}
+
+.progress-band > div {
+  padding: 20px;
+  background: #fff;
+}
+
+.stat {
+  display: block;
+  font-size: 2rem;
+  font-weight: 900;
+}
+
+.stat-label {
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.section,
+.lab-layout {
+  padding: 78px 6vw 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 22px;
+}
+
+.lesson-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.lesson-card,
+.challenge-card {
+  min-height: 250px;
+  padding: 22px;
+}
+
+.lesson-card p,
+.challenge-card p {
+  min-height: 52px;
+  color: var(--muted);
+}
+
+.challenge-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.stage-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.challenge-card {
+  position: relative;
+  border-top: 6px solid var(--amber);
+  cursor: pointer;
+}
+
+.challenge-card.active {
+  border-color: var(--mint);
+}
+
+.challenge-card.solved::after {
+  content: "CLEAR";
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  padding: 3px 8px;
+  background: var(--mint);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.challenge-card[hidden] {
+  display: none;
+}
+
+.challenge-level {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--coral);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.challenge-meta {
+  display: inline-block;
+  color: var(--coral);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.lesson-icon {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  margin-bottom: 20px;
+  background: var(--amber);
+  color: var(--ink);
+  font-family: Consolas, monospace;
+  font-weight: 900;
+}
+
+.ghost-button,
+.small-button,
+.chip {
+  min-height: 40px;
+  padding: 0 14px;
+  background: var(--panel);
+}
+
+.ghost-button:hover,
+.small-button:hover,
+.chip:hover,
+.chip.active {
+  background: var(--mint);
+  color: #fff;
+}
+
+.lab-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(300px, 0.65fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.lab-main,
+.output-panel {
+  padding: 22px;
+}
+
+.lab-header,
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: var(--ink);
+  color: #fff;
+  font-size: 1.05rem;
+}
+
+.icon-button:hover,
+.icon-button:focus {
+  background: var(--coral);
+}
+
+.assignment-panel {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  background: #fffdfa;
+}
+
+.assignment-panel p {
+  margin-bottom: 0;
+}
+
+.assignment-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 900;
+}
+
+.status-pill.pass {
+  border-color: var(--mint);
+  background: var(--mint);
+  color: #fff;
+}
+
+.status-pill.fail {
+  border-color: var(--coral);
+  background: var(--coral);
+  color: #fff;
+}
+
+.hint-box {
+  padding: 12px;
+  border-left: 5px solid var(--amber);
+  background: #fff4d3;
+  color: #463a1c;
+  font-weight: 700;
+}
+
+.explanation-box {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  color: var(--ink) !important;
+}
+
+#codeEditor {
+  width: 100%;
+  min-height: 360px;
+  resize: vertical;
+  border: 1px solid #2e3941;
+  padding: 18px;
+  background: #17202a;
+  color: #f8f4df;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 1rem;
+  line-height: 1.55;
+}
+
+#codeEditor:focus {
+  outline: 3px solid rgba(40, 169, 137, 0.35);
+}
+
+.hint-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.output-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: #fffdfa;
+}
+
+.output-box {
+  flex: 1;
+  min-height: 360px;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: #101820;
+  color: #dff7ed;
+  font-family: Consolas, "Courier New", monospace;
+  white-space: pre-wrap;
+}
+
+.judge-panel {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.judge-panel p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.quest-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.quest-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 72px;
+  padding: 16px;
+  font-weight: 800;
+}
+
+.quest-item.completed {
+  border-color: var(--mint);
+  background: #edfff8;
+}
+
+.quest-item input {
+  width: 22px;
+  height: 22px;
+  accent-color: var(--mint);
+}
+
+.quest-item input:disabled {
+  opacity: 1;
+}
+
+.footer {
+  padding: 54px 6vw 34px;
+  color: var(--muted);
+}
+
+@media (max-width: 880px) {
+  .topbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 20px;
+  }
+
+  .nav {
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+    font-size: 0.92rem;
+  }
+
+  .hero,
+  .lab-layout,
+  .lesson-grid,
+  .challenge-grid,
+  .quest-list,
+  .progress-band {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    min-height: auto;
+    padding-top: 38px;
+  }
+
+  h1 {
+    font-size: 3.4rem;
+  }
+
+  h2 {
+    font-size: 2.2rem;
+  }
+
+  .section-heading,
+  .lab-header,
+  .panel-header {
+    align-items: flex-start;
+  }
+
+  #codeEditor,
+  .output-box {
+    min-height: 280px;
+  }
+}
+
+@media (max-width: 520px) {
+  .hero,
+  .section,
+  .lab-layout,
+  .footer {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+
+  .progress-band {
+    margin-left: 18px;
+    margin-right: 18px;
+  }
+
+  .hero-actions,
+  .lab-header,
+  .panel-header {
+    flex-direction: column;
+  }
+
+  .primary-link,
+  .secondary-link {
+    width: 100%;
+  }
+
+  .toolbar {
+    width: 100%;
+  }
+
+  .icon-button {
+    width: 50%;
+  }
+
+  h1 {
+    font-size: 2.55rem;
+  }
+
+  h2 {
+    font-size: 1.9rem;
+  }
+}

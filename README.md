@@ -11,7 +11,7 @@ ITリテラシー向上に使える教材・ミニアプリのオープンハブ
 | ネットワーク探偵団 | Network | 公開中 |
 | Packet Wiring Lab | Network | 公開中 |
 | インシデントすごろく | Security | 準備中 |
-| プログラミングラボ | Programming | 準備中 |
+| プログラミングラボ | Programming | 公開中 |
 | ランサムウェアシミュレーション | Security | 開発中 |
 | SNS型投資詐欺シミュレーション | Simulation | 準備中 |
 | 仮想通貨投資詐欺シミュレーション | Security | 開発中 |
