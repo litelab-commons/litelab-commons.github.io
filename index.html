@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LiteLab Commons — ITリテラシー教材オープンハブ</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -26,7 +26,7 @@
   --tag-sim: #5c1020;
   --tag-other: #304060;
   --mono: 'DM Mono', monospace;
-  --serif: 'Fraunces', serif;
+  --display: 'Zen Kaku Gothic New', 'Noto Sans JP', sans-serif;
   --sans: 'Noto Sans JP', sans-serif;
 }
 
@@ -54,7 +54,7 @@ nav {
   font-family: var(--mono);
   font-size: 15px; font-weight: 500;
   color: var(--text);
-  letter-spacing: -0.3px;
+  letter-spacing: 0;
   display: flex; align-items: center; gap: 10px;
 }
 .nav-logo-mark {
@@ -105,15 +105,15 @@ nav {
   background: var(--accent);
 }
 .hero h1 {
-  font-family: var(--serif);
-  font-size: 52px; font-weight: 300;
+  font-family: var(--display);
+  font-size: 52px; font-weight: 700;
   line-height: 1.15;
-  letter-spacing: -1px;
+  letter-spacing: 0;
   color: var(--text);
   margin-bottom: 24px;
 }
 .hero h1 em {
-  font-style: italic;
+  font-style: normal;
   color: var(--accent);
 }
 .hero-desc {
@@ -168,8 +168,8 @@ nav {
 }
 .stat-row:last-child { border-bottom: none; }
 .stat-num {
-  font-family: var(--serif);
-  font-size: 36px; font-weight: 300;
+  font-family: var(--display);
+  font-size: 36px; font-weight: 500;
   color: var(--accent);
   line-height: 1;
 }
@@ -337,6 +337,13 @@ nav {
   border: 1px solid var(--border);
 }
 .card-btn-dl:hover { background: var(--border); color: var(--text); }
+.card-btn-disabled {
+  background: var(--surface2);
+  color: var(--text3);
+  border: 1px solid var(--border);
+  cursor: not-allowed;
+  pointer-events: none;
+}
 
 /* WIP card */
 .card.wip-card {
@@ -360,11 +367,11 @@ nav {
   display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
 }
 .about-left h2 {
-  font-family: var(--serif);
-  font-size: 32px; font-weight: 300;
+  font-family: var(--display);
+  font-size: 32px; font-weight: 500;
   line-height: 1.3; margin-bottom: 16px;
 }
-.about-left h2 em { font-style: italic; color: #7ec8a0; }
+.about-left h2 em { font-style: normal; color: #7ec8a0; }
 .about-left p {
   font-size: 14px; font-weight: 300;
   color: rgba(255,255,255,0.65);
@@ -462,8 +469,9 @@ footer {
   </div>
   <ul class="nav-links">
     <li><a href="#materials">教材一覧</a></li>
+    <li><a href="#contribute">投稿する</a></li>
     <li><a href="#about">このサイトについて</a></li>
-    <li><a href="#" target="_blank">GitHub</a></li>
+    <li><a href="https://github.com/inlfat/litelab-commons" target="_blank" rel="noopener">GitHub</a></li>
     <li><span class="nav-badge">β版</span></li>
   </ul>
 </nav>
@@ -488,21 +496,24 @@ footer {
       <a href="#about" class="btn-ghost">
         使い方・ライセンス →
       </a>
+      <a href="#contribute" class="btn-ghost">
+        教材を投稿する →
+      </a>
     </div>
   </div>
   <div class="hero-stats">
     <div class="hero-stats-title">Current Contents</div>
     <div class="stat-row">
-      <div class="stat-num">7</div>
+      <div class="stat-num">8</div>
       <div class="stat-label">教材・ミニアプリ<br><span style="font-size:11px;color:var(--text3)">随時追加予定</span></div>
     </div>
     <div class="stat-row">
-      <div class="stat-num">4</div>
+      <div class="stat-num">5</div>
       <div class="stat-label">カテゴリ<br><span style="font-size:11px;color:var(--text3)">セキュリティ・ネットワーク 等</span></div>
     </div>
     <div class="stat-row">
       <div class="stat-num">MIT</div>
-      <div class="stat-label">ライセンス<br><span style="font-size:11px;color:var(--text3)">商用・改変・再配布すべて可</span></div>
+      <div class="stat-label">公開済み教材のライセンス<br><span style="font-size:11px;color:var(--text3)">商用・改変・再配布すべて可</span></div>
     </div>
   </div>
 </section>
@@ -523,7 +534,7 @@ footer {
 <section class="grid-section" id="materials">
   <div class="grid-header">
     <span class="grid-title">教材ライブラリ</span>
-    <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">MIT License — 改変・再配布自由</span>
+    <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">Published materials: MIT License</span>
   </div>
   <div class="grid" id="card-grid">
 
@@ -539,14 +550,16 @@ footer {
         <span class="card-meta-item">⏱ 約20分</span>
         <span class="card-meta-item">👤 個人/グループ</span>
         <span class="card-meta-item">🏢 企業・自治体向け</span>
+        <span class="card-meta-item">📄 MIT</span>
+        <span class="card-meta-item">HTML</span>
       </div>
       <div class="card-actions">
         <a href="./network-detective/" class="card-btn card-btn-demo" target="_blank">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <a href="https://github.com/inlfat/litelab-commons/tree/main/network-detective" class="card-btn card-btn-gh" target="_blank" rel="noopener">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+        <a href="https://github.com/inlfat/litelab-commons/archive/refs/heads/main.zip" class="card-btn card-btn-dl">↓ ZIP</a>
       </div>
     </div>
 
@@ -563,14 +576,16 @@ footer {
         <span class="card-meta-item">⏱ 約20分</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🏢 企業・自治体向け</span>
+        <span class="card-meta-item">📄 MIT</span>
+        <span class="card-meta-item">HTML</span>
       </div>
       <div class="card-actions">
         <a href="./packet-wiring-lab/" class="card-btn card-btn-demo" target="_blank">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <a href="https://github.com/inlfat/litelab-commons/tree/main/packet-wiring-lab" class="card-btn card-btn-gh" target="_blank" rel="noopener">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           GitHub
         </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+        <a href="https://github.com/inlfat/litelab-commons/archive/refs/heads/main.zip" class="card-btn card-btn-dl">↓ ZIP</a>
       </div>
     </div>
 
@@ -586,14 +601,16 @@ footer {
         <span class="card-meta-item">⏱ 約30分</span>
         <span class="card-meta-item">👥 グループ向け</span>
         <span class="card-meta-item">🏢 管理職・IT担当者</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+          GitHub準備中
+        </span>
+        <span class="card-btn card-btn-disabled">↓ ZIP準備中</span>
       </div>
     </div>
 
@@ -609,14 +626,16 @@ footer {
         <span class="card-meta-item">⏱ 約15分〜</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🎓 新入社員・一般職員</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+          GitHub準備中
+        </span>
+        <span class="card-btn card-btn-disabled">↓ ZIP準備中</span>
       </div>
     </div>
 
@@ -633,13 +652,15 @@ footer {
         <span class="card-meta-item">⏱ 約20分</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🏢 中小企業・自治体</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo" style="opacity:0.4;pointer-events:none">▶ 準備中</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
+          GitHub準備中
+        </span>
       </div>
     </div>
 
@@ -655,14 +676,16 @@ footer {
         <span class="card-meta-item">⏱ 約15分</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🏦 金融機関・一般市民向け</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+          GitHub準備中
+        </span>
+        <span class="card-btn card-btn-disabled">↓ ZIP準備中</span>
       </div>
     </div>
 
@@ -679,13 +702,15 @@ footer {
         <span class="card-meta-item">⏱ 約20分</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🏦 金融機関・自治体</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo" style="opacity:0.4;pointer-events:none">▶ 準備中</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
+          GitHub準備中
+        </span>
       </div>
     </div>
 
@@ -701,14 +726,16 @@ footer {
         <span class="card-meta-item">⏱ 約5分</span>
         <span class="card-meta-item">👤 個人向け</span>
         <span class="card-meta-item">🏢 研修前後のアセスメント</span>
+        <span class="card-meta-item">📄 MIT予定</span>
+        <span class="card-meta-item">HTML予定</span>
       </div>
       <div class="card-actions">
-        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
-        <a href="#" class="card-btn card-btn-gh">
+        <span class="card-btn card-btn-disabled">▶ 準備中</span>
+        <span class="card-btn card-btn-disabled">
           <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          GitHub
-        </a>
-        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+          GitHub準備中
+        </span>
+        <span class="card-btn card-btn-disabled">↓ ZIP準備中</span>
       </div>
     </div>
 
@@ -735,9 +762,9 @@ footer {
         <span class="principle-num">03</span>
         <p class="principle-text"><strong>書き換えていい</strong>。クイズの文言を自社ルールに変える、ロゴを差し替える。MITライセンスで商用・改変・再配布すべて自由。</p>
       </div>
-      <div class="principle">
+      <div class="principle" id="contribute">
         <span class="principle-num">04</span>
-        <p class="principle-text"><strong>投稿歓迎</strong>。あなたが作ったIT教材もここに置けます。GitHubでPRを送るか、まずはご連絡ください。</p>
+        <p class="principle-text"><strong>投稿歓迎</strong>。あなたが作ったIT教材もここに置けます。GitHubでPRを送るか、まずはIssueで掲載したい教材の概要を教えてください。</p>
       </div>
     </div>
   </div>
@@ -746,11 +773,11 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LiteLab Commons</div>
-  <span class="footer-note">MIT License — すべての教材は自由に使用・改変・再配布できます</span>
+  <span class="footer-note">Published materials: MIT License — 自由に使用・改変・再配布できます</span>
   <ul class="footer-links">
-    <li><a href="#">GitHub</a></li>
-    <li><a href="#">ライセンス</a></li>
-    <li><a href="#">お問い合わせ</a></li>
+    <li><a href="https://github.com/inlfat/litelab-commons" target="_blank" rel="noopener">GitHub</a></li>
+    <li><a href="https://github.com/inlfat/litelab-commons/blob/main/README.md" target="_blank" rel="noopener">ライセンス</a></li>
+    <li><a href="https://github.com/inlfat/litelab-commons/issues" target="_blank" rel="noopener">お問い合わせ</a></li>
   </ul>
 </footer>
 
