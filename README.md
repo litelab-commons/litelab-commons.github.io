@@ -33,4 +33,4 @@ Pull Requestまたはissueでご連絡ください。
 
 ---
 
-[サイトを見る](https://inlfat.github.io/litelab-commons/)
+[サイトを見る](https://litelab-commons.github.io/)
