@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LiteLab Commons — ITリテラシー教材オープンハブ</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+  --bg: #f7f6f2;
+  --surface: #ffffff;
+  --surface2: #f0efe9;
+  --border: #e2e0d8;
+  --text: #1a1916;
+  --text2: #5a5850;
+  --text3: #9a9890;
+  --accent: #1a5c3a;
+  --accent2: #2d7a52;
+  --accent-light: #e8f2ec;
+  --tag-sec: #1e3a5f;
+  --tag-net: #4a2060;
+  --tag-prog: #5c3010;
+  --tag-sim: #5c1020;
+  --tag-other: #304060;
+  --mono: 'DM Mono', monospace;
+  --serif: 'Fraunces', serif;
+  --sans: 'Noto Sans JP', sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--sans);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  font-weight: 400;
+}
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(247,246,242,0.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 56px;
+}
+.nav-logo {
+  font-family: var(--mono);
+  font-size: 15px; font-weight: 500;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  display: flex; align-items: center; gap: 10px;
+}
+.nav-logo-mark {
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+}
+.nav-logo-mark svg { width: 14px; height: 14px; fill: white; }
+.nav-links {
+  display: flex; align-items: center; gap: 28px;
+  list-style: none;
+}
+.nav-links a {
+  font-size: 13px; font-weight: 400;
+  color: var(--text2); text-decoration: none;
+  letter-spacing: 0.2px;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--accent); }
+.nav-badge {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 500;
+  background: var(--accent-light);
+  color: var(--accent);
+  border: 1px solid rgba(26,92,58,0.2);
+  padding: 2px 8px; border-radius: 20px;
+  letter-spacing: 0.5px;
+}
+
+/* ── HERO ── */
+.hero {
+  padding: 88px 40px 72px;
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 380px; gap: 48px; align-items: end;
+}
+.hero-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 500;
+  color: var(--accent);
+  letter-spacing: 2px; text-transform: uppercase;
+  margin-bottom: 20px;
+  display: flex; align-items: center; gap: 8px;
+}
+.hero-eyebrow::before {
+  content: '';
+  display: block; width: 24px; height: 1px;
+  background: var(--accent);
+}
+.hero h1 {
+  font-family: var(--serif);
+  font-size: 52px; font-weight: 300;
+  line-height: 1.15;
+  letter-spacing: -1px;
+  color: var(--text);
+  margin-bottom: 24px;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--accent);
+}
+.hero-desc {
+  font-size: 15px; font-weight: 300;
+  color: var(--text2);
+  line-height: 1.8; max-width: 480px;
+  margin-bottom: 36px;
+}
+.hero-actions {
+  display: flex; align-items: center; gap: 16px;
+}
+.btn-primary {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: var(--accent);
+  color: white;
+  font-size: 13px; font-weight: 500;
+  padding: 11px 24px; border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.15s;
+  letter-spacing: 0.3px;
+}
+.btn-primary:hover { background: var(--accent2); transform: translateY(-1px); }
+.btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  color: var(--text2);
+  font-size: 13px; font-weight: 400;
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 2px;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover { color: var(--accent); border-color: var(--accent); }
+
+/* hero side stats */
+.hero-stats {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+}
+.hero-stats-title {
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 500;
+  color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+  margin-bottom: 20px;
+}
+.stat-row {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+}
+.stat-row:last-child { border-bottom: none; }
+.stat-num {
+  font-family: var(--serif);
+  font-size: 36px; font-weight: 300;
+  color: var(--accent);
+  line-height: 1;
+}
+.stat-label {
+  font-size: 12px; color: var(--text2);
+  line-height: 1.4;
+}
+
+/* ── FILTER BAR ── */
+.filter-bar {
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  padding: 0 40px;
+}
+.filter-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: flex; align-items: center; gap: 8px;
+  height: 52px; overflow-x: auto;
+}
+.filter-btn {
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--sans);
+  font-size: 12px; font-weight: 400;
+  color: var(--text2);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 5px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.filter-btn:hover, .filter-btn.active {
+  background: var(--text);
+  color: white; border-color: var(--text);
+}
+.filter-count {
+  font-family: var(--mono);
+  font-size: 10px;
+  opacity: 0.6;
+}
+
+/* ── GRID ── */
+.grid-section {
+  max-width: 1100px; margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+.grid-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 28px;
+}
+.grid-title {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 500;
+  color: var(--text3);
+  letter-spacing: 1.5px; text-transform: uppercase;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* ── CARD ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 28px;
+  display: flex; flex-direction: column;
+  transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+  position: relative; overflow: hidden;
+}
+.card:hover {
+  border-color: rgba(26,92,58,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.07);
+  transform: translateY(-2px);
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--card-accent, var(--accent));
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.card:hover::before { opacity: 1; }
+
+.card-tag {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px; font-weight: 500;
+  color: white;
+  background: var(--tag-bg, var(--tag-sec));
+  padding: 3px 9px; border-radius: 4px;
+  letter-spacing: 0.8px; text-transform: uppercase;
+  margin-bottom: 16px;
+  width: fit-content;
+}
+.card-status {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--text3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  padding: 2px 8px; border-radius: 4px;
+  margin-left: 6px;
+}
+.card-status.wip { color: #a06000; background: #fff8e8; border-color: #f0d080; }
+.card-status-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+
+.card-icon {
+  font-size: 28px; margin-bottom: 14px;
+  display: block;
+}
+.card h3 {
+  font-size: 15px; font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px; line-height: 1.4;
+}
+.card-desc {
+  font-size: 13px; font-weight: 300;
+  color: var(--text2);
+  line-height: 1.7; flex: 1;
+  margin-bottom: 20px;
+}
+.card-meta {
+  display: flex; align-items: center; gap: 8px;
+  font-family: var(--mono);
+  font-size: 10px; color: var(--text3);
+  margin-bottom: 18px;
+  flex-wrap: wrap;
+}
+.card-meta-item {
+  display: flex; align-items: center; gap: 4px;
+}
+.card-actions {
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.card-btn {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 500;
+  padding: 7px 13px; border-radius: 6px;
+  text-decoration: none; cursor: pointer;
+  border: none; font-family: var(--sans);
+  transition: all 0.15s; white-space: nowrap;
+}
+.card-btn-demo {
+  background: var(--accent);
+  color: white;
+}
+.card-btn-demo:hover { background: var(--accent2); }
+.card-btn-gh {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.card-btn-gh:hover { background: var(--border); color: var(--text); }
+.card-btn-dl {
+  background: var(--surface2);
+  color: var(--text2);
+  border: 1px solid var(--border);
+}
+.card-btn-dl:hover { background: var(--border); color: var(--text); }
+
+/* WIP card */
+.card.wip-card {
+  opacity: 0.75;
+}
+.card.wip-card .card-btn-demo {
+  background: var(--surface2);
+  color: var(--text3);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ── ABOUT STRIP ── */
+.about-strip {
+  background: var(--text);
+  color: white;
+  padding: 64px 40px;
+}
+.about-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center;
+}
+.about-left h2 {
+  font-family: var(--serif);
+  font-size: 32px; font-weight: 300;
+  line-height: 1.3; margin-bottom: 16px;
+}
+.about-left h2 em { font-style: italic; color: #7ec8a0; }
+.about-left p {
+  font-size: 14px; font-weight: 300;
+  color: rgba(255,255,255,0.65);
+  line-height: 1.8;
+}
+.about-right {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.principle {
+  display: flex; gap: 16px; align-items: flex-start;
+}
+.principle-num {
+  font-family: var(--mono);
+  font-size: 11px; font-weight: 500;
+  color: #7ec8a0;
+  padding-top: 2px;
+  flex-shrink: 0; width: 24px;
+}
+.principle-text {
+  font-size: 13px; font-weight: 300;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.7;
+}
+.principle-text strong { color: white; font-weight: 500; }
+
+/* ── FOOTER ── */
+footer {
+  border-top: 1px solid var(--border);
+  padding: 32px 40px;
+  display: flex; align-items: center; justify-content: space-between;
+  max-width: 1100px; margin: 0 auto;
+}
+.footer-logo {
+  font-family: var(--mono);
+  font-size: 13px; color: var(--text2);
+}
+.footer-note {
+  font-size: 12px; color: var(--text3);
+}
+.footer-links {
+  display: flex; gap: 20px; list-style: none;
+}
+.footer-links a {
+  font-size: 12px; color: var(--text3); text-decoration: none;
+}
+.footer-links a:hover { color: var(--accent); }
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.card {
+  animation: fadeUp 0.4s ease both;
+}
+.card:nth-child(1) { animation-delay: 0.05s; }
+.card:nth-child(2) { animation-delay: 0.1s; }
+.card:nth-child(3) { animation-delay: 0.15s; }
+.card:nth-child(4) { animation-delay: 0.2s; }
+.card:nth-child(5) { animation-delay: 0.25s; }
+.card:nth-child(6) { animation-delay: 0.3s; }
+.card:nth-child(7) { animation-delay: 0.35s; }
+
+/* hidden via filter */
+.card.hidden { display: none; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; }
+  .hero-stats { display: none; }
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .about-inner { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; }
+  nav { padding: 0 20px; }
+  .hero { padding: 48px 20px 48px; }
+  .grid-section { padding: 32px 20px 60px; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-mark">
+      <svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="5" height="5" rx="1"/>
+        <rect x="8" y="1" width="5" height="5" rx="1"/>
+        <rect x="1" y="8" width="5" height="5" rx="1"/>
+        <rect x="8" y="8" width="5" height="5" rx="1" opacity="0.4"/>
+      </svg>
+    </div>
+    LiteLab Commons
+  </div>
+  <ul class="nav-links">
+    <li><a href="#materials">教材一覧</a></li>
+    <li><a href="#about">このサイトについて</a></li>
+    <li><a href="#" target="_blank">GitHub</a></li>
+    <li><span class="nav-badge">β版</span></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-main">
+    <div class="hero-eyebrow">IT Literacy Open Hub</div>
+    <h1>探せる。試せる。<br><em>書き換えられる。</em></h1>
+    <p class="hero-desc">
+      企業研修・自治体講座・学校授業で今日から使えるITリテラシー教材とミニアプリを、<br>
+      オープンに・自由に・無料で。コードはすべて公開しています。
+    </p>
+    <div class="hero-actions">
+      <a href="#materials" class="btn-primary">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="12" height="9" rx="1.5"/>
+          <path d="M4 3V2a1 1 0 011-1h4a1 1 0 011 1v1"/>
+        </svg>
+        教材を探す
+      </a>
+      <a href="#about" class="btn-ghost">
+        使い方・ライセンス →
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stats-title">Current Contents</div>
+    <div class="stat-row">
+      <div class="stat-num">7</div>
+      <div class="stat-label">教材・ミニアプリ<br><span style="font-size:11px;color:var(--text3)">随時追加予定</span></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-num">4</div>
+      <div class="stat-label">カテゴリ<br><span style="font-size:11px;color:var(--text3)">セキュリティ・ネットワーク 等</span></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-num">MIT</div>
+      <div class="stat-label">ライセンス<br><span style="font-size:11px;color:var(--text3)">商用・改変・再配布すべて可</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-inner">
+    <button class="filter-btn active" data-filter="all">すべて <span class="filter-count">7</span></button>
+    <button class="filter-btn" data-filter="security">セキュリティ <span class="filter-count">3</span></button>
+    <button class="filter-btn" data-filter="network">ネットワーク <span class="filter-count">1</span></button>
+    <button class="filter-btn" data-filter="programming">プログラミング <span class="filter-count">1</span></button>
+    <button class="filter-btn" data-filter="simulation">シミュレーション <span class="filter-count">1</span></button>
+    <button class="filter-btn" data-filter="other">その他 <span class="filter-count">1</span></button>
+  </div>
+</div>
+
+<!-- GRID -->
+<section class="grid-section" id="materials">
+  <div class="grid-header">
+    <span class="grid-title">教材ライブラリ</span>
+    <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">MIT License — 改変・再配布自由</span>
+  </div>
+  <div class="grid" id="card-grid">
+
+    <!-- 1. ネットワーク探偵団 -->
+    <div class="card" data-cat="network" style="--card-accent:#7c3aed">
+      <div>
+        <span class="card-tag" style="--tag-bg:#4a2060">🌐 Network</span>
+      </div>
+      <span class="card-icon">🔍</span>
+      <h3>ネットワーク探偵団</h3>
+      <p class="card-desc">IPアドレス・DNS・ルーティングをゲーム感覚で学べるインタラクティブ教材。社内IT研修の導入に。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約20分</span>
+        <span class="card-meta-item">👤 個人/グループ</span>
+        <span class="card-meta-item">🏢 企業・自治体向け</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+    <!-- 2. インシデントすごろく -->
+    <div class="card" data-cat="security" style="--card-accent:#dc2626">
+      <div>
+        <span class="card-tag" style="--tag-bg:#7f1d1d">🛡️ Security</span>
+      </div>
+      <span class="card-icon">🎲</span>
+      <h3>インシデントすごろく</h3>
+      <p class="card-desc">サイバーインシデント発生から対応完了までのフローをすごろく形式で体験。初動対応の意識を高める研修ゲーム。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約30分</span>
+        <span class="card-meta-item">👥 グループ向け</span>
+        <span class="card-meta-item">🏢 管理職・IT担当者</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+    <!-- 3. プログラミングラボ -->
+    <div class="card" data-cat="programming" style="--card-accent:#d97706">
+      <div>
+        <span class="card-tag" style="--tag-bg:#78350f">💻 Programming</span>
+      </div>
+      <span class="card-icon">⚗️</span>
+      <h3>プログラミングラボ</h3>
+      <p class="card-desc">ブラウザだけで動くプログラミング体験教材。コードの仕組みを直感的に理解できる。AI時代の「読み書き」入門に。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約15分〜</span>
+        <span class="card-meta-item">👤 個人向け</span>
+        <span class="card-meta-item">🎓 新入社員・一般職員</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+    <!-- 4. ランサムウェアシミュレーション -->
+    <div class="card" data-cat="security" style="--card-accent:#dc2626">
+      <div>
+        <span class="card-tag" style="--tag-bg:#7f1d1d">🛡️ Security</span>
+        <span class="card-status wip"><span class="card-status-dot"></span>開発中</span>
+      </div>
+      <span class="card-icon">🔒</span>
+      <h3>ランサムウェアシミュレーション</h3>
+      <p class="card-desc">実際のランサムウェア感染の流れを疑似体験。「どの操作が危険だったか」を事後に振り返られる構成。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約20分</span>
+        <span class="card-meta-item">👤 個人向け</span>
+        <span class="card-meta-item">🏢 中小企業・自治体</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo" style="opacity:0.4;pointer-events:none">▶ 準備中</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- 5. SNS型投資詐欺シミュレーション -->
+    <div class="card" data-cat="simulation" style="--card-accent:#be185d">
+      <div>
+        <span class="card-tag" style="--tag-bg:#831843">🎭 Simulation</span>
+      </div>
+      <span class="card-icon">📱</span>
+      <h3>SNS型投資詐欺シミュレーション</h3>
+      <p class="card-desc">LINE風UIで詐欺の流れを疑似体験。偽の投資アプリ画面・選択肢分岐・脱出判定を含む没入型シナリオ。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約15分</span>
+        <span class="card-meta-item">👤 個人向け</span>
+        <span class="card-meta-item">🏦 金融機関・一般市民向け</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+    <!-- 6. 仮想通貨投資詐欺シミュレーション -->
+    <div class="card" data-cat="security" style="--card-accent:#be185d">
+      <div>
+        <span class="card-tag" style="--tag-bg:#7f1d1d">🛡️ Security</span>
+        <span class="card-status wip"><span class="card-status-dot"></span>開発中</span>
+      </div>
+      <span class="card-icon">💰</span>
+      <h3>仮想通貨投資詐欺シミュレーション</h3>
+      <p class="card-desc">暗号資産をテーマにした詐欺体験型教材。偽アプリ・出金拒否・圧力シナリオを含む発展版。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約20分</span>
+        <span class="card-meta-item">👤 個人向け</span>
+        <span class="card-meta-item">🏦 金融機関・自治体</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo" style="opacity:0.4;pointer-events:none">▶ 準備中</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+
+    <!-- 7. アンケート -->
+    <div class="card" data-cat="other" style="--card-accent:#0891b2">
+      <div>
+        <span class="card-tag" style="--tag-bg:#164e63">📋 Tool</span>
+      </div>
+      <span class="card-icon">📊</span>
+      <h3>ITリテラシー診断アンケート</h3>
+      <p class="card-desc">研修前後に使えるITリテラシー自己診断ツール。設問・選択肢はJSONで管理し、組織に合わせて簡単カスタマイズ可。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約5分</span>
+        <span class="card-meta-item">👤 個人向け</span>
+        <span class="card-meta-item">🏢 研修前後のアセスメント</span>
+      </div>
+      <div class="card-actions">
+        <a href="#" class="card-btn card-btn-demo">▶ デモを試す</a>
+        <a href="#" class="card-btn card-btn-gh">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="#" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-strip" id="about">
+  <div class="about-inner">
+    <div class="about-left">
+      <h2>なぜ<em>オープン</em>なのか</h2>
+      <p>ITリテラシーの問題は、特定の組織だけでは解決できません。企業も、学校も、自治体も、同じ課題に直面しています。教材をオープンにすることで、現場に合った形に書き換えて使ってもらい、その改善版がまた誰かの役に立つ。そのサイクルをここから始めます。</p>
+    </div>
+    <div class="about-right">
+      <div class="principle">
+        <span class="principle-num">01</span>
+        <p class="principle-text"><strong>すべてのコードは公開</strong>。中身が見えない教材は信頼できない。特にセキュリティ系ツールは透明性が命です。</p>
+      </div>
+      <div class="principle">
+        <span class="principle-num">02</span>
+        <p class="principle-text"><strong>1ファイルで動く</strong>。サーバー不要。社内共有フォルダに置くだけで使える。ITが苦手な担当者でも展開できます。</p>
+      </div>
+      <div class="principle">
+        <span class="principle-num">03</span>
+        <p class="principle-text"><strong>書き換えていい</strong>。クイズの文言を自社ルールに変える、ロゴを差し替える。MITライセンスで商用・改変・再配布すべて自由。</p>
+      </div>
+      <div class="principle">
+        <span class="principle-num">04</span>
+        <p class="principle-text"><strong>投稿歓迎</strong>。あなたが作ったIT教材もここに置けます。GitHubでPRを送るか、まずはご連絡ください。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">LiteLab Commons</div>
+  <span class="footer-note">MIT License — すべての教材は自由に使用・改変・再配布できます</span>
+  <ul class="footer-links">
+    <li><a href="#">GitHub</a></li>
+    <li><a href="#">ライセンス</a></li>
+    <li><a href="#">お問い合わせ</a></li>
+  </ul>
+</footer>
+
+<script>
+// Filter logic
+const btns = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.card');
+
+btns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    btns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    cards.forEach(card => {
+      if (filter === 'all' || card.dataset.cat === filter) {
+        card.classList.remove('hidden');
+      } else {
+        card.classList.add('hidden');
+      }
+    });
+  });
+});
+</script>
+</body>
+</html>
