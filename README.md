@@ -29,7 +29,7 @@ ITリテラシー向上に使える教材・ミニアプリのオープンハブ
 ## 投稿・貢献
 
 あなたが作ったIT教材もここに置けます。
-Pull RequestまたはIssueでご連絡ください。
+Pull Requestまたは[教材掲載リクエスト](https://github.com/litelab-commons/litelab-commons.github.io/issues/new?template=material-request.yml)でご連絡ください。
 
 ### 掲載条件
 

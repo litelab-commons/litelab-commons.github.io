@@ -1,0 +1,110 @@
+name: 教材掲載リクエスト
+description: LiteLab Commons に掲載したい教材・ミニアプリを提案する
+title: "教材掲載リクエスト: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        LiteLab Commons への掲載提案ありがとうございます。
+        掲載は、ライセンス・安全性・教育目的を確認したうえで行います。
+
+  - type: input
+    id: material_name
+    attributes:
+      label: 教材名
+      description: 掲載したい教材・ミニアプリの名前を入力してください。
+      placeholder: 例）フィッシングメール判定ゲーム
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: 概要
+      description: 何を学べる教材か、どのように使う教材かを書いてください。
+      placeholder: 例）メール本文や送信元を見て、フィッシング詐欺かどうかを判定する教材です。
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: カテゴリ
+      options:
+        - セキュリティ
+        - ネットワーク
+        - プログラミング
+        - シミュレーション
+        - その他
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: targets
+    attributes:
+      label: 想定対象者
+      options:
+        - label: 学校
+        - label: 企業研修
+        - label: 自治体講座
+        - label: 一般市民
+        - label: 高齢者
+        - label: その他
+
+  - type: input
+    id: demo_url
+    attributes:
+      label: デモURL
+      description: 既に試せるURLがあれば入力してください。
+      placeholder: https://example.com/demo
+
+  - type: input
+    id: repository_url
+    attributes:
+      label: リポジトリURLまたは配布ファイルURL
+      description: コードや配布ファイルの場所があれば入力してください。
+      placeholder: https://github.com/example/example
+
+  - type: input
+    id: license
+    attributes:
+      label: ライセンス
+      description: 利用条件が分かるライセンス名を入力してください。
+      placeholder: 例）MIT / CC BY 4.0 / CC0 / 独自ライセンス
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: permissions
+    attributes:
+      label: 利用条件
+      description: 分かる範囲でチェックしてください。
+      options:
+        - label: 商用利用できる
+        - label: 改変できる
+        - label: 再配布できる
+
+  - type: dropdown
+    id: external_communication
+    attributes:
+      label: 個人情報・外部通信の有無
+      options:
+        - 個人情報を扱わず、外部通信もしない
+        - 個人情報は扱わないが、外部通信がある
+        - 個人情報を扱う可能性がある
+        - 不明
+    validations:
+      required: true
+
+  - type: textarea
+    id: safety_notes
+    attributes:
+      label: 安全性に関する補足
+      description: 危険な操作、攻撃手法、外部サービス連携などがあれば書いてください。
+      placeholder: 例）実際の攻撃コードは含みません。ブラウザ内だけで完結します。
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: その他
+      description: 掲載時に伝えておきたいことがあれば書いてください。
