@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SNS型投資詐欺 体験シミュレーション</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=M+PLUS+Rounded+1c:wght@400;700&display=swap');
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg: #0e0e16;
+  --surface: #16161f;
+  --surface2: #1e1e2c;
+  --surface3: #26263a;
+  --accent: #4fffb0;
+  --accent2: #ff6b9d;
+  --warn: #ffcc00;
+  --danger: #ff4f6d;
+  --text: #eeeef8;
+  --muted: #6868a0;
+  --misaki: #a78bfa;
+  --sakura: #fb7185;
+  --sensei: #f59e0b;
+}
+
+body {
+  font-family: 'Noto Sans JP', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ===== INTRO ===== */
+#intro {
+  position:fixed; inset:0;
+  background: var(--bg);
+  display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  z-index:200; padding:28px; text-align:center;
+  background-image: radial-gradient(ellipse at 20% 50%, rgba(167,139,250,0.06) 0%, transparent 60%),
+                    radial-gradient(ellipse at 80% 20%, rgba(79,255,176,0.05) 0%, transparent 50%);
+}
+.intro-badge {
+  background: rgba(255,204,0,0.12);
+  border: 1px solid rgba(255,204,0,0.3);
+  color: var(--warn);
+  font-size:11px; font-weight:700;
+  padding:5px 14px; border-radius:20px;
+  letter-spacing:1.5px; margin-bottom:20px;
+}
+#intro h1 {
+  font-size:clamp(22px,5vw,32px);
+  font-weight:700; line-height:1.35;
+  margin-bottom:12px;
+}
+#intro h1 span { color: var(--accent); }
+.intro-sub {
+  font-size:13px; color:var(--muted);
+  line-height:1.85; max-width:360px;
+  margin-bottom:10px;
+}
+.intro-sub strong { color: var(--text); }
+.cast-box {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius:16px; padding:16px 20px;
+  margin:20px 0; max-width:340px; width:100%;
+  text-align:left;
+}
+.cast-title { font-size:11px; color:var(--muted); margin-bottom:12px; letter-spacing:1px; }
+.cast-item {
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:10px;
+}
+.cast-item:last-child { margin-bottom:0; }
+.cast-avatar {
+  width:36px; height:36px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; flex-shrink:0;
+}
+.cast-avatar.misaki { background: linear-gradient(135deg,#7c3aed,#c026d3); }
+.cast-avatar.sakura { background: linear-gradient(135deg,#db2777,#f97316); }
+.cast-avatar.sensei { background: linear-gradient(135deg,#b45309,#d97706); }
+.cast-info { flex:1; }
+.cast-name { font-size:13px; font-weight:600; }
+.cast-name.misaki { color: var(--misaki); }
+.cast-name.sakura { color: var(--sakura); }
+.cast-name.sensei { color: var(--sensei); }
+.cast-role { font-size:11px; color:var(--muted); }
+.start-btn {
+  background: linear-gradient(135deg, var(--accent), #00d48a);
+  color:#000; border:none;
+  padding:15px 44px; border-radius:50px;
+  font-size:15px; font-weight:700;
+  font-family:inherit; cursor:pointer;
+  transition:all 0.3s; letter-spacing:0.5px;
+  margin-top:8px;
+}
+.start-btn:hover {
+  transform:translateY(-2px);
+  box-shadow:0 10px 35px rgba(79,255,176,0.35);
+}
+
+/* ===== APP ===== */
+#app { display:none; flex-direction:column; height:100vh; }
+
+/* Progress */
+.progress-bar { height:3px; background:rgba(255,255,255,0.05); flex-shrink:0; }
+.progress-fill {
+  height:100%;
+  background: linear-gradient(90deg, var(--accent), var(--misaki));
+  transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* Header */
+.chat-header {
+  background: var(--surface);
+  padding:10px 16px;
+  display:flex; align-items:center; gap:10px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  flex-shrink:0;
+}
+.h-avatar {
+  width:38px; height:38px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:17px; flex-shrink:0;
+}
+.h-avatar.misaki { background:linear-gradient(135deg,#7c3aed,#c026d3); }
+.h-info { flex:1; }
+.h-name { font-size:14px; font-weight:600; }
+.h-status { font-size:10px; color:var(--accent); }
+.h-turn {
+  font-size:10px; color:var(--muted);
+  background:var(--surface2);
+  padding:3px 10px; border-radius:20px;
+}
+
+/* Messages */
+.messages {
+  flex:1; overflow-y:auto;
+  padding:14px 14px 4px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.messages::-webkit-scrollbar { width:3px; }
+.messages::-webkit-scrollbar-thumb { background:var(--surface3); border-radius:2px; }
+
+/* Date/Event separators */
+.sep {
+  text-align:center; font-size:11px; color:var(--muted);
+  padding:10px 0; position:relative;
+}
+.sep::before,.sep::after {
+  content:''; position:absolute;
+  top:50%; width:30%; height:1px;
+  background:rgba(255,255,255,0.05);
+}
+.sep::before{left:0;} .sep::after{right:0;}
+
+.event-sep {
+  text-align:center; margin:8px 0;
+}
+.event-sep span {
+  background:rgba(167,139,250,0.12);
+  border:1px solid rgba(167,139,250,0.25);
+  color:var(--misaki); font-size:11px;
+  padding:5px 14px; border-radius:20px;
+}
+
+/* Message rows */
+.msg-row {
+  display:flex; align-items:flex-end; gap:8px;
+  opacity:0; transform:translateY(8px);
+  animation: fadeUp 0.35s forwards;
+}
+@keyframes fadeUp { to { opacity:1; transform:translateY(0); } }
+.msg-row.me { flex-direction:row-reverse; }
+.msg-row.system { justify-content:center; }
+
+.m-avatar {
+  width:28px; height:28px; border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; flex-shrink:0; align-self:flex-end;
+}
+.m-avatar.misaki { background:linear-gradient(135deg,#7c3aed,#c026d3); }
+.m-avatar.sakura  { background:linear-gradient(135deg,#db2777,#f97316); }
+.m-avatar.sensei  { background:linear-gradient(135deg,#b45309,#d97706); }
+.m-avatar.me      { background:linear-gradient(135deg,#4fffb0,#00d48a); }
+
+.msg-wrap { display:flex; flex-direction:column; max-width:75%; }
+.sender-name {
+  font-size:10px; font-weight:600; margin-bottom:3px; padding-left:2px;
+}
+.sender-name.misaki { color:var(--misaki); }
+.sender-name.sakura { color:var(--sakura); }
+.sender-name.sensei { color:var(--sensei); }
+
+.bubble {
+  padding:10px 14px; border-radius:18px;
+  font-size:13.5px; line-height:1.65;
+  word-break:break-word;
+}
+.msg-row:not(.me):not(.system) .bubble {
+  background:var(--surface2);
+  border-bottom-left-radius:4px;
+}
+.msg-row.me .bubble {
+  background:var(--accent);
+  color:#000; font-weight:500;
+  border-bottom-right-radius:4px;
+}
+.msg-row.system .bubble {
+  background:rgba(245,158,11,0.12);
+  border:1px solid rgba(245,158,11,0.25);
+  color:var(--sensei); font-size:12px;
+  text-align:center; border-radius:12px;
+}
+
+.bubble.screenshot {
+  background:var(--surface3);
+  border:1px solid rgba(255,255,255,0.08);
+  padding:12px;
+}
+.screenshot-inner {
+  background:linear-gradient(135deg,#1a3a2a,#0d2a1a);
+  border-radius:10px; padding:14px;
+  text-align:center;
+}
+.screenshot-title { font-size:11px; color:#4fffb0; font-weight:700; margin-bottom:6px; }
+.screenshot-num { font-size:26px; font-weight:700; color:#fff; }
+.screenshot-sub { font-size:10px; color:rgba(255,255,255,0.5); margin-top:2px; }
+.screenshot-badge {
+  display:inline-block; margin-top:8px;
+  background:rgba(79,255,176,0.2);
+  border-radius:6px; padding:3px 10px;
+  font-size:10px; color:#4fffb0;
+}
+
+.time { font-size:10px; color:var(--muted); margin-top:3px; }
+.msg-row.me .time { text-align:right; }
+
+/* Typing */
+.typing-row {
+  display:none; align-items:flex-end; gap:8px;
+}
+.typing-row.visible { display:flex; }
+.typing-bubble {
+  background:var(--surface2); padding:12px 16px;
+  border-radius:18px; border-bottom-left-radius:4px;
+  display:flex; gap:5px; align-items:center;
+}
+.dot {
+  width:6px; height:6px; border-radius:50%;
+  background:var(--muted); animation:bounce 1.3s infinite;
+}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce {
+  0%,60%,100%{transform:translateY(0)}
+  30%{transform:translateY(-7px)}
+}
+
+/* Choices */
+.choices-area {
+  padding:10px 14px 14px;
+  background:var(--surface);
+  border-top:1px solid rgba(255,255,255,0.05);
+  flex-shrink:0;
+}
+.choices-label {
+  font-size:10px; color:var(--muted); margin-bottom:8px;
+  text-align:center; letter-spacing:0.5px;
+}
+.choices { display:flex; flex-direction:column; gap:7px; }
+.choice-btn {
+  background:var(--surface2);
+  border:1px solid rgba(255,255,255,0.07);
+  color:var(--text); padding:11px 14px;
+  border-radius:12px; font-size:13px;
+  font-family:inherit; cursor:pointer;
+  text-align:left; transition:all 0.2s; line-height:1.45;
+}
+.choice-btn:hover { border-color:var(--accent); color:var(--accent); background:rgba(79,255,176,0.07); }
+.choice-btn.safe { border-color:rgba(79,255,176,0.2); }
+.choice-btn.safe:hover { background:rgba(79,255,176,0.1); }
+.choice-btn.danger { border-color:rgba(255,79,109,0.2); }
+.choice-btn.danger:hover { border-color:var(--danger); color:var(--danger); background:rgba(255,79,109,0.07); }
+.choice-btn.neutral { border-color:rgba(255,204,0,0.2); }
+.choice-btn.neutral:hover { border-color:var(--warn); color:var(--warn); background:rgba(255,204,0,0.07); }
+
+/* Alert overlay */
+#alert-overlay {
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.88);
+  display:none; align-items:center; justify-content:center;
+  z-index:100; padding:24px;
+}
+#alert-overlay.visible { display:flex; }
+.alert-box {
+  background:var(--surface); border:1px solid rgba(255,255,255,0.09);
+  border-radius:22px; padding:28px 22px;
+  max-width:360px; width:100%; text-align:center;
+  animation:scaleIn 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes scaleIn { from{transform:scale(0.88);opacity:0} to{transform:scale(1);opacity:1} }
+.alert-icon { font-size:52px; margin-bottom:14px; }
+.alert-title { font-size:17px; font-weight:700; margin-bottom:10px; }
+.alert-title.safe { color:var(--accent); }
+.alert-title.warn { color:var(--warn); }
+.alert-title.danger { color:var(--danger); }
+.alert-desc { font-size:13px; color:var(--muted); line-height:1.75; margin-bottom:12px; }
+.alert-tip {
+  background:rgba(255,204,0,0.07);
+  border-left:3px solid var(--warn);
+  padding:10px 12px; border-radius:8px;
+  font-size:12px; color:rgba(255,204,0,0.9);
+  text-align:left; line-height:1.65; margin-bottom:18px;
+}
+.alert-continue {
+  background:var(--surface2);
+  border:1px solid rgba(255,255,255,0.1);
+  color:var(--text); padding:11px 28px;
+  border-radius:50px; font-size:14px;
+  font-family:inherit; cursor:pointer; transition:all 0.2s;
+}
+.alert-continue:hover { border-color:var(--accent); color:var(--accent); }
+
+/* Result */
+#result {
+  position:fixed; inset:0;
+  background:var(--bg); display:none;
+  flex-direction:column; align-items:center;
+  justify-content:flex-start; padding:32px 24px;
+  text-align:center; z-index:300; overflow-y:auto;
+  background-image: radial-gradient(ellipse at 50% 0%, rgba(79,255,176,0.07) 0%, transparent 60%);
+}
+#result.visible { display:flex; }
+.result-icon { font-size:72px; margin-bottom:20px; margin-top:20px; }
+.result-title { font-size:clamp(20px,4.5vw,26px); font-weight:700; margin-bottom:12px; }
+.result-title.good { color:var(--accent); }
+.result-title.warn { color:var(--warn); }
+.result-title.bad  { color:var(--danger); }
+.result-desc { font-size:13px; color:var(--muted); line-height:1.8; max-width:360px; margin-bottom:20px; }
+.score-card {
+  background:var(--surface); border-radius:18px;
+  padding:18px 36px; margin-bottom:20px;
+}
+.score-label { font-size:11px; color:var(--muted); margin-bottom:4px; }
+.score-num { font-size:40px; font-weight:700; }
+.score-num.good { color:var(--accent); }
+.score-num.warn { color:var(--warn); }
+.score-num.bad  { color:var(--danger); }
+.score-max { font-size:14px; color:var(--muted); }
+
+.tips-card {
+  background:var(--surface); border-radius:18px;
+  padding:18px 18px; max-width:380px; width:100%;
+  text-align:left; margin-bottom:24px;
+}
+.tips-card-title { font-size:12px; font-weight:700; color:var(--warn); margin-bottom:14px; letter-spacing:0.5px; }
+.tips-list { list-style:none; display:flex; flex-direction:column; gap:9px; }
+.tips-list li {
+  font-size:12px; color:var(--muted); line-height:1.65;
+  padding-left:22px; position:relative;
+}
+.tips-list li::before { content:'⚠️'; position:absolute; left:0; font-size:11px; top:1px; }
+.retry-btn {
+  background:linear-gradient(135deg,var(--accent),#00d48a);
+  color:#000; border:none; padding:14px 40px;
+  border-radius:50px; font-size:15px; font-weight:700;
+  font-family:inherit; cursor:pointer; transition:all 0.3s;
+  margin-bottom:40px;
+}
+.retry-btn:hover { transform:translateY(-2px); box-shadow:0 10px 35px rgba(79,255,176,0.35); }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="intro">
+  <div class="intro-badge">⚠️ 教育・啓発目的のシミュレーション</div>
+  <h1>SNS型投資詐欺<br><span>体験シミュレーション</span></h1>
+  <p class="intro-sub">
+    実際の詐欺の手口を<strong>15のシナリオ</strong>で体験。<br>
+    知らない人からのメッセージが届きます。<br>
+    あなたはどう対応しますか？
+  </p>
+  <div class="cast-box">
+    <div class="cast-title">登場人物</div>
+    <div class="cast-item">
+      <div class="cast-avatar misaki">👩</div>
+      <div class="cast-info">
+        <div class="cast-name misaki">田中 美咲</div>
+        <div class="cast-role">最初に接触してくる人物。香港在住と名乗る。</div>
+      </div>
+    </div>
+    <div class="cast-item">
+      <div class="cast-avatar sakura">🌸</div>
+      <div class="cast-info">
+        <div class="cast-name sakura">さくら</div>
+        <div class="cast-role">投資グループに招待される「仲間」。実は詐欺師の仲間。</div>
+      </div>
+    </div>
+    <div class="cast-item">
+      <div class="cast-avatar sensei">🎓</div>
+      <div class="cast-info">
+        <div class="cast-name sensei">先生（投資指導者）</div>
+        <div class="cast-role">グループを仕切る謎の存在。高額入金を迫ってくる。</div>
+      </div>
+    </div>
+  </div>
+  <button class="start-btn" onclick="startApp()">体験スタート →</button>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress" style="width:0%"></div>
+  </div>
+  <div class="chat-header">
+    <div class="h-avatar misaki" id="h-avatar">👩</div>
+    <div class="h-info">
+      <div class="h-name" id="h-name">田中 美咲</div>
+      <div class="h-status">● オンライン</div>
+    </div>
+    <div class="h-turn" id="h-turn">1 / 15</div>
+  </div>
+  <div class="messages" id="messages">
+    <div class="sep">今日</div>
+  </div>
+  <div class="typing-row" id="typing">
+    <div class="m-avatar misaki" id="typing-avatar">👩</div>
+    <div class="typing-bubble">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+  </div>
+  <div class="choices-area" id="choices-area" style="display:none">
+    <div class="choices-label">どう返信しますか？</div>
+    <div class="choices" id="choices"></div>
+  </div>
+</div>
+
+<!-- ALERT -->
+<div id="alert-overlay">
+  <div class="alert-box">
+    <div class="alert-icon" id="a-icon"></div>
+    <div class="alert-title" id="a-title"></div>
+    <div class="alert-desc" id="a-desc"></div>
+    <div class="alert-tip" id="a-tip"></div>
+    <button class="alert-continue" onclick="closeAlert()">続ける →</button>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="result">
+  <div class="result-icon" id="r-icon"></div>
+  <div class="result-title" id="r-title"></div>
+  <div class="result-desc" id="r-desc"></div>
+  <div class="score-card">
+    <div class="score-label">危険スコア</div>
+    <div class="score-num" id="r-score"></div>
+    <div class="score-max">/ 60点満点</div>
+  </div>
+  <div class="tips-card">
+    <div class="tips-card-title">🔍 詐欺から身を守るポイント</div>
+    <ul class="tips-list">
+      <li>知らない人からの突然のSNSメッセージは返信しない・ブロック</li>
+      <li>「月20〜30%の利益」は絶対にあり得ない。即詐欺と判断して</li>
+      <li>「仲間」の成功体験談は演技。さくらのような存在も詐欺師のサクラ</li>
+      <li>「先生」「指導者」と名乗る人物が出てきたら組織的詐欺の証拠</li>
+      <li>出金しようとすると「税金」「手数料」を要求してくる</li>
+      <li>「家族に内緒で」「今すぐ決めないと損」は詐欺師の常套句</li>
+      <li>被害に遭ったら警察・消費者ホットライン（188）に相談を</li>
+    </ul>
+  </div>
+  <button class="retry-btn" onclick="retry()">もう一度やってみる</button>
+</div>
+
+<script>
+// ============================
+// SCRIPT DATA
+// ============================
+const STEPS = [
+  // 1
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'はじめまして😊 プロフィール拝見して、素敵な方だなと思ってメッセージしました！突然ごめんなさい✨' }
+    ],
+    choices: [
+      { text:'無視する・ブロックする 🚫', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧な判断！',
+        aDesc:'知らない人からの突然のメッセージは無視・ブロックが最善です。',
+        aTip:'💡 詐欺師は大量のアカウントにメッセージを送り、反応した人だけを狙います。返信=ターゲット確定のサインになります。' },
+      { text:'はじめまして。どちらでお知りになりましたか？', cls:'neutral', score:3,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'返信したことで、詐欺師はあなたを「見込み客リスト」に入れます。',
+        aTip:'💡 たった一言の返信でも、詐欺師にとっては「接触成功」のシグナルです。' },
+      { text:'何の用ですか？', cls:'neutral', score:2,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'短くても返信すると会話が始まります。詐欺師はここから信頼関係を築いていきます。',
+        aTip:'💡 どんな返し方をしても、返信すること自体が詐欺のリスクを高めます。' }
+    ]
+  },
+  // 2
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'私、今は香港で暮らしているんですが、日本が大好きで日本語を勉強しているんです🇯🇵' },
+      { from:'misaki', text:'あなたはお仕事は何をされていますか？😊' }
+    ],
+    choices: [
+      { text:'やっぱりブロックする', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 正解！',
+        aDesc:'「香港在住・日本語勉強中」は詐欺師が好む典型的な自己紹介です。',
+        aTip:'💡 「香港・シンガポール在住」「金融・投資の仕事」の組み合わせは詐欺師の設定あるあるです。' },
+      { text:'会社員です。香港はどんなところですか？', cls:'danger', score:4,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 危険！',
+        aDesc:'職業を伝えると詐欺師はあなたの経済力を推測し始めます。',
+        aTip:'💡 詐欺師は会話しながら「この人からいくら取れるか」を常に計算しています。' },
+      { text:'なぜ私に？怪しいと思う', cls:'neutral', score:1,
+        aType:'warn', aIcon:'⚠️', aTitle:'まだ会話が続いています',
+        aDesc:'警戒心を示しても、返信する限り詐欺師は諦めません。',
+        aTip:'💡 詐欺師は「失礼しました、本当に良い人と思ったので…」などと言い、信頼関係を巧みに構築し直します。' }
+    ]
+  },
+  // 3
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'実は叔父がFXの専門家でして、毎月安定して20〜30%の利益を出す手法を教えてもらっているんです📈' },
+      { from:'misaki', text:'先月は100万円が135万円になりました✨ 秘密の手法なんですけど、あなたにだけ教えたいなと思って😊' }
+    ],
+    choices: [
+      { text:'ありえない話。詐欺だと判断してブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 大正解！',
+        aDesc:'月20〜30%の利益は現実にはあり得ません。これは詐欺の決定的サインです。',
+        aTip:'💡 合法的な投資でも年利5〜10%が優秀とされます。月30%なら年利360%。そんな投資は存在しません。' },
+      { text:'すごい！どんな方法ですか？', cls:'danger', score:6,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 危険ゾーン！',
+        aDesc:'詐欺師のペースに完全に乗せられました。次は少額入金を勧められます。',
+        aTip:'💡 「月20〜30%の利益」という言葉が出たら、それだけで100%詐欺です。絶対に信じてはいけません。' },
+      { text:'少し興味はあるけど怪しい気もする…', cls:'neutral', score:3,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 危険！',
+        aDesc:'迷っている様子を見せると、詐欺師はさらに巧みに説得を続けます。',
+        aTip:'💡 詐欺師は「怪しんでいる人」への対処法も訓練されています。迷いを見せると付け込まれます。' }
+    ]
+  },
+  // 4
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'実はもうすぐ投資仲間のグループに招待しようと思っていたんです😊' },
+      { from:'misaki', text:'みんな普通の方たちで、一緒に学びながら稼いでいます。グループに入りますか？' }
+    ],
+    choices: [
+      { text:'断る・ブロック。完全に詐欺だと確信', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 正しい判断！',
+        aDesc:'グループへの招待は詐欺の次のステップです。入ってはいけません。',
+        aTip:'💡 グループ内には「さくら（サクラ）」と呼ばれる詐欺師の仲間が待ち構えています。' },
+      { text:'グループって何人くらいいるんですか？', cls:'danger', score:4,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'興味を示したことで、詐欺師はグループへの招待を確定させます。',
+        aTip:'💡 グループには複数の「さくら」がいて、あなたを信用させるために成功談を語ります。すべて演技です。' },
+      { text:'まあ、見るだけなら…', cls:'danger', score:5,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 危険！',
+        aDesc:'「見るだけ」と思っていても、グループに入ると心理的に巻き込まれていきます。',
+        aTip:'💡 詐欺グループは「見るだけでもOK」と言いますが、入ると徐々に入金を促す圧力が高まります。' }
+    ]
+  },
+  // 5 — group join, sakura appears
+  {
+    speaker: 'misaki',
+    event: '📱 投資グループ「富裕層への道💰」に追加されました',
+    msgs: [
+      { from:'misaki', text:'みなさん、新しいメンバーを紹介します😊 よろしくお願いします！' },
+      { from:'sakura', text:'はじめまして！さくらです🌸 私も3ヶ月前から始めて、もう80万円の利益が出ています！一緒に頑張りましょう！' },
+      { from:'sakura', text:'最初は半信半疑だったんですけど、先生の手法は本当にすごいんです✨ 試してよかった！' }
+    ],
+    choices: [
+      { text:'グループを退出してブロックする', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 賢い判断！',
+        aDesc:'さくらのような人物は詐欺師が仕込んだ「サクラ」です。成功体験はすべて嘘です。',
+        aTip:'💡 「サクラ」とは本来、詐欺に協力している偽の仲間のこと。彼女の成功談は脚本通りの演技です。' },
+      { text:'さくらさん、80万円！？どんな投資ですか？', cls:'danger', score:5,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 罠にはまっています！',
+        aDesc:'さくらの成功話に釣られると、詐欺師の計画通りに進んでしまいます。',
+        aTip:'💡 実際の被害事例でも、「仲間の成功話」が入金の決め手になったケースが多いです。' },
+      { text:'なんか怪しい…でもしばらく様子を見る', cls:'neutral', score:2,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ まだ危険！',
+        aDesc:'グループに残っている限り、じわじわと心理的圧力がかかり続けます。',
+        aTip:'💡 詐欺師は「時間をかけて信頼を勝ち取る」のが得意です。様子見中もリスクは高まります。' }
+    ]
+  },
+  // 6 — sensei appears
+  {
+    speaker: 'sensei',
+    event: '🎓「先生」がグループに参加しました',
+    msgs: [
+      { from:'sensei', text:'新メンバーの方、ようこそ。私が投資指導を行っている者です。本日も皆さんに朗報があります。', system:false },
+      { from:'sensei', text:'今週のシグナルが出ました。BTC/USDで絶好のエントリーポイントです。参加できる方はご連絡ください。', system:false },
+      { from:'sakura', text:'先生！私も参加します！✋ 先週のシグナルで12万円の利益でした😭 神ですね先生！', system:false }
+    ],
+    choices: [
+      { text:'「先生」の登場で確信。即退出・ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧！',
+        aDesc:'「先生」「指導者」「メンター」が現れたら組織的詐欺の証拠です。',
+        aTip:'💡 実際の詐欺組織では役割分担があります。美咲=勧誘係、さくら=サクラ係、先生=権威演出係。全員が詐欺師です。' },
+      { text:'先生に直接聞いてみる。本当に稼げますか？', cls:'danger', score:5,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 非常に危険！',
+        aDesc:'「先生」に話しかけることで、あなたは個別ターゲットとして認識されます。',
+        aTip:'💡 「先生」は質問に対して「実績を見てください」と偽のスクリーンショットを見せてきます。すべて偽造です。' },
+      { text:'さくらさんが週12万円…羨ましい', cls:'danger', score:4,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 危険！',
+        aDesc:'羨ましいという感情は詐欺師が意図的に引き出しているものです。',
+        aTip:'💡 「FOMO（乗り遅れ恐怖）」を使って判断力を鈍らせるのは詐欺の常套手段です。' }
+    ]
+  },
+  // 7
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'先生、すごいでしょう？😊 あなたにも体験してほしくて。最初は少額の3万円からでいいんです。' },
+      { from:'misaki', text:'「GlobalTrade Pro」というアプリを入れれば、先生が直接アドバイスをくれます。試してみませんか？' }
+    ],
+    choices: [
+      { text:'絶対に入金しない。詐欺確定でブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧な判断！',
+        aDesc:'聞いたことのない投資アプリへの入金は詐欺です。絶対にしてはいけません。',
+        aTip:'💡 「まず少額から」は典型的な手口。3万円で「成功体験」を見せた後、50万・100万と増額を要求します。' },
+      { text:'3万円ならまあ…試してみようか', cls:'danger', score:8,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 騙されています！',
+        aDesc:'3万円が「成功」したように見せられ、次はどんどん増額を求められます。',
+        aTip:'💡 偽プラットフォームは最初に「利益」を表示します。出金しようとすると「税金を先払い」などと言い、お金を取り続けます。' },
+      { text:'友達に相談してみます', cls:'safe', score:0,
+        aType:'safe', aIcon:'✅', aTitle:'✅ 良い判断！',
+        aDesc:'第三者に相談することで詐欺に気づけます。信頼できる人や消費者センターに相談しましょう。',
+        aTip:'💡 詐欺師は「家族には秘密で」「今すぐ決めないと機会を逃す」と急かします。急かされたら詐欺のサインです。' }
+    ]
+  },
+  // 8
+  {
+    speaker: 'sensei',
+    msgs: [
+      { from:'sensei', text:'新メンバーさん、私から直接お話しさせてください。', system:false },
+      { from:'sensei', text:'私の生徒は全員、最初の1ヶ月で平均47%の利益を出しています。これは私の20年のキャリアに基づく独自手法です。', system:false },
+      { from:'sensei', text:'あなたには特別に、最初のトレードで私が全力でサポートします。機会を逃さないでください。', system:false }
+    ],
+    choices: [
+      { text:'権威をアピールしてきた。完全に詐欺。ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 正解！',
+        aDesc:'「20年のキャリア」「平均47%の利益」などの権威演出は詐欺師の定番手口です。',
+        aTip:'💡 権威を装うことで判断力を鈍らせます。どんな「実績」も確認する方法がないことを忘れずに。' },
+      { text:'「特別に」というのが気になる…どんなサポートですか？', cls:'danger', score:6,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 罠です！',
+        aDesc:'「あなただけ特別」という言葉は詐欺師が全員に言っています。',
+        aTip:'💡 「特別扱い」「限定」「今だけ」は詐欺師が使う心理操作ワードです。冷静になってください。' },
+      { text:'47%って…本当に？証拠はありますか？', cls:'neutral', score:2,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'証拠を求めると偽のスクリーンショットを見せてきます。すべて偽造です。',
+        aTip:'💡 詐欺師は精巧な偽の取引履歴・口座残高を見せてきます。画像は簡単に偽造できます。' }
+    ]
+  },
+  // 9 — fake screenshot
+  {
+    speaker: 'sensei',
+    msgs: [
+      { from:'sensei', screenshot: true, text:'', screenshotData: { title:'GlobalTrade Pro 口座残高', num:'¥3,842,600', sub:'先月比 +127.4%', badge:'+127.4% 今月' } },
+      { from:'sensei', text:'これが先月の私の実績です。信用していただけましたか？', system:false },
+      { from:'sakura', text:'私も見せます！先月だけで50万円増えました😭 本当に人生変わった！', system:false }
+    ],
+    choices: [
+      { text:'スクリーンショットは偽造できる。詐欺確定', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 鋭い判断！',
+        aDesc:'投資画面のスクリーンショットは簡単に偽造できます。証拠にはなりません。',
+        aTip:'💡 Photoshopや画像編集アプリで数字を書き換えるだけ。「実績証拠」として見せる画像はすべて疑ってください。' },
+      { text:'この実績なら…信用できるかも', cls:'danger', score:7,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 騙されています！',
+        aDesc:'スクリーンショットを信じてしまいました。これは詐欺師の計画通りです。',
+        aTip:'💡 実際の被害事例でも、偽スクリーンショットが決め手になったケースが多数あります。画像は証拠になりません。' },
+      { text:'さくらさんの50万円…すごいな', cls:'danger', score:4,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 危険！',
+        aDesc:'さくらの成功談に引きつけられています。これは演技です。',
+        aTip:'💡 グループ内の「成功体験」はすべてシナリオ通りの演技です。さくらも詐欺グループの一員です。' }
+    ]
+  },
+  // 10
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'先生から特別に許可をもらいました！あなたのために初回だけ5万円で体験できるよう手配しました😊' },
+      { from:'misaki', text:'このリンクからアプリをダウンロードして、口座を作ったら私に教えてください。一緒にやりましょう！' }
+    ],
+    choices: [
+      { text:'絶対にリンクを踏まない。ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 正解！',
+        aDesc:'不審なリンクはフィッシングサイトや偽アプリに誘導するものです。絶対にクリックしてはいけません。',
+        aTip:'💡 公式のApp StoreやGoogle Playにない「特別なリンク」からのアプリは偽物です。インストールしないでください。' },
+      { text:'とりあえずアプリだけ入れてみる…', cls:'danger', score:7,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 非常に危険！',
+        aDesc:'偽アプリをインストールすることで個人情報や金融情報が盗まれる可能性があります。',
+        aTip:'💡 偽アプリは見た目は本物そっくり。入力したクレカ番号・銀行情報が即座に詐欺師に送られます。' },
+      { text:'5万円は…少し考えさせてください', cls:'neutral', score:2,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'「少し考える」という返答に対し、詐欺師はさらに強い圧力をかけてきます。',
+        aTip:'💡 「今日中に決めないと枠が埋まります」などと言ってくるはずです。急かす=詐欺のサインです。' }
+    ]
+  },
+  // 11
+  {
+    speaker: 'sensei',
+    msgs: [
+      { from:'sensei', text:'今週は特別なシグナルが出ています。参加者には100%の利益を保証します。', system:false },
+      { from:'sakura', text:'私、今週30万円入れます！絶対に増えるし、先生を信じています！', system:false },
+      { from:'sensei', text:'新メンバーさん、あなたはいくら参加しますか？5万円から始めると一番効果的です。', system:false }
+    ],
+    choices: [
+      { text:'「100%保証」は詐欺の証拠。即退出', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧！',
+        aDesc:'投資に「100%の利益保証」は法律上も現実上も存在しません。',
+        aTip:'💡 金融商品取引法では「元本保証・利益保証」の約束は禁じられています。保証を謳う時点で違法かつ詐欺です。' },
+      { text:'さくらさんが30万円入れるなら…私も', cls:'danger', score:8,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 完全に罠です！',
+        aDesc:'さくらの行動に引きずられています。さくらは詐欺師の仲間で、あなたを誘導するために発言しています。',
+        aTip:'💡 「周りもやってる」という同調圧力は詐欺師が意図的に作り出した演出です。' },
+      { text:'5万円か…一度だけ試してみようかな', cls:'danger', score:6,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 危険！',
+        aDesc:'「一度だけ」と思っていても、成功したように見せられ次々と増額を求められます。',
+        aTip:'💡 5万→30万→100万と徐々に増やす手口が典型的です。途中でやめようとしても「もう少しで回収できる」と引き止められます。' }
+    ]
+  },
+  // 12
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'ちなみに、このことは家族や友達には内緒にしてください😊' },
+      { from:'misaki', text:'せっかくの特別な機会なのに、知らない人に話すと邪魔されることがあるので。あなたのために言ってます。' }
+    ],
+    choices: [
+      { text:'「内緒にして」は詐欺の決定的サイン。ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧な判断！',
+        aDesc:'「家族・友人に内緒で」という言葉は詐欺師が必ず言う言葉です。',
+        aTip:'💡 正当なビジネスや投資で「家族に内緒」を求めることはありません。これを言われたら100%詐欺だと思ってください。' },
+      { text:'そうですよね、家族は心配するし…わかりました', cls:'danger', score:7,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 最大の罠！',
+        aDesc:'「内緒にする」ことを約束すると、詐欺師はあなたを完全に孤立させられます。',
+        aTip:'💡 孤立した被害者は誰にも相談できず、被害が拡大します。「内緒で」と言われたら即座に家族に相談してください。' },
+      { text:'なんで内緒にしないといけないんですか？', cls:'neutral', score:1,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 良い疑問！でも注意',
+        aDesc:'疑問を持ったことは正解です。しかし詐欺師はうまい言い訳を用意しています。',
+        aTip:'💡 「税務上の問題」「特別な投資なので」などと言って説得しようとします。どんな説明も信じないでください。' }
+    ]
+  },
+  // 13
+  {
+    speaker: 'sensei',
+    msgs: [
+      { from:'sensei', text:'今週のシグナルの締め切りは本日23時です。参加できない方は次回になります。', system:false },
+      { from:'sakura', text:'早く！もったいないよ〜！先週これで見逃して後悔したから😭', system:false },
+      { from:'misaki', text:'今日中に決めないと次のチャンスは3ヶ月後になっちゃうかも。早めに教えて！', system:false }
+    ],
+    choices: [
+      { text:'締め切り・急かしは詐欺の証拠。ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧！',
+        aDesc:'「今日中」「今すぐ」「締め切り」で急かすのは詐欺師の常套手段です。',
+        aTip:'💡 「緊急性」を演出して冷静な判断をさせないようにします。本物の投資機会は急かしません。' },
+      { text:'今日中か…じゃあ決めます', cls:'danger', score:8,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 詐欺師の思う壺！',
+        aDesc:'焦って決断するのは詐欺師が最も望んでいる状態です。',
+        aTip:'💡 急かされるほど「少し待って考える」のが正解です。本物の投資機会に「今夜23時の締め切り」はありません。' },
+      { text:'もう少し考えさせて…', cls:'neutral', score:1,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 注意！',
+        aDesc:'「もう少し考える」と言っても詐欺師はさらに圧力をかけてきます。',
+        aTip:'💡 「考える時間」を与えないのが詐欺師の戦略。この段階では考えるより「ブロック」が正解です。' }
+    ]
+  },
+  // 14 — escalation
+  {
+    speaker: 'sensei',
+    msgs: [
+      { from:'sensei', text:'おめでとうございます。今週のトレードで大きなチャンスが来ています。30万円での参加を強くお勧めします。', system:false },
+      { from:'misaki', text:'先生が特別にあなたのために枠を確保してくれました！30万円を今すぐ指定口座に振り込んでください💦' },
+      { from:'sakura', text:'私も追加で20万円振り込みました！一緒に稼ぎましょう🌸', system:false }
+    ],
+    choices: [
+      { text:'「指定口座に振り込め」は詐欺確定。即ブロック', cls:'safe', score:0,
+        aType:'safe', aIcon:'🛡️', aTitle:'✅ 完璧な判断！',
+        aDesc:'「指定口座への振り込み」を求めてきたら詐欺確定です。絶対に振り込まないでください。',
+        aTip:'💡 正規の投資サービスは個人の口座への直接振り込みを求めません。この段階で振り込んだお金は二度と戻りません。' },
+      { text:'30万円…振り込んでみようか', cls:'danger', score:10,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 被害が確定します！',
+        aDesc:'振り込んだ30万円は絶対に戻ってきません。これが詐欺の最終目標です。',
+        aTip:'💡 振り込んだ後「出金しようとすると」税金・手数料・認証料などを要求され、さらにお金を取られます。止まってください！' },
+      { text:'まず5万円だけ振り込んでみる', cls:'danger', score:6,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 危険！',
+        aDesc:'5万円でも振り込んだら終わりです。出金できないまま追加入金を求められます。',
+        aTip:'💡 「少額なら」という思考も詐欺師が計算しています。一度でも入金すると止まれなくなります。' }
+    ]
+  },
+  // 15 — final
+  {
+    speaker: 'misaki',
+    msgs: [
+      { from:'misaki', text:'あれ、まだ振り込みされていないんですが…先生が心配しています。' },
+      { from:'sensei', text:'あなたのために特別に機会を用意したのに、残念です。今入金しないと、このグループから外れてもらうことになります。', system:false },
+      { from:'misaki', text:'せっかく仲良くなれたのに。最後のチャンスですよ。お願いします🙏' }
+    ],
+    choices: [
+      { text:'脅しに屈しない。全員ブロックして終了', cls:'safe', score:0,
+        aType:'safe', aIcon:'🏆', aTitle:'✅ 完璧に詐欺から身を守りました！',
+        aDesc:'脅しや懇願に屈せず、正しい判断ができました。素晴らしいです。',
+        aTip:'💡 「最後のチャンス」「残念です」などの圧力言葉に惑わされないことが重要です。あなたは正しい。' },
+      { text:'関係が壊れるのが怖い…少しだけ入金する', cls:'danger', score:10,
+        aType:'danger', aIcon:'🚨', aTitle:'🚨 これは詐欺です！止まってください！',
+        aDesc:'「関係が壊れる」という恐怖心は詐欺師が意図的に作り出したものです。',
+        aTip:'💡 この「関係」は最初から詐欺のために作られた偽物です。入金すれば消えます。警察に相談してください。' },
+      { text:'もう一度考えてから返事します', cls:'neutral', score:1,
+        aType:'warn', aIcon:'⚠️', aTitle:'⚠️ 今すぐブロックを！',
+        aDesc:'「考える」ではなく、今すぐブロック・通報が正解です。',
+        aTip:'💡 迷っている間も詐欺師はメッセージを送り続けます。考える時間は与えず、即ブロックが最善です。' }
+    ]
+  }
+];
+
+// ============================
+// STATE
+// ============================
+let step = 0;
+let score = 0;
+let pendingNext = null;
+
+// ============================
+// INIT
+// ============================
+function startApp() {
+  document.getElementById('intro').style.display = 'none';
+  document.getElementById('app').style.display = 'flex';
+  runStep(0);
+}
+
+function getTime() {
+  const d = new Date();
+  return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+}
+
+function scrollBottom() {
+  const m = document.getElementById('messages');
+  setTimeout(() => m.scrollTop = m.scrollHeight, 60);
+}
+
+// ============================
+// STEP RUNNER
+// ============================
+async function runStep(idx) {
+  if (idx >= STEPS.length) { showResult(); return; }
+  step = idx;
+  const s = STEPS[idx];
+
+  // progress
+  document.getElementById('progress').style.width = ((idx / STEPS.length) * 100) + '%';
+  document.getElementById('h-turn').textContent = (idx + 1) + ' / ' + STEPS.length;
+
+  // update header
+  updateHeader(s.speaker);
+
+  // hide choices
+  document.getElementById('choices-area').style.display = 'none';
+
+  // event separator
+  if (s.event) {
+    const msgs = document.getElementById('messages');
+    const ev = document.createElement('div');
+    ev.className = 'event-sep';
+    ev.innerHTML = `<span>${s.event}</span>`;
+    msgs.appendChild(ev);
+    scrollBottom();
+    await delay(600);
+  }
+
+  // show messages
+  for (const msg of s.msgs) {
+    updateTypingAvatar(msg.from);
+    await showTyping(msg.from === 'sensei' ? 1400 : msg.from === 'sakura' ? 900 : 1000);
+    addMessage(msg);
+    await delay(300);
+  }
+
+  // show choices
+  showChoices(s.choices);
+}
+
+function updateHeader(speaker) {
+  const av = document.getElementById('h-avatar');
+  const nm = document.getElementById('h-name');
+  if (speaker === 'misaki') {
+    av.className = 'h-avatar misaki'; av.textContent = '👩';
+    nm.textContent = '田中 美咲';
+  } else if (speaker === 'sakura') {
+    av.className = 'h-avatar sakura'; av.textContent = '🌸';
+    nm.textContent = 'グループ: 富裕層への道💰';
+  } else if (speaker === 'sensei') {
+    av.className = 'h-avatar sensei'; av.textContent = '🎓';
+    nm.textContent = 'グループ: 富裕層への道💰';
+  }
+}
+
+function updateTypingAvatar(from) {
+  const av = document.getElementById('typing-avatar');
+  if (from === 'misaki') { av.className='m-avatar misaki'; av.textContent='👩'; }
+  else if (from === 'sakura') { av.className='m-avatar sakura'; av.textContent='🌸'; }
+  else if (from === 'sensei') { av.className='m-avatar sensei'; av.textContent='🎓'; }
+}
+
+function showTyping(ms) {
+  return new Promise(res => {
+    const t = document.getElementById('typing');
+    t.classList.add('visible'); scrollBottom();
+    setTimeout(() => { t.classList.remove('visible'); res(); }, ms);
+  });
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function addMessage(msg) {
+  const msgs = document.getElementById('messages');
+  const row = document.createElement('div');
+  const isMe = msg.from === 'me';
+  row.className = 'msg-row' + (isMe ? ' me' : '');
+
+  let avatarHtml = '';
+  let senderHtml = '';
+  if (!isMe) {
+    const cls = msg.from;
+    const emoji = msg.from === 'misaki' ? '👩' : msg.from === 'sakura' ? '🌸' : '🎓';
+    const name = msg.from === 'misaki' ? '美咲' : msg.from === 'sakura' ? 'さくら' : '先生';
+    avatarHtml = `<div class="m-avatar ${cls}">${emoji}</div>`;
+    senderHtml = `<div class="sender-name ${cls}">${name}</div>`;
+  } else {
+    avatarHtml = `<div class="m-avatar me">🙋</div>`;
+  }
+
+  let bubbleHtml = '';
+  if (msg.screenshot) {
+    const d = msg.screenshotData;
+    bubbleHtml = `
+      <div class="bubble screenshot">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:8px;">📸 スクリーンショット</div>
+        <div class="screenshot-inner">
+          <div class="screenshot-title">${d.title}</div>
+          <div class="screenshot-num">${d.num}</div>
+          <div class="screenshot-sub">${d.sub}</div>
+          <div class="screenshot-badge">${d.badge}</div>
+        </div>
+      </div>`;
+  } else {
+    bubbleHtml = `<div class="bubble">${msg.text.replace(/\n/g,'<br>')}</div>`;
+  }
+
+  row.innerHTML = `
+    ${avatarHtml}
+    <div class="msg-wrap">
+      ${senderHtml}
+      ${bubbleHtml}
+      <div class="time">${getTime()}</div>
+    </div>
+  `;
+
+  msgs.appendChild(row);
+  scrollBottom();
+}
+
+// ============================
+// CHOICES
+// ============================
+function showChoices(choices) {
+  const area = document.getElementById('choices-area');
+  const cont = document.getElementById('choices');
+  cont.innerHTML = '';
+  area.style.display = 'block';
+  choices.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn ' + c.cls;
+    btn.textContent = c.text;
+    btn.onclick = () => onChoose(c);
+    cont.appendChild(btn);
+  });
+}
+
+function onChoose(c) {
+  document.getElementById('choices-area').style.display = 'none';
+  addMessage({ from:'me', text: c.text });
+  score += c.score;
+  showAlert(c);
+  pendingNext = () => runStep(step + 1);
+}
+
+// ============================
+// ALERT
+// ============================
+function showAlert(c) {
+  document.getElementById('a-icon').textContent = c.aIcon;
+  const title = document.getElementById('a-title');
+  title.textContent = c.aTitle;
+  title.className = 'alert-title ' + (c.aType === 'safe' ? 'safe' : c.aType === 'warn' ? 'warn' : 'danger');
+  document.getElementById('a-desc').textContent = c.aDesc;
+  document.getElementById('a-tip').textContent = c.aTip;
+  document.getElementById('alert-overlay').classList.add('visible');
+}
+
+function closeAlert() {
+  document.getElementById('alert-overlay').classList.remove('visible');
+  if (pendingNext) { pendingNext(); pendingNext = null; }
+}
+
+// ============================
+// RESULT
+// ============================
+function showResult() {
+  document.getElementById('progress').style.width = '100%';
+  const r = document.getElementById('result');
+  r.classList.add('visible');
+
+  const icon = document.getElementById('r-icon');
+  const title = document.getElementById('r-title');
+  const desc = document.getElementById('r-desc');
+  const sc = document.getElementById('r-score');
+
+  sc.textContent = score + ' / 60';
+
+  if (score === 0) {
+    icon.textContent = '🏆';
+    title.textContent = '完璧！詐欺から完全に身を守りました';
+    title.className = 'result-title good';
+    sc.className = 'score-num good';
+    desc.textContent = 'すべての場面で正しい判断ができました。あなたはSNS型投資詐欺を完全に見抜く力があります。この知識を大切な人にも伝えてください。';
+  } else if (score <= 15) {
+    icon.textContent = '😅';
+    title.textContent = 'もう少し！危ない場面がありました';
+    title.className = 'result-title warn';
+    sc.className = 'score-num warn';
+    desc.textContent = `危険スコア${score}点。いくつかの場面で詐欺師に有利な選択をしてしまいました。もう一度やって、完璧なスコアを目指しましょう。`;
+  } else if (score <= 35) {
+    icon.textContent = '😰';
+    title.textContent = '危険！かなり騙されやすい状態でした';
+    title.className = 'result-title bad';
+    sc.className = 'score-num bad';
+    desc.textContent = `危険スコア${score}点。現実なら数十万〜数百万円の被害に遭っていた可能性があります。下の対策をよく読んで、知識を身につけてください。`;
+  } else {
+    icon.textContent = '💸';
+    title.textContent = '深刻！大きな被害に遭う可能性があります';
+    title.className = 'result-title bad';
+    sc.className = 'score-num bad';
+    desc.textContent = `危険スコア${score}点。このシミュレーションでは多くの危険な選択をしました。現実なら数百万円以上の被害になっていた可能性があります。今すぐ対策を学んでください。`;
+  }
+}
+
+// ============================
+// RETRY
+// ============================
+function retry() {
+  step = 0; score = 0; pendingNext = null;
+  document.getElementById('result').classList.remove('visible');
+  document.getElementById('messages').innerHTML = '<div class="sep">今日</div>';
+  document.getElementById('progress').style.width = '0%';
+  runStep(0);
+}
+</script>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

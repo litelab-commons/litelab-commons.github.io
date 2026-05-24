@@ -14,6 +14,7 @@ ITリテラシー向上に使える教材・ミニアプリのオープンハブ
 | プログラミングラボ | Programming | 公開中 | https://litelab-commons.github.io/programming-lab/ |
 | ランサムウェア初動対応訓練 Basic | Security | 公開中 | https://litelab-commons.github.io/ransomware-triage-basic/ |
 | SNS型投資詐欺シミュレーション | Simulation | 公開中 | https://litelab-commons.github.io/fraud-game-v2/ |
+| SNS型投資詐欺 診断シミュレーション | Simulation | 公開中 | https://litelab-commons.github.io/sns-fraud-simulation/ |
 | 仮想通貨投資詐欺シミュレーション | Security | 開発中 | - |
 | ITリテラシー診断アンケート | Tool | 準備中 | - |
 
