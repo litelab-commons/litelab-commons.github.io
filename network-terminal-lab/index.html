@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ネットワーク基礎ターミナルラボ 🔍</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --card: #1a2234;
+    --border: #2a3a5c;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #22c55e;
+    --error: #ef4444;
+    --warn: #f59e0b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 30px 0 20px;
+  }
+  .logo {
+    font-size: 2.2rem;
+    font-weight: 900;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+  .tagline {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-top: 4px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* SCORE BAR */
+  .scorebar {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin: 16px 0;
+    flex-wrap: wrap;
+  }
+  .score-item {
+    text-align: center;
+  }
+  .score-label {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+  }
+  .score-val {
+    font-size: 1.4rem;
+    font-weight: 900;
+    color: var(--accent);
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin: 20px 0 16px;
+    flex-wrap: wrap;
+  }
+  .tab {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+    cursor: pointer;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+  .tab:hover { border-color: var(--accent); color: var(--accent); }
+  .tab.active {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+  }
+
+  /* SECTION */
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* TERMINAL SIMULATOR */
+  .terminal {
+    background: #050d1a;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .terminal-bar {
+    background: var(--card);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ef4444; }
+  .dot-y { background: #f59e0b; }
+  .dot-g { background: #22c55e; }
+  .terminal-title { color: var(--muted); font-size: 0.75rem; font-family: 'Share Tech Mono', monospace; margin-left: 8px; }
+  .terminal-body {
+    padding: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    min-height: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .terminal-body::-webkit-scrollbar { width: 4px; }
+  .terminal-body::-webkit-scrollbar-track { background: transparent; }
+  .terminal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .t-line { margin-bottom: 4px; line-height: 1.5; }
+  .t-prompt { color: var(--accent3); }
+  .t-output { color: #94a3b8; }
+  .t-success { color: var(--success); }
+  .t-error { color: var(--error); }
+  .t-warn { color: var(--warn); }
+  .t-highlight { color: var(--accent); }
+  .t-info { color: var(--accent2); }
+
+  .terminal-input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0 16px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+  }
+  .t-prompt-inline { color: var(--accent3); white-space: nowrap; }
+  .terminal-input {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    flex: 1;
+    caret-color: var(--accent);
+  }
+
+  /* COMMAND BUTTONS */
+  .cmd-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+  .cmd-btn {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--accent);
+    cursor: pointer;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    transition: all 0.15s;
+  }
+  .cmd-btn:hover {
+    background: var(--accent);
+    color: var(--bg);
+    border-color: var(--accent);
+    transform: translateY(-1px);
+  }
+
+  /* QUIZ */
+  .quiz-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 16px;
+  }
+  .quiz-q {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .quiz-hint {
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin-bottom: 16px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .quiz-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  @media(max-width: 500px) { .quiz-options { grid-template-columns: 1fr; } }
+  .quiz-opt {
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-size: 0.9rem;
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.4;
+  }
+  .quiz-opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.08);
+  }
+  .quiz-opt.correct { border-color: var(--success); background: rgba(34,197,94,0.15); color: var(--success); }
+  .quiz-opt.wrong { border-color: var(--error); background: rgba(239,68,68,0.1); color: var(--error); }
+  .quiz-opt:disabled { cursor: default; }
+
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    display: none;
+    line-height: 1.5;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.ok { background: rgba(34,197,94,0.1); border: 1px solid var(--success); color: var(--success); }
+  .quiz-feedback.ng { background: rgba(239,68,68,0.08); border: 1px solid var(--error); color: #f87171; }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 14px;
+  }
+  .quiz-counter { color: var(--muted); font-size: 0.8rem; font-family: 'Share Tech Mono', monospace; }
+
+  /* PACKET GAME */
+  .packet-arena {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .network-diagram {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    padding: 20px 0;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+  .net-node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+  .net-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    border: 2px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    transition: all 0.3s;
+    position: relative;
+  }
+  .net-icon.active {
+    border-color: var(--accent);
+    box-shadow: 0 0 16px rgba(0,212,255,0.4);
+    animation: pulse 0.6s ease;
+  }
+  .net-icon.error-node {
+    border-color: var(--error);
+    box-shadow: 0 0 16px rgba(239,68,68,0.4);
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+  .net-label { font-size: 0.7rem; color: var(--muted); font-family: 'Share Tech Mono', monospace; text-align: center; }
+  .net-ip { font-size: 0.65rem; color: var(--accent); font-family: 'Share Tech Mono', monospace; }
+  .net-line {
+    flex: 1;
+    height: 2px;
+    background: var(--border);
+    min-width: 20px;
+    max-width: 60px;
+    position: relative;
+    overflow: hidden;
+  }
+  .net-line.active::after {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%; width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    animation: flow 0.5s linear;
+  }
+  @keyframes flow { to { left: 100%; } }
+
+  .packet-log {
+    background: #050d1a;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.78rem;
+    height: 120px;
+    overflow-y: auto;
+    margin-top: 12px;
+  }
+  .packet-log::-webkit-scrollbar { width: 3px; }
+  .packet-log::-webkit-scrollbar-thumb { background: var(--border); }
+
+  .p-line { margin-bottom: 3px; }
+  .p-time { color: var(--muted); margin-right: 8px; }
+
+  /* PORT SCANNER */
+  .port-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 8px;
+    margin: 16px 0;
+  }
+  .port-cell {
+    padding: 10px 6px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .port-cell:hover { transform: translateY(-2px); }
+  .port-cell .pnum { font-size: 0.8rem; font-weight: bold; }
+  .port-cell .pname { font-size: 0.6rem; color: var(--muted); margin-top: 2px; }
+  .port-cell .pstatus { font-size: 0.65rem; margin-top: 4px; }
+  .port-open { border-color: var(--success); background: rgba(34,197,94,0.08); }
+  .port-open .pnum { color: var(--success); }
+  .port-open .pstatus { color: var(--success); }
+  .port-closed { border-color: var(--error); background: rgba(239,68,68,0.05); }
+  .port-closed .pnum { color: var(--error); }
+  .port-closed .pstatus { color: var(--error); }
+  .port-unknown { border-color: var(--muted); }
+  .port-unknown .pnum { color: var(--muted); }
+
+  .port-detail {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 12px;
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+  .port-detail.show { display: block; }
+  .port-detail h4 { color: var(--accent); font-family: 'Share Tech Mono', monospace; margin-bottom: 8px; }
+  .port-detail p { font-size: 0.88rem; color: var(--text); line-height: 1.6; }
+
+  /* BUTTONS */
+  .btn {
+    padding: 10px 22px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: 'Zen Kaku Gothic New', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: all 0.15s;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+  }
+  .btn-primary:hover { opacity: 0.85; transform: translateY(-1px); }
+  .btn-secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* BADGE */
+  .badges {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 16px;
+  }
+  .badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.3;
+    transition: opacity 0.3s;
+  }
+  .badge.earned { opacity: 1; animation: badgePop 0.4s ease; }
+  @keyframes badgePop { 0%{transform:scale(0.5)} 70%{transform:scale(1.1)} 100%{transform:scale(1)} }
+  .badge-blue { background: rgba(0,212,255,0.2); color: var(--accent); border: 1px solid var(--accent); }
+  .badge-orange { background: rgba(255,107,53,0.2); color: var(--accent2); border: 1px solid var(--accent2); }
+  .badge-green { background: rgba(57,255,20,0.15); color: var(--accent3); border: 1px solid var(--accent3); }
+
+  .section-title {
+    font-size: 1rem;
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .info-box {
+    background: rgba(0,212,255,0.06);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 14px;
+    color: #94a3b8;
+  }
+  .info-box strong { color: var(--accent); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+  .result-screen {
+    text-align: center;
+    padding: 40px 20px;
+    display: none;
+  }
+  .result-screen.show { display: block; animation: fadeIn 0.4s ease; }
+  .result-emoji { font-size: 4rem; margin-bottom: 12px; }
+  .result-title { font-size: 1.6rem; font-weight: 900; margin-bottom: 8px; }
+  .result-sub { color: var(--muted); font-size: 0.9rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">🔍 ネットワーク基礎ターミナルラボ</div>
+    <div class="tagline">$ learn_by_doing --mode=interactive --level=beginner</div>
+  </header>
+
+  <div class="scorebar">
+    <div class="score-item">
+      <div class="score-label">スコア</div>
+      <div class="score-val" id="totalScore">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">クイズ正解</div>
+      <div class="score-val" id="quizCorrect">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">コマンド実行</div>
+      <div class="score-val" id="cmdCount">0</div>
+    </div>
+    <div class="score-item">
+      <div class="score-label">バッジ</div>
+      <div class="score-val" id="badgeCount">0</div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('terminal')">💻 コマンド道場</button>
+    <button class="tab" onclick="switchTab('quiz')">🧠 クイズ</button>
+    <button class="tab" onclick="switchTab('packet')">📦 パケット旅</button>
+    <button class="tab" onclick="switchTab('port')">🔌 ポートスキャン</button>
+    <button class="tab" onclick="switchTab('badges')">🏆 バッジ</button>
+  </div>
+
+  <!-- ===== TERMINAL ===== -->
+  <div id="tab-terminal" class="section active">
+    <div class="section-title">// コマンド道場</div>
+    <div class="info-box">
+      ネットワーク診断コマンドを体験しよう。ボタンを押すか、コマンドを直接入力してEnterキーを押してね。
+    </div>
+    <div class="cmd-buttons">
+      <button class="cmd-btn" onclick="runCmd('ipconfig')">ipconfig</button>
+      <button class="cmd-btn" onclick="runCmd('ping 8.8.8.8')">ping 8.8.8.8</button>
+      <button class="cmd-btn" onclick="runCmd('ping google.com')">ping google.com</button>
+      <button class="cmd-btn" onclick="runCmd('tracert 8.8.8.8')">tracert</button>
+      <button class="cmd-btn" onclick="runCmd('netstat')">netstat</button>
+      <button class="cmd-btn" onclick="runCmd('nslookup google.com')">nslookup</button>
+      <button class="cmd-btn" onclick="runCmd('arp -a')">arp -a</button>
+      <button class="cmd-btn" onclick="runCmd('help')">help</button>
+    </div>
+    <div class="terminal">
+      <div class="terminal-bar">
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+        <div class="terminal-title">コマンドプロンプト — シミュレーター</div>
+      </div>
+      <div class="terminal-body" id="termBody">
+        <div class="t-line t-success">ネットワーク基礎ターミナルラボ v1.0 へようこそ！</div>
+        <div class="t-line t-output">コマンドを入力するか、上のボタンを押してみよう。</div>
+        <div class="t-line t-output">「help」と入力するとコマンド一覧が表示されます。</div>
+        <div class="t-line">&nbsp;</div>
+      </div>
+      <div class="terminal-input-row">
+        <span class="t-prompt-inline">C:\Users\Tantei&gt;</span>
+        <input type="text" class="terminal-input" id="termInput" placeholder="コマンドを入力..." onkeydown="handleTermKey(event)">
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== QUIZ ===== -->
+  <div id="tab-quiz" class="section">
+    <div class="section-title">// クイズバトル</div>
+    <div id="quizMain">
+      <div class="quiz-card" id="quizCard">
+        <div class="quiz-q" id="quizQ"></div>
+        <div class="quiz-hint" id="quizHint"></div>
+        <div class="quiz-options" id="quizOpts"></div>
+        <div class="quiz-feedback" id="quizFeedback"></div>
+        <div class="quiz-nav">
+          <span class="quiz-counter" id="quizCounter"></span>
+          <button class="btn btn-primary" id="quizNext" onclick="nextQuestion()" style="display:none">次の問題 →</button>
+        </div>
+      </div>
+    </div>
+    <div class="result-screen" id="quizResult">
+      <div class="result-emoji">🎉</div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-sub" id="resultSub"></div>
+      <br>
+      <button class="btn btn-primary" onclick="restartQuiz()" style="margin-top:16px">もう一度挑戦！</button>
+    </div>
+  </div>
+
+  <!-- ===== PACKET ===== -->
+  <div id="tab-packet" class="section">
+    <div class="section-title">// パケット旅シミュレーター</div>
+    <div class="info-box">
+      あなたのPCから <strong>google.com</strong> にアクセスするとき、データはどんな旅をする？<br>
+      「送信する」を押してパケットの旅を観察しよう！
+    </div>
+    <div class="packet-arena">
+      <div style="position:relative">
+        <div class="network-diagram" id="netDiagram">
+          <div class="net-node">
+            <div class="net-icon" id="node-pc">💻</div>
+            <div class="net-label">あなたのPC</div>
+            <div class="net-ip">192.168.1.5</div>
+          </div>
+          <div class="net-line" id="line-0"></div>
+          <div class="net-node">
+            <div class="net-icon" id="node-router">📡</div>
+            <div class="net-label">ルーター</div>
+            <div class="net-ip">192.168.1.1</div>
+          </div>
+          <div class="net-line" id="line-1"></div>
+          <div class="net-node">
+            <div class="net-icon" id="node-isp">🏢</div>
+            <div class="net-label">プロバイダ</div>
+            <div class="net-ip">203.0.113.1</div>
+          </div>
+          <div class="net-line" id="line-2"></div>
+          <div class="net-node">
+            <div class="net-icon" id="node-dns">🗂️</div>
+            <div class="net-label">DNSサーバー</div>
+            <div class="net-ip">8.8.8.8</div>
+          </div>
+          <div class="net-line" id="line-3"></div>
+          <div class="net-node">
+            <div class="net-icon" id="node-server">🌐</div>
+            <div class="net-label">Googleサーバー</div>
+            <div class="net-ip">142.250.x.x</div>
+          </div>
+        </div>
+        <!-- パケット玉アニメーション用SVGオーバーレイ -->
+        <svg id="packetSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible"></svg>
+      </div>
+      <div class="packet-log" id="packetLog">
+        <div class="p-line"><span class="p-time">[待機中]</span>「パケットを送る」を押してスタート</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn btn-primary" id="packetBtn" onclick="startPacket()">📨 パケットを送る</button>
+      <button class="btn btn-secondary" onclick="resetPacket()">🔄 リセット</button>
+    </div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">// ミッション：パケットを追え！</div>
+      <div id="packetMission" class="quiz-card">
+        <div class="quiz-q" id="packetQ"></div>
+        <div class="quiz-options" id="packetOpts"></div>
+        <div class="quiz-feedback" id="packetFb"></div>
+        <div class="quiz-nav">
+          <span class="quiz-counter" id="packetCounter"></span>
+          <button class="btn btn-primary" id="packetNext" onclick="nextPacketQ()" style="display:none">次の問題 →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PORT SCANNER ===== -->
+  <div id="tab-port" class="section">
+    <div class="section-title">// ポートスキャン体験</div>
+    <div class="info-box">
+      ポートはPCの「窓口番号」。サービスごとに決まった番号が割り当てられている。<br>
+      各ポートをクリックして、何のサービスか調べよう！
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <button class="btn btn-primary" onclick="scanAll()">🔍 全ポートスキャン</button>
+      <button class="btn btn-secondary" onclick="resetPorts()">🔄 リセット</button>
+    </div>
+    <div class="port-grid" id="portGrid"></div>
+    <div class="port-detail" id="portDetail"></div>
+
+    <div style="margin-top:20px">
+      <div class="section-title">// ポート暗記クイズ</div>
+      <div class="quiz-card" id="portQuizCard">
+        <div class="quiz-q" id="portQuizQ">スキャンでポートを開いてからクイズに挑戦！</div>
+        <div class="quiz-options" id="portQuizOpts"></div>
+        <div class="quiz-feedback" id="portQuizFb"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== BADGES ===== -->
+  <div id="tab-badges" class="section">
+    <div class="section-title">// 実績バッジ</div>
+    <div class="info-box">バッジを集めてネットワーク探偵のランクを上げよう！</div>
+    <div class="badges" id="badgeList"></div>
+  </div>
+
+</div>
+
+<script>
+function launchFullscreen(element) { if(element.requestFullscreen) { element.requestFullscreen(); } else if(element.mozRequestFullScreen) { element.mozRequestFullScreen(); } else if(element.webkitRequestFullscreen) { element.webkitRequestFullscreen(); } else if(element.msRequestFullscreen) { element.msRequestFullscreen(); } } document.addEventListener('click', function() { var body = document.querySelector('body'); launchFullscreen(body); });
+// ==================== STATE ====================
+const state = {
+  score: 0,
+  quizCorrect: 0,
+  cmdCount: 0,
+  badgeCount: 0,
+  badges: {},
+  quizIdx: 0,
+  quizAnswered: false,
+  portScanned: new Set(),
+  portQuizActive: false,
+};
+
+function addScore(n) {
+  state.score += n;
+  document.getElementById('totalScore').textContent = state.score;
+}
+function updateUI() {
+  document.getElementById('quizCorrect').textContent = state.quizCorrect;
+  document.getElementById('cmdCount').textContent = state.cmdCount;
+  document.getElementById('badgeCount').textContent = state.badgeCount;
+}
+
+// ==================== BADGES ====================
+const BADGES_DEF = [
+  { id: 'first_cmd', label: '🖥️ 初コマンド', cls: 'badge-blue', desc: '初めてコマンドを実行した！' },
+  { id: 'ping_master', label: '📡 Ping名人', cls: 'badge-blue', desc: 'pingを3回実行した' },
+  { id: 'ipconfig_pro', label: '🌐 IP調査員', cls: 'badge-orange', desc: 'ipconfigを実行した' },
+  { id: 'tracert_hero', label: '🗺️ 経路探偵', cls: 'badge-green', desc: 'tracertで経路を追った' },
+  { id: 'quiz_3', label: '🧠 クイズ3連勝', cls: 'badge-blue', desc: 'クイズを3問正解した' },
+  { id: 'quiz_all', label: '🏆 クイズ完全制覇', cls: 'badge-orange', desc: '全クイズをクリアした' },
+  { id: 'port_scanner', label: '🔌 ポートハンター', cls: 'badge-green', desc: 'ポートを5つ調べた' },
+  { id: 'packet_sent', label: '📦 パケット送信者', cls: 'badge-blue', desc: 'パケット旅を体験した' },
+  { id: 'dns_genius', label: '🗂️ DNS博士', cls: 'badge-orange', desc: 'パケットミッションを正解した' },
+];
+
+function earnBadge(id) {
+  if (state.badges[id]) return;
+  state.badges[id] = true;
+  state.badgeCount++;
+  updateUI();
+  renderBadges();
+  showBadgeToast(BADGES_DEF.find(b => b.id === id));
+}
+
+function renderBadges() {
+  const el = document.getElementById('badgeList');
+  el.innerHTML = BADGES_DEF.map(b => `
+    <div class="badge ${b.cls} ${state.badges[b.id] ? 'earned' : ''}" title="${b.desc}">
+      ${b.label}
+    </div>
+  `).join('');
+}
+
+function showBadgeToast(b) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:20px;right:20px;background:#1a2234;border:1px solid #00d4ff;
+    border-radius:10px;padding:12px 18px;font-family:'Zen Kaku Gothic New',sans-serif;
+    font-size:0.9rem;color:#e2e8f0;z-index:9999;animation:fadeIn 0.3s ease;box-shadow:0 4px 20px rgba(0,212,255,0.2)`;
+  t.innerHTML = `🏅 バッジ獲得！<strong style="color:#00d4ff"> ${b.label}</strong>`;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+renderBadges();
+
+// ==================== TABS ====================
+function switchTab(name) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ==================== TERMINAL ====================
+let pingCount = 0;
+
+const COMMANDS = {
+  help: () => [
+    { cls: 't-highlight', txt: '=== 使えるコマンド一覧 ===' },
+    { cls: 't-success', txt: '  ipconfig        - このPCのIPアドレスを表示' },
+    { cls: 't-success', txt: '  ping <アドレス>  - 相手が生きてるか確認' },
+    { cls: 't-success', txt: '  tracert <アドレス>- 経路を追跡する' },
+    { cls: 't-success', txt: '  netstat         - 現在の接続状態を表示' },
+    { cls: 't-success', txt: '  nslookup <ドメイン>- DNSで名前解決' },
+    { cls: 't-success', txt: '  arp -a          - MACアドレステーブル表示' },
+    { cls: 't-output', txt: '' },
+  ],
+  ipconfig: () => {
+    earnBadge('ipconfig_pro');
+    addScore(10);
+    return [
+      { cls: 't-output', txt: 'Windows IP 構成' },
+      { cls: 't-output', txt: '' },
+      { cls: 't-highlight', txt: 'イーサネット アダプター:' },
+      { cls: 't-output', txt: '   接続固有の DNS サフィックス . . . : local' },
+      { cls: 't-success', txt: '   IPv4 アドレス. . . . . . . . . . : 192.168.1.5' },
+      { cls: 't-output', txt: '   サブネット マスク . . . . . . . . : 255.255.255.0' },
+      { cls: 't-output', txt: '   デフォルト ゲートウェイ . . . . . : 192.168.1.1' },
+      { cls: 't-output', txt: '' },
+      { cls: 't-info', txt: '📌 ポイント: 192.168.x.x はプライベートIPアドレス。' },
+      { cls: 't-info', txt: '   インターネット上では直接使えない「内輪のアドレス」です。' },
+      { cls: 't-warn', txt: '   ゲートウェイ(192.168.1.1)= 外に出るための「玄関」= ルーター' },
+      { cls: 't-output', txt: '' },
+    ];
+  },
+  'ping 8.8.8.8': () => { runPing('8.8.8.8', true); return null; },
+  'ping google.com': () => { runPing('google.com', true); return null; },
+  'ping 192.168.99.99': () => { runPing('192.168.99.99', false); return null; },
+  tracert: () => tracertResult(),
+  'tracert 8.8.8.8': () => tracertResult(),
+  netstat: () => [
+    { cls: 't-output', txt: 'アクティブな接続' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-highlight', txt: '  プロトコル  ローカルアドレス     外部アドレス        状態' },
+    { cls: 't-success', txt: '  TCP    192.168.1.5:54321  142.250.4.46:443   ESTABLISHED' },
+    { cls: 't-output', txt: '  TCP    192.168.1.5:54322  104.18.32.47:443   ESTABLISHED' },
+    { cls: 't-success', txt: '  TCP    192.168.1.5:54323  140.82.114.4:443   ESTABLISHED' },
+    { cls: 't-output', txt: '  TCP    192.168.1.5:54410  0.0.0.0:0          LISTENING' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-info', txt: '📌 ポイント: ESTABLISHED = 現在通信中！' },
+    { cls: 't-info', txt: '   ポート443 = HTTPS（暗号化されたWebアクセス）' },
+    { cls: 't-warn', txt: '   見知らぬIPがたくさんあったら要注意！' },
+    { cls: 't-output', txt: '' },
+  ],
+  'nslookup google.com': () => [
+    { cls: 't-output', txt: 'サーバー:  dns.google' },
+    { cls: 't-output', txt: 'Address:  8.8.8.8' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-highlight', txt: '権限のない回答:' },
+    { cls: 't-success', txt: '名前:    google.com' },
+    { cls: 't-success', txt: 'Addresses: 142.250.4.46' },
+    { cls: 't-output', txt: '           2404:6800:4004:80e::200e' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-info', txt: '📌 ポイント: DNSが「google.com」→「142.250.4.46」に変換してくれた！' },
+    { cls: 't-info', txt: '   これが「名前解決」。電話帳みたいな役割。' },
+    { cls: 't-output', txt: '' },
+  ],
+  'arp -a': () => [
+    { cls: 't-highlight', txt: 'インターフェイス: 192.168.1.5' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-output', txt: '  インターネット アドレス    物理アドレス        種類' },
+    { cls: 't-success', txt: '  192.168.1.1          aa-bb-cc-dd-ee-ff   動的' },
+    { cls: 't-output', txt: '  192.168.1.2          11-22-33-44-55-66   動的' },
+    { cls: 't-output', txt: '  192.168.1.255         ff-ff-ff-ff-ff-ff   静的' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-info', txt: '📌 ポイント: MACアドレス = ハードウェア固有のID。' },
+    { cls: 't-info', txt: '   同じLAN内の機器を識別するために使う。' },
+    { cls: 't-output', txt: '' },
+  ],
+};
+
+// ping は executeCmd の均一インターバルを使わず独自制御する
+// 戻り値 null = executeCmd 側は何もしない
+function pingResult(host, success) {
+  pingCount++;
+  if (pingCount >= 3) earnBadge('ping_master');
+  addScore(5);
+  return null; // executeCmd に処理させない
+}
+
+// ping 専用の描画関数
+function runPing(host, success) {
+  setTermBusy(true);
+  const body = document.getElementById('termBody');
+  const times = [14, 13, 12, 15];
+
+  // 指定 delay(ms) 後に行を追加するヘルパー
+  function appendLine(cls, txt, delay) {
+    setTimeout(() => {
+      const d = document.createElement('div');
+      d.className = `t-line ${cls}`;
+      d.style.animation = 'fadeIn 0.15s ease';
+      d.textContent = txt;
+      body.appendChild(d);
+      body.scrollTop = body.scrollHeight;
+    }, delay);
+  }
+
+  // 指定 delay 後に「送信中」行を差し替えるヘルパー
+  function replaceLastSending(cls, txt, delay) {
+    setTimeout(() => {
+      const all = body.querySelectorAll('.t-line');
+      const last = all[all.length - 1];
+      if (last && last.textContent.startsWith('> 送信中')) last.remove();
+      const d = document.createElement('div');
+      d.className = `t-line ${cls}`;
+      d.style.animation = 'fadeIn 0.15s ease';
+      d.textContent = txt;
+      body.appendChild(d);
+      body.scrollTop = body.scrollHeight;
+    }, delay);
+  }
+
+  appendLine('t-output', `${host} に ping を送信しています 32 バイトのデータ:`, 0);
+
+  let t = 300; // 累積タイムライン(ms)
+
+  if (success) {
+    for (let i = 0; i < 4; i++) {
+      const ms = times[i];
+      appendLine('t-muted', `> 送信中... (${i + 1}/4)`, t);
+      replaceLastSending('t-success', `${host} からの応答: バイト数 =32 時間 =${ms}ms TTL=118`, t + 700);
+      t += 1000; // 1秒ごとに次の送信
+    }
+
+    const stats = t + 200;
+    [
+      ['t-output',    ''],
+      ['t-highlight', `${host} の ping 統計:`],
+      ['t-output',    '    パケット数: 送信 = 4、受信 = 4、損失 = 0 (0% の損失)'],
+      ['t-output',    '    ラウンドトリップの概算時間 (ミリ秒):'],
+      ['t-output',    '    最小 = 12ms、最大 = 15ms、平均 = 13ms'],
+      ['t-info',      '📌 接続OK！相手のサーバーは生きています。'],
+      ['t-info',      '   「時間=13ms」= 往復13ミリ秒。速い！'],
+      ['t-output',    ''],
+    ].forEach(([cls, txt], i) => appendLine(cls, txt, stats + i * 60));
+
+    setTimeout(() => setTermBusy(false), stats + 8 * 60 + 100);
+
+  } else {
+    for (let i = 0; i < 4; i++) {
+      appendLine('t-muted', `> 送信中... (${i + 1}/4) ─ 待機中`, t);
+      replaceLastSending('t-error', '要求がタイムアウトしました。', t + 1800);
+      t += 2000; // タイムアウトは2秒待機
+    }
+
+    [
+      ['t-output', ''],
+      ['t-warn',   '📌 応答なし。相手がいないか、ファイアウォールで弾かれています。'],
+      ['t-output', ''],
+    ].forEach(([cls, txt], i) => appendLine(cls, txt, t + i * 80));
+
+    setTimeout(() => setTermBusy(false), t + 3 * 80 + 100);
+  }
+}
+
+function tracertResult() {
+  earnBadge('tracert_hero');
+  addScore(15);
+  return [
+    { cls: 't-output', txt: '8.8.8.8 へのルートをトレースしています。' },
+    { cls: 't-output', txt: '経由するホップ数は最大 30 です:' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-highlight', txt: '  1    1 ms    1 ms    1 ms  192.168.1.1   [ルーター]' },
+    { cls: 't-output', txt: '  2    8 ms    7 ms    8 ms  203.0.113.1   [プロバイダ]' },
+    { cls: 't-output', txt: '  3   12 ms   11 ms   12 ms  10.20.30.40   [中継ルーター]' },
+    { cls: 't-output', txt: '  4   13 ms   13 ms   14 ms  8.8.8.8       [Google DNS]' },
+    { cls: 't-output', txt: '' },
+    { cls: 't-info', txt: '📌 ポイント: パケットが通ったルーターを全部表示！' },
+    { cls: 't-info', txt: '   「ホップ」= 経由地点。4ホップで到達。' },
+    { cls: 't-warn', txt: '   * が出たらそのルーターは情報を隠している。' },
+    { cls: 't-output', txt: '' },
+  ];
+}
+
+// コマンドごとの行間隔(ms)設定
+const CMD_INTERVALS = {
+  'ping':    280,   // 応答が1行ずつ返ってくる感じ
+  'tracert': 350,   // ホップごとに少し待つ
+  'netstat':  80,
+  'nslookup': 120,
+  'arp':      90,
+  'ipconfig':  60,
+  'help':      30,
+  'default':   60,
+};
+
+let termBusy = false; // 実行中フラグ
+
+function runCmd(cmd) {
+  const input = document.getElementById('termInput');
+  input.value = cmd;
+  executeCmd(cmd);
+  input.value = '';
+}
+
+function handleTermKey(e) {
+  if (e.key === 'Enter') {
+    const cmd = e.target.value.trim();
+    executeCmd(cmd);
+    e.target.value = '';
+  }
+}
+
+function setTermBusy(busy) {
+  termBusy = busy;
+  const input = document.getElementById('termInput');
+  document.querySelectorAll('.cmd-btn').forEach(b => b.disabled = busy);
+  input.disabled = busy;
+  if (!busy) input.focus();
+}
+
+function executeCmd(cmd) {
+  if (termBusy) return;
+  const body = document.getElementById('termBody');
+  const cmdLower = cmd.toLowerCase();
+
+  // Echo command
+  const promptLine = document.createElement('div');
+  promptLine.className = 't-line';
+  promptLine.innerHTML = `<span class="t-prompt">C:\\Users\\Tantei&gt;</span> <span>${escHtml(cmd)}</span>`;
+  body.appendChild(promptLine);
+  body.scrollTop = body.scrollHeight;
+
+  state.cmdCount++;
+  if (state.cmdCount === 1) earnBadge('first_cmd');
+  updateUI();
+
+  if (!cmd.trim()) return;
+
+  // Find handler
+  const handler = COMMANDS[cmdLower] || COMMANDS[cmdLower.split(' ')[0]];
+  let lines;
+  if (handler) {
+    lines = handler();
+  } else {
+    lines = [
+      { cls: 't-error', txt: `'${cmd}' は認識されないコマンドです。` },
+      { cls: 't-output', txt: '「help」でコマンド一覧を確認してね。' },
+      { cls: 't-output', txt: '' },
+    ];
+  }
+
+  // null = 独自タイミング制御のコマンド（ping等）が自分で描画する
+  if (lines === null) return;
+
+  // インターバルを決定
+  const baseKey = cmdLower.split(' ')[0];
+  const interval = CMD_INTERVALS[baseKey] ?? CMD_INTERVALS['default'];
+
+  // 処理中インジケーター
+  setTermBusy(true);
+  const spinner = document.createElement('div');
+  spinner.className = 't-line t-muted';
+  spinner.id = 'term-spinner';
+  spinner.innerHTML = `<span style="color:var(--muted);font-family:'Share Tech Mono',monospace">処理中<span id="spin-dots">.</span></span>`;
+  body.appendChild(spinner);
+  body.scrollTop = body.scrollHeight;
+
+  let dotCount = 1;
+  const spinInterval = setInterval(() => {
+    const d = document.getElementById('spin-dots');
+    if (d) { dotCount = (dotCount % 3) + 1; d.textContent = '.'.repeat(dotCount); }
+  }, 200);
+
+  // 行ごとに時間差で出力
+  let delay = interval * 0.6; // 最初の行は少し早め
+  lines.forEach((l, i) => {
+    setTimeout(() => {
+      // スピナー除去（初回のみ）
+      if (i === 0) {
+        clearInterval(spinInterval);
+        const sp = document.getElementById('term-spinner');
+        if (sp) sp.remove();
+      }
+      const d = document.createElement('div');
+      d.className = `t-line ${l.cls}`;
+      d.style.animation = 'fadeIn 0.15s ease';
+      d.textContent = l.txt;
+      body.appendChild(d);
+      body.scrollTop = body.scrollHeight;
+
+      // 最終行で解放
+      if (i === lines.length - 1) {
+        setTimeout(() => setTermBusy(false), 100);
+      }
+    }, delay);
+    delay += interval;
+  });
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ==================== QUIZ ====================
+const QUESTIONS = [
+  {
+    q: 'IPアドレスとは何ですか？',
+    hint: '💡 ヒント：インターネット上の「住所」のようなもの',
+    opts: ['ウイルスの一種', 'ネット上の住所番号', 'パスワードの種類', 'ファイルの形式'],
+    ans: 1,
+    exp: '✅ 正解！IPアドレスはインターネット上の住所です。例：192.168.1.1。郵便の宛先みたいにデータの届け先を示します。'
+  },
+  {
+    q: 'pingコマンドの主な目的は何ですか？',
+    hint: '💡 ヒント：野球でいう「届いてる？」の確認',
+    opts: ['ファイルを削除する', '相手のPCが繋がるか確認', 'パスワードを変更する', 'Webサイトを表示する'],
+    ans: 1,
+    exp: '✅ 正解！pingは「ねえ、聞こえる？」とデータを送って、相手が「聞こえるよ！」と返してくれるか確認します。'
+  },
+  {
+    q: 'ポート80番は通常どんなサービスで使われる？',
+    hint: '💡 ヒント：Webブラウザでhttp://...を開くとき',
+    opts: ['メール送信', 'SSH（遠隔操作）', 'HTTP（Webページ）', 'FTP（ファイル転送）'],
+    ans: 2,
+    exp: '✅ 正解！ポート80はHTTPのデフォルトポート。ブラウザでWebページを見るときに使います。HTTPS（暗号化）は443番。'
+  },
+  {
+    q: 'DNSの役割は？',
+    hint: '💡 ヒント：「google.com」を数字のアドレスに変える',
+    opts: ['データを暗号化する', '電話帳のように名前→IPを変換', 'ファイルを圧縮する', '接続速度を上げる'],
+    ans: 1,
+    exp: '✅ 正解！DNS（Domain Name System）はインターネットの電話帳。google.comを142.250.4.46のようなIPアドレスに変換します。'
+  },
+  {
+    q: '192.168.x.x というIPアドレスの特徴は？',
+    hint: '💡 ヒント：自宅やオフィスのLAN内だけで使うアドレス',
+    opts: ['インターネット上の公開アドレス', 'LAN内だけのプライベートIP', 'ウイルスが使うアドレス', '固定回線専用アドレス'],
+    ans: 1,
+    exp: '✅ 正解！192.168.x.xはプライベートIPアドレス。自宅や会社のLAN内だけで使う「内輪のアドレス」でインターネット上には出ません。'
+  },
+  {
+    q: 'tracertコマンドで分かることは？',
+    hint: '💡 ヒント：パケットが通ってきた「経路」を見る',
+    opts: ['ファイルのサイズ', 'データが通ったルーターの一覧', 'Webサイトのパスワード', 'ウイルスの場所'],
+    ans: 1,
+    exp: '✅ 正解！tracertは「traceroute（経路追跡）」の略。データが目的地まで何個のルーターを経由したかを表示します。'
+  },
+  {
+    q: 'MACアドレスとIPアドレスの違いは？',
+    hint: '💡 ヒント：MACはハードウェアの固有番号',
+    opts: [
+      'MACは変えられる、IPは変えられない',
+      'MACはネットワーク機器固有のID、IPは割り当てられる住所',
+      '全く同じもの',
+      'MACはセキュリティ用、IPは速度調整用'
+    ],
+    ans: 1,
+    exp: '✅ 正解！MACアドレスはネットワークカードに刻まれた固有ID（変えられない）。IPアドレスはネットワークで割り当てられる住所（変えられる）。'
+  },
+];
+
+let quizOrder = [];
+function initQuiz() {
+  quizOrder = [...Array(QUESTIONS.length).keys()].sort(() => Math.random() - 0.5);
+  state.quizIdx = 0;
+  state.quizAnswered = false;
+  document.getElementById('quizMain').style.display = '';
+  document.getElementById('quizResult').classList.remove('show');
+  showQuestion();
+}
+
+function showQuestion() {
+  const q = QUESTIONS[quizOrder[state.quizIdx]];
+  document.getElementById('quizQ').textContent = q.q;
+  document.getElementById('quizHint').textContent = q.hint;
+  document.getElementById('quizCounter').textContent = `${state.quizIdx + 1} / ${QUESTIONS.length}`;
+  document.getElementById('quizNext').style.display = 'none';
+  const fb = document.getElementById('quizFeedback');
+  fb.className = 'quiz-feedback';
+  fb.textContent = '';
+  state.quizAnswered = false;
+
+  const optsEl = document.getElementById('quizOpts');
+  optsEl.innerHTML = q.opts.map((o, i) =>
+    `<button class="quiz-opt" onclick="answerQuiz(this, ${i})">${o}</button>`
+  ).join('');
+}
+
+function answerQuiz(el, idx) {
+  if (state.quizAnswered) return;
+  state.quizAnswered = true;
+  const q = QUESTIONS[quizOrder[state.quizIdx]];
+  const opts = document.querySelectorAll('.quiz-opt');
+  opts.forEach(o => o.disabled = true);
+  const fb = document.getElementById('quizFeedback');
+
+  if (idx === q.ans) {
+    el.classList.add('correct');
+    fb.className = 'quiz-feedback show ok';
+    fb.textContent = q.exp;
+    state.quizCorrect++;
+    addScore(20);
+    if (state.quizCorrect >= 3) earnBadge('quiz_3');
+  } else {
+    el.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.className = 'quiz-feedback show ng';
+    fb.textContent = '❌ 不正解。' + q.exp;
+  }
+  updateUI();
+  document.getElementById('quizNext').style.display = 'inline-block';
+}
+
+function nextQuestion() {
+  state.quizIdx++;
+  if (state.quizIdx >= QUESTIONS.length) {
+    showResult();
+  } else {
+    showQuestion();
+  }
+}
+
+function showResult() {
+  document.getElementById('quizMain').style.display = 'none';
+  const r = document.getElementById('quizResult');
+  r.classList.add('show');
+  const pct = Math.round(state.quizCorrect / QUESTIONS.length * 100);
+  earnBadge('quiz_all');
+  let emoji = '😅', title = 'もう一度チャレンジ！';
+  if (pct >= 80) { emoji = '🎉'; title = 'すごい！ネットワーク通！'; }
+  else if (pct >= 50) { emoji = '👍'; title = 'なかなかいい線いってます！'; }
+  document.getElementById('resultTitle').textContent = `${emoji} ${title}`;
+  document.getElementById('resultSub').textContent = `正解率: ${state.quizCorrect}/${QUESTIONS.length} (${pct}%) ・ 獲得スコア: ${state.score}`;
+}
+
+function restartQuiz() {
+  state.quizCorrect = 0;
+  initQuiz();
+}
+
+initQuiz();
+
+// ==================== PACKET ====================
+let packetRunning = false;
+
+// ノード中心座標をSVG親基準で取得
+function getNodeCenter(nodeId) {
+  const diagram = document.getElementById('netDiagram');
+  const icon    = document.getElementById(nodeId);
+  if (!diagram || !icon) return null;
+  const dr = diagram.getBoundingClientRect();
+  const ir = icon.getBoundingClientRect();
+  return {
+    x: ir.left - dr.left + ir.width  / 2,
+    y: ir.top  - dr.top  + ir.height / 2,
+  };
+}
+
+// パケット玉を fromId→toId へ飛ばす（Promise）
+function animatePacket({ fromId, toId, color, label, duration }) {
+  return new Promise(resolve => {
+    const svg  = document.getElementById('packetSvg');
+    const from = getNodeCenter(fromId);
+    const to   = getNodeCenter(toId);
+    if (!svg || !from || !to) { resolve(); return; }
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const g  = document.createElementNS(ns, 'g');
+
+    // トレイル線
+    const trail = document.createElementNS(ns, 'line');
+    trail.setAttribute('x1', from.x); trail.setAttribute('y1', from.y);
+    trail.setAttribute('x2', from.x); trail.setAttribute('y2', from.y);
+    trail.setAttribute('stroke', color);
+    trail.setAttribute('stroke-width', '2');
+    trail.setAttribute('stroke-opacity', '0.3');
+    trail.setAttribute('stroke-dasharray', '4 3');
+    g.appendChild(trail);
+
+    // グロー
+    const glow = document.createElementNS(ns, 'circle');
+    glow.setAttribute('r', '14');
+    glow.setAttribute('fill', color);
+    glow.setAttribute('opacity', '0.2');
+    g.appendChild(glow);
+
+    // 玉本体
+    const ball = document.createElementNS(ns, 'circle');
+    ball.setAttribute('r', '8');
+    ball.setAttribute('fill', color);
+    ball.setAttribute('opacity', '0.95');
+    g.appendChild(ball);
+
+    // ラベル
+    if (label) {
+      const txt = document.createElementNS(ns, 'text');
+      txt.setAttribute('text-anchor', 'middle');
+      txt.setAttribute('dy', '-13');
+      txt.setAttribute('font-size', '9');
+      txt.setAttribute('font-family', 'Share Tech Mono, monospace');
+      txt.setAttribute('fill', color);
+      txt.textContent = label;
+      g.appendChild(txt);
+    }
+
+    svg.appendChild(g);
+
+    const t0 = performance.now();
+    function tick(now) {
+      const p    = Math.min((now - t0) / duration, 1);
+      const ease = p < 0.5 ? 2*p*p : -1 + (4 - 2*p)*p;
+      const cx   = from.x + (to.x - from.x) * ease;
+      const cy   = from.y + (to.y - from.y) * ease;
+      ball.setAttribute('cx', cx);  ball.setAttribute('cy', cy);
+      glow.setAttribute('cx', cx);  glow.setAttribute('cy', cy);
+      trail.setAttribute('x2', cx); trail.setAttribute('y2', cy);
+      if (label) {
+        const t = g.querySelector('text');
+        if (t) { t.setAttribute('x', cx); t.setAttribute('y', cy); }
+      }
+      if (p < 1) requestAnimationFrame(tick);
+      else { svg.removeChild(g); resolve(); }
+    }
+    requestAnimationFrame(tick);
+  });
+}
+
+// フェーズ定義: DNS問合せ → DNS応答 → HTTPリクエスト → HTTPレスポンス → 完了
+const PACKET_PHASES = [
+  {
+    logCls: 't-output',
+    logMsg: '🔍 [DNS問合せ] PC → DNS: "google.comのIPを教えて"',
+    color: '#a78bfa', label: 'DNS?',
+    hops: [
+      { from: 'node-pc',     to: 'node-router', dur: 360 },
+      { from: 'node-router', to: 'node-isp',    dur: 360 },
+      { from: 'node-isp',    to: 'node-dns',    dur: 400 },
+    ],
+  },
+  {
+    logCls: 't-success',
+    logMsg: '✅ [DNS応答]  DNS → PC: "142.250.4.46 だよ！"',
+    color: '#39ff14', label: 'IP!',
+    hops: [
+      { from: 'node-dns',    to: 'node-isp',    dur: 360 },
+      { from: 'node-isp',    to: 'node-router', dur: 360 },
+      { from: 'node-router', to: 'node-pc',     dur: 360 },
+    ],
+  },
+  {
+    logCls: 't-highlight',
+    logMsg: '📤 [HTTPリクエスト] PC → Google: "トップページを送って！"',
+    color: '#00d4ff', label: 'GET',
+    hops: [
+      { from: 'node-pc',     to: 'node-router', dur: 300 },
+      { from: 'node-router', to: 'node-isp',    dur: 320 },
+      { from: 'node-isp',    to: 'node-server', dur: 400 },
+    ],
+  },
+  {
+    logCls: 't-info',
+    logMsg: '📥 [HTTPレスポンス] Google → PC: HTMLデータを返送中...',
+    color: '#ff6b35', label: 'HTML',
+    hops: [
+      { from: 'node-server', to: 'node-isp',    dur: 360 },
+      { from: 'node-isp',    to: 'node-router', dur: 320 },
+      { from: 'node-router', to: 'node-pc',     dur: 300 },
+    ],
+  },
+  {
+    logCls: 't-success',
+    logMsg: '🖥️ [完了] ブラウザがHTMLを受信 → Webページ表示！ (往復約22ms)',
+    color: null, label: null,
+    hops: [],
+  },
+];
+
+async function startPacket() {
+  if (packetRunning) return;
+  packetRunning = true;
+  document.getElementById('packetBtn').disabled = true;
+  resetPacketVisuals();
+
+  const svg = document.getElementById('packetSvg');
+  if (svg) svg.innerHTML = '';
+
+  const log = document.getElementById('packetLog');
+  log.innerHTML = '';
+  earnBadge('packet_sent');
+  addScore(10);
+
+  const startTime = performance.now();
+
+  function appendLog(cls, msg) {
+    const elapsed = ((performance.now() - startTime) / 1000).toFixed(3);
+    const d = document.createElement('div');
+    d.className = 'p-line';
+    d.innerHTML = `<span class="p-time">[${elapsed}s]</span><span class="${cls}"> ${msg}</span>`;
+    log.appendChild(d);
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function activateNode(id) {
+    const n = document.getElementById(id);
+    if (n) { n.classList.add('active'); setTimeout(() => n.classList.remove('active'), 450); }
+  }
+
+  for (const phase of PACKET_PHASES) {
+    appendLog(phase.logCls, phase.logMsg);
+    for (const hop of phase.hops) {
+      activateNode(hop.from);
+      await animatePacket({ fromId: hop.from, toId: hop.to, color: phase.color, label: phase.label, duration: hop.dur });
+      activateNode(hop.to);
+      await new Promise(r => setTimeout(r, 60));
+    }
+    await new Promise(r => setTimeout(r, 180));
+  }
+
+  packetRunning = false;
+  document.getElementById('packetBtn').disabled = false;
+}
+
+function resetPacket() {
+  resetPacketVisuals();
+  packetRunning = false;
+  document.getElementById('packetBtn').disabled = false;
+  document.getElementById('packetLog').innerHTML =
+    '<div class="p-line"><span class="p-time">[待機中]</span>「パケットを送る」を押してスタート</div>';
+  initPacketQuiz();
+}
+
+function resetPacketVisuals() {
+  document.querySelectorAll('.net-icon').forEach(n => n.classList.remove('active','error-node'));
+  document.querySelectorAll('.net-line').forEach(l => l.classList.remove('active'));
+}
+
+// ==================== PACKET QUIZ ====================
+const PACKET_QUESTIONS = [
+  {
+    q: 'パケットが届いたとき、最初に「名前→IPアドレス」の変換をしてくれるのはどれ？',
+    opts: ['📡 ルーター', '🗂️ DNSサーバー', '🏢 プロバイダ', '🌐 Webサーバー'],
+    ans: 1,
+    exp: '✅ 正解！DNSサーバーが「google.com → IPアドレス」の変換をしてくれます。インターネットの電話帳ですね！',
+    badge: 'dns_genius',
+  },
+  {
+    q: 'あなたのPCからデータが最初に向かう機器はどれ？',
+    opts: ['🌐 Webサーバー', '🗂️ DNSサーバー', '📡 ルーター（ゲートウェイ）', '🏢 プロバイダ'],
+    ans: 2,
+    exp: '✅ 正解！自宅やオフィスのルーターが「玄関口」。まずここにパケットを渡して外に出してもらいます。',
+  },
+  {
+    q: 'パケットがGoogleサーバーに到達した後、返信はどのルートで戻ってくる？',
+    opts: ['毎回違うランダムなルート', '専用の返信専用回線', 'ほぼ同じルートを逆順にたどる', '衛星経由で直接届く'],
+    ans: 2,
+    exp: '✅ 正解！TCP/IPではルーティングにより、往路とほぼ同じ経路を逆にたどって返信パケットが戻ってきます。',
+  },
+  {
+    q: 'IPアドレス「192.168.1.5」の特徴は？',
+    opts: ['世界中からアクセスできる公開IP', 'LAN内だけで使うプライベートIP', 'GoogleのサーバーのIP', 'DNSサーバーのIP'],
+    ans: 1,
+    exp: '✅ 正解！192.168.x.x はプライベートIPアドレス。インターネット上には出られず、家や会社の内部ネットワークだけで使われます。',
+  },
+  {
+    q: 'Webページを「暗号化して」やりとりするときに使うポート番号は？',
+    opts: ['80番', '22番', '443番', '53番'],
+    ans: 2,
+    exp: '✅ 正解！HTTPS（暗号化Web通信）はポート443番。ブラウザの🔒マークはここが使われているサインです。',
+  },
+];
+
+let packetQuizIdx = 0;
+let packetQuizAnswered = false;
+
+function initPacketQuiz() {
+  packetQuizIdx = 0;
+  showPacketQuestion();
+}
+
+function showPacketQuestion() {
+  packetQuizAnswered = false;
+  const q = PACKET_QUESTIONS[packetQuizIdx];
+  document.getElementById('packetQ').textContent = q.q;
+  document.getElementById('packetCounter').textContent = `${packetQuizIdx + 1} / ${PACKET_QUESTIONS.length}`;
+  document.getElementById('packetNext').style.display = 'none';
+  const fb = document.getElementById('packetFb');
+  fb.className = 'quiz-feedback';
+  fb.textContent = '';
+  document.getElementById('packetOpts').innerHTML = q.opts.map((o, i) =>
+    `<button class="quiz-opt" onclick="checkPacketQ(this, ${i})">${o}</button>`
+  ).join('');
+}
+
+function checkPacketQ(el, idx) {
+  if (packetQuizAnswered) return;
+  packetQuizAnswered = true;
+  const q = PACKET_QUESTIONS[packetQuizIdx];
+  const opts = document.querySelectorAll('#packetOpts .quiz-opt');
+  opts.forEach(o => o.disabled = true);
+  const fb = document.getElementById('packetFb');
+  if (idx === q.ans) {
+    el.classList.add('correct');
+    fb.className = 'quiz-feedback show ok';
+    fb.textContent = q.exp;
+    if (q.badge) earnBadge(q.badge);
+    addScore(15);
+  } else {
+    el.classList.add('wrong');
+    opts[q.ans].classList.add('correct');
+    fb.className = 'quiz-feedback show ng';
+    fb.textContent = '❌ 不正解。' + q.exp.replace('✅ 正解！', '');
+  }
+  updateUI();
+  if (packetQuizIdx < PACKET_QUESTIONS.length - 1) {
+    document.getElementById('packetNext').style.display = 'inline-block';
+  } else {
+    setTimeout(() => {
+      fb.textContent += '　🎉 全問クリア！';
+    }, 300);
+  }
+}
+
+function nextPacketQ() {
+  packetQuizIdx++;
+  showPacketQuestion();
+}
+
+initPacketQuiz();
+
+// ==================== PORT SCANNER ====================
+const PORTS = [
+  { num: 21, name: 'FTP', service: 'ファイル転送プロトコル', desc: 'FTP（21番）はファイルをサーバーに送受信するための古いプロトコル。暗号化されていないので要注意！最近はSFTP（22番）が推奨。', open: true },
+  { num: 22, name: 'SSH', service: 'セキュアシェル', desc: 'SSH（22番）はサーバーを遠隔操作するためのプロトコル。暗号化されているので安全。インフラエンジニアが多用する。', open: true },
+  { num: 25, name: 'SMTP', service: 'メール送信', desc: 'SMTP（25番）はメールを送信するためのプロトコル。「Send Mail Transfer Protocol」の略。受信はPOP3(110)やIMAP(143)。', open: false },
+  { num: 53, name: 'DNS', service: 'ドメイン名解決', desc: 'DNS（53番）はドメイン名をIPアドレスに変換するサービス。8.8.8.8（Google）や1.1.1.1（Cloudflare）が有名。', open: true },
+  { num: 80, name: 'HTTP', service: 'Webページ(非暗号)', desc: 'HTTP（80番）はWebページを表示するプロトコル。暗号化なし。「http://」で始まるURL。現在はHTTPS(443)が推奨。', open: true },
+  { num: 110, name: 'POP3', service: 'メール受信', desc: 'POP3（110番）はメールを受信するプロトコル。メールをサーバーからダウンロードする。IMAPと違い受信後は削除される。', open: false },
+  { num: 143, name: 'IMAP', service: 'メール管理', desc: 'IMAP（143番）はメールをサーバー上で管理するプロトコル。複数デバイスから同じメールを見られる。GmailはIMAPを使用。', open: false },
+  { num: 443, name: 'HTTPS', service: 'Webページ(暗号化)', desc: 'HTTPS（443番）はHTTPを暗号化したもの。「🔒」マークのついたサイト。現代のWebはほぼすべてHTTPS。個人情報はここで守られる。', open: true },
+  { num: 3389, name: 'RDP', service: 'Windowsリモート', desc: 'RDP（3389番）はWindowsを遠隔操作するためのプロトコル。外部に開いたままにするとサイバー攻撃のターゲットになりやすい！', open: false },
+  { num: 8080, name: 'HTTP-alt', service: 'Web代替ポート', desc: 'ポート8080はHTTPの代替ポート。開発環境やプロキシサーバーでよく使われる。本番環境では80/443を使うのが一般的。', open: true },
+];
+
+const portQuizQ = [
+  { q: 'Webページ（暗号化あり）のポート番号は？', ans: '443', opts: ['80', '443', '22', '53'] },
+  { q: 'SSHのポート番号は？', ans: '22', opts: ['21', '22', '25', '80'] },
+  { q: 'DNS（名前解決）のポート番号は？', ans: '53', opts: ['25', '53', '110', '143'] },
+  { q: 'メール送信（SMTP）のポート番号は？', ans: '25', opts: ['21', '25', '80', '443'] },
+];
+
+let portQuizIdx = 0;
+
+function renderPorts(scanned) {
+  const grid = document.getElementById('portGrid');
+  grid.innerHTML = PORTS.map(p => {
+    const isScanned = scanned.has(p.num);
+    let cls = 'port-unknown';
+    let status = '?????';
+    if (isScanned) {
+      cls = p.open ? 'port-open' : 'port-closed';
+      status = p.open ? '● OPEN' : '× CLOSED';
+    }
+    return `<div class="port-cell ${cls}" onclick="showPort(${p.num})">
+      <div class="pnum">${p.num}</div>
+      <div class="pname">${p.name}</div>
+      <div class="pstatus">${status}</div>
+    </div>`;
+  }).join('');
+}
+
+function showPort(num) {
+  const p = PORTS.find(x => x.num === num);
+  if (!p) return;
+  state.portScanned.add(num);
+  addScore(3);
+  if (state.portScanned.size >= 5) earnBadge('port_scanner');
+  renderPorts(state.portScanned);
+
+  const d = document.getElementById('portDetail');
+  d.className = 'port-detail show';
+  const statusLabel = p.open
+    ? `<span style="color:var(--success)">● OPEN（開いている）</span>`
+    : `<span style="color:var(--error)">× CLOSED（閉じている）</span>`;
+  d.innerHTML = `<h4>PORT ${p.num} / ${p.name} — ${p.service}</h4>
+    <p>状態: ${statusLabel}</p>
+    <p style="margin-top:8px">${p.desc}</p>`;
+  updateUI();
+
+  // show port quiz
+  if (state.portScanned.size >= 3 && !state.portQuizActive) {
+    state.portQuizActive = true;
+    showPortQuiz();
+  }
+}
+
+function scanAll() {
+  let delay = 0;
+  PORTS.forEach(p => {
+    setTimeout(() => {
+      state.portScanned.add(p.num);
+      addScore(1);
+      renderPorts(state.portScanned);
+    }, delay);
+    delay += 120;
+  });
+  setTimeout(() => {
+    earnBadge('port_scanner');
+    updateUI();
+    state.portQuizActive = true;
+    showPortQuiz();
+  }, delay + 200);
+}
+
+function resetPorts() {
+  state.portScanned = new Set();
+  state.portQuizActive = false;
+  renderPorts(state.portScanned);
+  document.getElementById('portDetail').className = 'port-detail';
+  document.getElementById('portQuizQ').textContent = 'スキャンでポートを開いてからクイズに挑戦！';
+  document.getElementById('portQuizOpts').innerHTML = '';
+  document.getElementById('portQuizFb').className = 'quiz-feedback';
+}
+
+function showPortQuiz() {
+  if (portQuizIdx >= portQuizQ.length) return;
+  const q = portQuizQ[portQuizIdx % portQuizQ.length];
+  document.getElementById('portQuizQ').textContent = q.q;
+  document.getElementById('portQuizFb').className = 'quiz-feedback';
+  const optsEl = document.getElementById('portQuizOpts');
+  optsEl.innerHTML = q.opts.map(o =>
+    `<button class="quiz-opt" onclick="answerPortQuiz(this, '${o}', '${q.ans}')">${o}番</button>`
+  ).join('');
+}
+
+function answerPortQuiz(el, chosen, ans) {
+  const opts = document.querySelectorAll('#portQuizCard .quiz-opt');
+  opts.forEach(o => o.disabled = true);
+  const fb = document.getElementById('portQuizFb');
+  if (chosen === ans) {
+    el.classList.add('correct');
+    fb.className = 'quiz-feedback show ok';
+    fb.textContent = `✅ 正解！${ans}番です。`;
+    addScore(10);
+    updateUI();
+  } else {
+    el.classList.add('wrong');
+    opts[[...opts].findIndex(o => o.textContent === ans + '番')].classList.add('correct');
+    fb.className = 'quiz-feedback show ng';
+    fb.textContent = `❌ 不正解。正解は${ans}番です。`;
+  }
+  portQuizIdx++;
+  setTimeout(() => {
+    if (portQuizIdx < portQuizQ.length) showPortQuiz();
+    else {
+      document.getElementById('portQuizQ').textContent = '🎉 全問クリア！ポート番号マスターです！';
+      document.getElementById('portQuizOpts').innerHTML = '';
+    }
+  }, 2000);
+}
+
+renderPorts(state.portScanned);
+</script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>

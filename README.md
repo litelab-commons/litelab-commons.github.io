@@ -10,6 +10,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 |--------|----------|------|------|
 | ネットワーク探偵団 | Network | 公開中 | https://litelab-commons.github.io/network-detective/ |
 | Packet Wiring Lab | Network | 公開中 | https://litelab-commons.github.io/packet-wiring-lab/ |
+| ネットワーク基礎ターミナルラボ | Network | 公開中 | https://litelab-commons.github.io/network-terminal-lab/ |
 | インシデントすごろく | Security | 準備中 | - |
 | プログラミングラボ | Programming | 公開中 | https://litelab-commons.github.io/programming-lab/ |
 | ランサムウェア初動対応訓練 Basic | Security | 公開中 | https://litelab-commons.github.io/ransomware-triage-basic/ |
