@@ -1,5 +1,5 @@
 name: 教材掲載リクエスト
-description: LiteLab Commons に掲載したい教材・ミニアプリを提案する
+description: LiteLab Commons に掲載したい教材・ミニアプリ・ミニツールを提案する
 title: "教材掲載リクエスト: "
 body:
   - type: markdown
@@ -12,7 +12,7 @@ body:
     id: material_name
     attributes:
       label: 教材名
-      description: 掲載したい教材・ミニアプリの名前を入力してください。
+      description: 掲載したい教材・ミニアプリ・ミニツールの名前を入力してください。
       placeholder: 例）フィッシングメール判定ゲーム
     validations:
       required: true
@@ -35,6 +35,7 @@ body:
         - ネットワーク
         - プログラミング
         - シミュレーション
+        - ミニツール
         - その他
     validations:
       required: true
@@ -102,6 +103,13 @@ body:
       label: 安全性に関する補足
       description: 危険な操作、攻撃手法、外部サービス連携などがあれば書いてください。
       placeholder: 例）実際の攻撃コードは含みません。ブラウザ内だけで完結します。
+
+  - type: textarea
+    id: runtime_notes
+    attributes:
+      label: 配布プログラムの実行内容
+      description: Pythonアプリなどの配布プログラムの場合は、実行内容・外部通信・必要権限・対応OSを書いてください。
+      placeholder: 例）Windows向け。ping、ipconfig、DNS解決、外部HTTP接続確認を行います。管理者権限は不要です。
 
   - type: textarea
     id: notes

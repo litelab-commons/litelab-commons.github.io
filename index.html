@@ -482,7 +482,7 @@ footer {
     <div class="hero-eyebrow">IT Literacy Open Hub</div>
     <h1>探せる。試せる。<br><em>書き換えられる。</em></h1>
     <p class="hero-desc">
-      企業研修・自治体講座・学校授業で今日から使えるITリテラシー教材とミニアプリを、<br>
+      企業研修・自治体講座・学校授業で今日から使えるITリテラシー教材、ミニアプリ、ミニツールを、<br>
       オープンに・自由に・無料で。コードはすべて公開しています。
     </p>
     <div class="hero-actions">
@@ -504,8 +504,8 @@ footer {
   <div class="hero-stats">
     <div class="hero-stats-title">Current Contents</div>
     <div class="stat-row">
-      <div class="stat-num">9</div>
-      <div class="stat-label">教材・ミニアプリ<br><span style="font-size:11px;color:var(--text3)">随時追加予定</span></div>
+      <div class="stat-num">10</div>
+      <div class="stat-label">教材・ミニアプリ・ツール<br><span style="font-size:11px;color:var(--text3)">随時追加予定</span></div>
     </div>
     <div class="stat-row">
       <div class="stat-num">5</div>
@@ -513,7 +513,7 @@ footer {
     </div>
     <div class="stat-row">
       <div class="stat-num">MIT</div>
-      <div class="stat-label">公開済み教材のライセンス<br><span style="font-size:11px;color:var(--text3)">商用・改変・再配布すべて可</span></div>
+      <div class="stat-label">公開済みコンテンツのライセンス<br><span style="font-size:11px;color:var(--text3)">商用・改変・再配布すべて可</span></div>
     </div>
   </div>
 </section>
@@ -521,12 +521,12 @@ footer {
 <!-- FILTER BAR -->
 <div class="filter-bar">
   <div class="filter-inner">
-    <button class="filter-btn active" data-filter="all">すべて <span class="filter-count">9</span></button>
+    <button class="filter-btn active" data-filter="all">すべて <span class="filter-count">10</span></button>
     <button class="filter-btn" data-filter="security">セキュリティ <span class="filter-count">3</span></button>
     <button class="filter-btn" data-filter="network">ネットワーク <span class="filter-count">2</span></button>
     <button class="filter-btn" data-filter="programming">プログラミング <span class="filter-count">1</span></button>
     <button class="filter-btn" data-filter="simulation">シミュレーション <span class="filter-count">2</span></button>
-    <button class="filter-btn" data-filter="other">その他 <span class="filter-count">1</span></button>
+    <button class="filter-btn" data-filter="other">その他 <span class="filter-count">2</span></button>
   </div>
 </div>
 
@@ -534,7 +534,7 @@ footer {
 <section class="grid-section" id="materials">
   <div class="grid-header">
     <span class="grid-title">教材ライブラリ</span>
-    <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">Published materials: MIT License</span>
+    <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">Published contents: MIT License</span>
   </div>
   <div class="grid" id="card-grid">
 
@@ -739,7 +739,32 @@ footer {
       </div>
     </div>
 
-    <!-- 7. アンケート -->
+    <!-- 7. ネットワーク接続診断ミニツール -->
+    <div class="card" data-cat="other" style="--card-accent:#0891b2">
+      <div>
+        <span class="card-tag" style="--tag-bg:#164e63">📋 Tool</span>
+      </div>
+      <span class="card-icon">🖥️</span>
+      <h3>ネットワーク接続診断ミニツール</h3>
+      <p class="card-desc">インターネット接続、Ping、DNS、ゲートウェイを確認しながら、障害切り分け手順を学べるPython/Tkinter製ツール。</p>
+      <div class="card-meta">
+        <span class="card-meta-item">⏱ 約10分</span>
+        <span class="card-meta-item">👤 個人/研修向け</span>
+        <span class="card-meta-item">🏢 企業・自治体・学校</span>
+        <span class="card-meta-item">📄 MIT</span>
+        <span class="card-meta-item">Python / Tkinter</span>
+      </div>
+      <div class="card-actions">
+        <a href="https://litelab-commons.github.io/netmonitor-tkinter/" class="card-btn card-btn-demo" target="_blank" rel="noopener">使い方を見る</a>
+        <a href="https://github.com/litelab-commons/litelab-commons.github.io/tree/main/netmonitor-tkinter" class="card-btn card-btn-gh" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+        <a href="https://github.com/litelab-commons/litelab-commons.github.io/archive/refs/heads/main.zip" class="card-btn card-btn-dl">↓ ZIP</a>
+      </div>
+    </div>
+
+    <!-- 8. アンケート -->
     <div class="card" data-cat="other" style="--card-accent:#0891b2">
       <div>
         <span class="card-tag" style="--tag-bg:#164e63">📋 Tool</span>
@@ -798,7 +823,7 @@ footer {
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">LiteLab Commons</div>
-  <span class="footer-note">Published materials: MIT License — 自由に使用・改変・再配布できます</span>
+  <span class="footer-note">Published contents: MIT License — 自由に使用・改変・再配布できます</span>
   <ul class="footer-links">
     <li><a href="https://github.com/litelab-commons/litelab-commons.github.io" target="_blank" rel="noopener">GitHub</a></li>
     <li><a href="https://github.com/litelab-commons/litelab-commons.github.io/blob/main/README.md" target="_blank" rel="noopener">ライセンス</a></li>
