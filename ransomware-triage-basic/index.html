@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ランサムウェア初動対応訓練 Basic</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">盾</div>
+        <div>
+          <h1>ランサムウェア初動対応訓練 Basic</h1>
+          <p>感染端末だけでなく、共有・AD・バックアップを守る練習</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="ghost-button instructor-only" id="instructorToggle" type="button" hidden>講師モード OFF</button>
+        <button class="ghost-button" id="restartButton" type="button">最初から</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="screen active" id="introScreen">
+        <div class="intro-grid">
+          <section class="hero-panel">
+            <p class="eyebrow">Beginner Training</p>
+            <h2>最初の違和感を見抜き、広がる前に止める。</h2>
+            <p>
+              この訓練のテーマは1つだけです。感染したPCを止めても、
+              共有フォルダ・認証基盤・バックアップを守らないと被害は広がります。
+            </p>
+            <button class="primary-button" id="startButton" type="button">訓練を開始</button>
+          </section>
+          <aside class="lesson-panel">
+            <h3>今回覚えること</h3>
+            <ol>
+              <li>ファイル名変更、黒い画面、READ_ME は危険サイン</li>
+              <li>まず感染端末を隔離する</li>
+              <li>共有フォルダを止めると横展開を抑えられる</li>
+              <li>ADとバックアップは早めに守る</li>
+            </ol>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="triageScreen">
+        <div class="metrics" aria-label="現在の評価">
+          <div><span>スコア</span><strong id="scoreMetric">0</strong></div>
+          <div><span>被害額</span><strong id="lossMetric">¥0</strong></div>
+          <div><span>業務影響</span><strong id="impactMetric">低</strong></div>
+          <div><span>封じ込め</span><strong id="containmentMetric">50</strong></div>
+          <div><span>復旧力</span><strong id="recoveryMetric">50</strong></div>
+        </div>
+
+        <div class="triage-layout">
+          <section class="chat-panel">
+            <div class="panel-head">
+              <strong>ヘルプデスク報告</strong>
+              <span id="triageProgress">1 / 4</span>
+            </div>
+            <div class="report-card">
+              <div class="sender" id="reportSender"></div>
+              <p id="reportText"></p>
+            </div>
+            <div class="evidence-box" id="evidenceBox">証拠確認をすると、判断材料が表示されます。</div>
+            <div class="triage-actions">
+              <button class="secondary-button" id="evidenceButton" type="button">証拠確認</button>
+              <button class="choice-button watch" data-triage="watch" type="button">様子見</button>
+              <button class="choice-button investigate" data-triage="investigate" type="button">要調査</button>
+              <button class="choice-button isolate" data-triage="isolate" type="button">緊急隔離</button>
+            </div>
+          </section>
+
+          <aside class="coach-panel">
+            <h3>判断メモ</h3>
+            <p>初級では「暗号化っぽい兆候」を見抜くことに集中します。</p>
+            <ul>
+              <li>ファイル名や拡張子が変わる</li>
+              <li>添付ファイル後に黒い画面が出る</li>
+              <li>READ_ME や復旧要求文が出る</li>
+              <li>ただのWebエラーやプリンター不調は慌てない</li>
+            </ul>
+            <div class="instructor-card instructor-only" id="triageInstructor" hidden></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="defenseScreen">
+        <div class="defense-layout">
+          <section class="network-panel">
+            <div class="panel-head">
+              <strong>ネットワーク防御</strong>
+              <span id="defensePhaseText">まず調査で状態を確認しましょう</span>
+            </div>
+            <div class="network-map" id="networkMap" aria-label="社内ネットワーク図">
+              <svg viewBox="0 0 940 520" role="img">
+                <line id="line-pc-file" class="net-link" x1="210" y1="245" x2="440" y2="245"></line>
+                <line id="line-file-ad" class="net-link" x1="560" y1="220" x2="725" y2="145"></line>
+                <line id="line-file-backup" class="net-link" x1="560" y1="270" x2="725" y2="355"></line>
+                <g class="net-node" id="node-pc" transform="translate(80 190)">
+                  <rect width="160" height="110" rx="8"></rect>
+                  <text x="80" y="46">感染端末</text>
+                  <text class="sub" x="80" y="72" id="sourceNodeLabel">経理PC-A</text>
+                </g>
+                <g class="net-node" id="node-file" transform="translate(410 190)">
+                  <rect width="180" height="110" rx="8"></rect>
+                  <text x="90" y="46">File Server</text>
+                  <text class="sub" x="90" y="72">共有フォルダ</text>
+                </g>
+                <g class="net-node" id="node-ad" transform="translate(700 90)">
+                  <rect width="160" height="110" rx="8"></rect>
+                  <text x="80" y="46">AD</text>
+                  <text class="sub" x="80" y="72">認証基盤</text>
+                </g>
+                <g class="net-node" id="node-backup" transform="translate(700 310)">
+                  <rect width="160" height="110" rx="8"></rect>
+                  <text x="80" y="46">Backup</text>
+                  <text class="sub" x="80" y="72">復旧データ</text>
+                </g>
+              </svg>
+            </div>
+            <div class="command-row">
+              <button data-command="scan" type="button">調査する</button>
+              <button data-command="pc" type="button">感染端末隔離</button>
+              <button data-command="shares" type="button">共有停止</button>
+              <button data-command="ad" type="button">AD保護</button>
+              <button data-command="backup" type="button">バックアップ切断</button>
+            </div>
+          </section>
+
+          <aside class="log-panel">
+            <h3>対応ログ</h3>
+            <div class="lesson-callout">
+              感染は固定ルートで進みます。感染端末 → 共有フォルダ → AD / バックアップ。
+            </div>
+            <div class="instructor-card instructor-only" id="defenseInstructor" hidden></div>
+            <div class="log" id="defenseLog"></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="screen" id="resultScreen">
+        <div class="result-layout">
+          <section class="result-hero" id="resultHero">
+            <p class="eyebrow">Training Report</p>
+            <h2 id="resultTitle">訓練完了</h2>
+            <p id="resultSummary"></p>
+            <div class="big-score"><span id="resultScore">0</span><small>pt</small></div>
+          </section>
+
+          <section class="result-grid">
+            <article>
+              <h3>被害サマリー</h3>
+              <div class="summary-list" id="damageSummary"></div>
+            </article>
+            <article>
+              <h3>4軸評価</h3>
+              <div class="axis-list" id="axisList"></div>
+            </article>
+          </section>
+
+          <section class="result-section">
+            <h3>判断履歴</h3>
+            <div id="historyList"></div>
+          </section>
+
+          <section class="result-section">
+            <h3>次回に活かすポイント</h3>
+            <ul id="hintList"></ul>
+          </section>
+
+          <div class="result-actions">
+            <button class="primary-button" id="againButton" type="button">もう一度訓練</button>
+            <button class="secondary-button" id="copyButton" type="button">レポートをコピー</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

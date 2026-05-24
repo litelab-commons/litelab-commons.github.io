@@ -12,7 +12,7 @@ ITリテラシー向上に使える教材・ミニアプリのオープンハブ
 | Packet Wiring Lab | Network | 公開中 | https://litelab-commons.github.io/packet-wiring-lab/ |
 | インシデントすごろく | Security | 準備中 | - |
 | プログラミングラボ | Programming | 公開中 | https://litelab-commons.github.io/programming-lab/ |
-| ランサムウェアシミュレーション | Security | 開発中 | - |
+| ランサムウェア初動対応訓練 Basic | Security | 公開中 | https://litelab-commons.github.io/ransomware-triage-basic/ |
 | SNS型投資詐欺シミュレーション | Simulation | 準備中 | - |
 | 仮想通貨投資詐欺シミュレーション | Security | 開発中 | - |
 | ITリテラシー診断アンケート | Tool | 準備中 | - |
