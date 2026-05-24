@@ -1,0 +1,1331 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<title>あなたは気づけるか？ — 投資詐欺体験シミュレーション</title>
+
+<style>
+:root {
+  --bg: #0e0e0e; --bg2: #141414; --bg3: #1c1c1c;
+  --border: #272727; --text: #e8e0d5; --dim: #666;
+  --red: #d93030; --red2: #ff4444; --red-glow: rgba(217,48,48,0.25);
+  --green: #2ecc71; --yellow: #f1c40f; --blue: #3b82f6;
+  --line-green: #06c755; --line-bg: #1a2744;
+  --mono: 'Share Tech Mono', monospace;
+  --sans: 'Noto Sans JP', sans-serif;
+  --serif: 'Noto Serif JP', serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;overflow-x:hidden}
+
+/* TITLE */
+#title-screen{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;background:radial-gradient(ellipse at 50% 40%,#1c0000 0%,#0e0e0e 65%);position:relative;overflow:hidden}
+#title-screen::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(255,255,255,0.008) 3px,rgba(255,255,255,0.008) 4px)}
+.title-badge{font-family:var(--mono);font-size:10px;letter-spacing:.3em;color:var(--red);border:1px solid var(--red);padding:6px 18px;margin-bottom:28px;animation:pulseBorder 2s infinite}
+@keyframes pulseBorder{0%,100%{border-color:var(--red);color:var(--red)}50%{border-color:#ff8888;color:#ff8888}}
+.title-main{font-family:var(--serif);font-size:clamp(36px,10vw,76px);font-weight:900;line-height:1.2;color:#fff;margin-bottom:10px}
+.title-main em{color:var(--red2);font-style:normal}
+.title-sub{font-size:14px;color:var(--dim);margin-bottom:44px;line-height:1.9}
+.start-btn{background:var(--red);color:#fff;border:none;padding:18px 52px;font-family:var(--sans);font-size:16px;font-weight:700;cursor:pointer;letter-spacing:.08em;transition:all .2s;border-radius:2px}
+.start-btn:hover{background:#ff3333;transform:translateY(-2px);box-shadow:0 8px 28px var(--red-glow)}
+.title-note{margin-top:28px;font-size:11px;color:#444;font-family:var(--mono);letter-spacing:.08em;line-height:1.7}
+
+/* GAME */
+#game{display:none;min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:80px}
+
+/* STATUS */
+.status-bar{position:sticky;top:0;z-index:100;background:rgba(14,14,14,.97);backdrop-filter:blur(10px);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;justify-content:space-between;align-items:center}
+.status-left{font-family:var(--mono);font-size:10px;color:var(--dim);letter-spacing:.12em}
+.status-damage{font-family:var(--mono);font-size:12px;color:var(--red2);font-weight:bold}
+
+/* SCENE */
+.scene{display:none;padding:20px 18px;animation:sceneFade .35s ease}
+.scene.active{display:block}
+@keyframes sceneFade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.scene-label{font-family:var(--mono);font-size:9px;letter-spacing:.28em;color:var(--red);margin-bottom:6px}
+.scene-title{font-family:var(--serif);font-size:20px;font-weight:700;margin-bottom:18px;line-height:1.45;color:#fff}
+
+/* LINE UI */
+.line-ui{background:#1e2d50;border-radius:14px;overflow:hidden;margin:14px 0;box-shadow:0 8px 36px rgba(0,0,0,.55)}
+.line-header{background:#17253f;padding:11px 15px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.06)}
+.line-avatar{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+.line-avatar.green{background:linear-gradient(135deg,#06c755,#04a040)}
+.line-avatar.gold{background:linear-gradient(135deg,#f39c12,#e67e22)}
+.line-name{font-size:13px;font-weight:700;color:#fff}
+.line-online{font-size:10px;color:var(--line-green)}
+
+.line-body{padding:14px;display:flex;flex-direction:column;gap:9px;min-height:180px;max-height:420px;overflow-y:auto;background:#1a2744;scroll-behavior:smooth}
+
+/* Chat bubbles */
+.chat-row{display:flex;gap:7px;align-items:flex-end;opacity:0;transform:translateY(6px);transition:all .3s ease}
+.chat-row.show{opacity:1;transform:translateY(0)}
+.chat-row.mine{flex-direction:row-reverse}
+.chat-mini-av{width:26px;height:26px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px}
+.chat-mini-av.green{background:linear-gradient(135deg,#06c755,#04a040)}
+.chat-mini-av.gold{background:linear-gradient(135deg,#f39c12,#e67e22)}
+.chat-bubble{padding:9px 13px;border-radius:12px;font-size:13px;line-height:1.65;max-width:82%;word-break:break-word}
+.chat-row:not(.mine) .chat-bubble{background:#2d4470;border-bottom-left-radius:3px;color:#dde8ff}
+.chat-row.mine .chat-bubble{background:var(--line-green);border-bottom-right-radius:3px;color:#fff}
+.chat-time{font-size:9px;color:rgba(255,255,255,.28);margin-top:2px;text-align:right}
+.chat-row:not(.mine) .chat-time{text-align:left}
+
+/* Typing */
+.typing-row{display:flex;gap:7px;align-items:center;opacity:0;transition:opacity .3s}
+.typing-row.show{opacity:1}
+.typing-dots{display:flex;gap:3px;background:#2d4470;padding:10px 14px;border-radius:12px;border-bottom-left-radius:3px}
+.dot{width:5px;height:5px;background:rgba(255,255,255,.4);border-radius:50%;animation:bounce 1.1s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px);background:rgba(255,255,255,.7)}}
+
+/* CHOICES */
+.choices-wrap{margin-top:18px;display:flex;flex-direction:column;gap:8px}
+.choice-btn{width:100%;background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:14px 18px;text-align:left;font-family:var(--sans);font-size:13px;cursor:pointer;border-radius:6px;transition:all .18s;display:flex;align-items:flex-start;gap:10px;line-height:1.55}
+.choice-btn:hover{background:#242424;border-color:#444;transform:translateX(3px)}
+.choice-btn:active{transform:translateX(1px) scale(.99)}
+.choice-num{font-family:var(--mono);font-size:10px;color:var(--dim);min-width:16px;margin-top:1px;flex-shrink:0}
+.choice-q{font-size:13px;color:#b0a8a0;margin-bottom:10px}
+
+/* INVESTMENT APP */
+.app-ui{background:#08111f;border-radius:14px;overflow:hidden;margin:14px 0;box-shadow:0 12px 44px rgba(0,0,0,.7);border:1px solid #152035}
+.app-header{background:linear-gradient(135deg,#0b1830,#162848);padding:13px 16px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid rgba(255,255,255,.05)}
+.app-logo{font-family:var(--mono);font-size:12px;color:#5af;letter-spacing:.08em}
+.app-logo b{color:#fff}
+.app-signal{font-size:10px;font-family:var(--mono)}
+.app-signal.live{color:var(--green)}
+.app-signal.warn{color:var(--yellow)}
+.app-signal.dead{color:#444}
+.app-balance-sec{padding:18px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,.04)}
+.app-bal-label{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.2em;font-family:var(--mono);margin-bottom:5px}
+.app-bal{font-family:var(--mono);font-size:34px;font-weight:bold;color:#5af;transition:color .4s}
+.app-bal.up{color:var(--green);text-shadow:0 0 18px rgba(46,204,113,.45)}
+.app-bal.down{color:var(--red2);text-shadow:0 0 18px rgba(255,68,68,.45)}
+.app-bal.zero{color:#333;font-size:26px}
+.app-sub{font-size:11px;margin-top:3px;font-family:var(--mono);color:var(--dim)}
+.app-sub.up{color:var(--green)}
+.app-sub.down{color:var(--red2)}
+.app-trade-panel{padding:14px 16px}
+.trade-label{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:.15em;font-family:var(--mono);margin-bottom:9px}
+.trade-btns{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.trade-btn{padding:15px;border:none;border-radius:8px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.trade-btn small{font-size:10px;font-weight:400;opacity:.65}
+.trade-btn.rise{background:linear-gradient(135deg,#1a5530,#27ae60);color:#fff}
+.trade-btn.fall{background:linear-gradient(135deg,#5c1a1a,#c0392b);color:#fff}
+.trade-btn:hover{transform:scale(1.03);filter:brightness(1.1)}
+.trade-btn:active{transform:scale(.97)}
+.trade-btn:disabled{opacity:.3;cursor:default;transform:none;filter:none}
+.app-timer{text-align:center;padding:9px;font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.25)}
+.app-timer span{color:var(--yellow);font-size:13px}
+.app-reward-row{display:flex;justify-content:space-between;padding:9px 16px;border-top:1px solid rgba(255,255,255,.04)}
+.app-reward-label{font-size:10px;color:rgba(255,255,255,.3)}
+.app-reward-val{font-family:var(--mono);font-size:13px;color:var(--green)}
+.app-notif{margin:0 14px 12px;background:rgba(241,196,15,.1);border:1px solid rgba(241,196,15,.25);border-radius:6px;padding:9px 13px;font-size:11px;color:var(--yellow);font-family:var(--mono);display:none}
+
+/* NARRATIVE */
+.narr{font-size:14px;color:#b8b0a8;line-height:1.9;margin:10px 0}
+.narr b{color:var(--text)}
+
+/* ALERT BOXES */
+.alert{border-radius:4px;padding:12px 16px;font-size:13px;line-height:1.7;margin:12px 0}
+.alert.red{background:rgba(217,48,48,.1);border:1px solid rgba(217,48,48,.3);color:#ff9090}
+.alert.yellow{background:rgba(241,196,15,.08);border:1px solid rgba(241,196,15,.25);color:var(--yellow)}
+.alert.green{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.25);color:var(--green)}
+
+/* DAMAGE */
+.damage-box{text-align:center;padding:24px;background:rgba(217,48,48,.07);border:1px solid rgba(217,48,48,.2);border-radius:8px;margin:14px 0}
+.damage-lbl{font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.18em;margin-bottom:7px}
+.damage-amt{font-family:var(--mono);font-size:36px;font-weight:bold;color:var(--red2)}
+.damage-note{font-size:11px;color:var(--dim);margin-top:6px}
+
+/* FEE TABLE */
+.fee-table{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin:14px 0}
+.fee-head{background:var(--bg3);padding:11px 15px;font-family:var(--mono);font-size:9px;letter-spacing:.15em;color:var(--dim);display:flex;justify-content:space-between;border-bottom:1px solid var(--border)}
+.fee-row{display:flex;justify-content:space-between;align-items:center;padding:11px 15px;border-bottom:1px solid var(--border);font-size:13px;transition:opacity .5s}
+.fee-row:last-child{border-bottom:none}
+.fee-row .amt{font-family:var(--mono);color:var(--red2);font-size:12px}
+.fee-row.paid .amt::after{content:' ✓';color:#888;font-size:10px}
+.fee-total{display:flex;justify-content:space-between;padding:13px 15px;background:rgba(217,48,48,.08);border-top:1px solid rgba(217,48,48,.2);font-weight:700;font-size:13px}
+.fee-total .amt{font-family:var(--mono);color:var(--red2);font-size:15px}
+
+/* LAWYER */
+.lawyer-card{background:#12182e;border:1px solid #1e2a4a;border-radius:8px;padding:14px;margin:12px 0;display:flex;gap:12px;align-items:flex-start}
+.lawyer-photo{width:68px;height:82px;border-radius:5px;border:2px solid #2a3a5a;flex-shrink:0;background:linear-gradient(135deg,#1c2c4a,#0e1820);display:flex;align-items:center;justify-content:center;font-size:32px;position:relative;overflow:hidden}
+.lawyer-photo::after{content:'AI?';position:absolute;bottom:3px;right:3px;font-family:var(--mono);font-size:7px;background:rgba(217,48,48,.85);color:#fff;padding:1px 4px;border-radius:2px}
+.lawyer-info{flex:1}
+.lawyer-name{font-size:13px;font-weight:700;color:#fff;margin-bottom:3px}
+.lawyer-title{font-size:10px;color:#5a7aaa;margin-bottom:7px}
+.lawyer-desc{font-size:11px;color:#666;line-height:1.6}
+.lawyer-badge{display:inline-block;background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.35);color:#3b82f6;font-size:9px;padding:2px 7px;border-radius:20px;margin-top:5px;font-family:var(--mono)}
+
+/* ENDING */
+.ending-wrap{text-align:center;padding:28px 16px}
+.ending-icon{font-size:52px;margin-bottom:14px}
+.ending-ttl{font-family:var(--serif);font-size:26px;font-weight:900;margin-bottom:10px}
+.ending-ttl.good{color:var(--green)}
+.ending-ttl.bad{color:var(--red2)}
+.ending-ttl.warn{color:var(--yellow)}
+.ending-body{font-size:13px;color:#999;line-height:1.9;max-width:360px;margin:0 auto 20px}
+
+.check-list{text-align:left;display:flex;flex-direction:column;gap:7px;margin:18px 0}
+.check-item{padding:11px 14px;font-size:12px;color:var(--text);line-height:1.6;border-left:3px solid var(--red)}
+.check-item.ok{border-left-color:var(--green)}
+.check-item.warn{border-left-color:var(--yellow)}
+
+/* CONTACTS */
+.contact-list{display:flex;flex-direction:column;gap:7px;margin:16px 0;text-align:left}
+.contact-item{background:var(--bg3);border:1px solid var(--border);padding:13px 16px;border-radius:4px;display:flex;align-items:center;gap:12px}
+.c-icon{font-size:20px;flex-shrink:0}
+.c-name{font-size:12px;font-weight:700;color:var(--text)}
+.c-tel{font-family:var(--mono);font-size:15px;color:var(--yellow)}
+.c-desc{font-size:11px;color:var(--dim);margin-top:1px}
+
+/* BUTTONS */
+.next-btn{width:100%;margin-top:16px;background:transparent;border:1px solid var(--border);color:var(--dim);padding:13px;font-family:var(--mono);font-size:11px;letter-spacing:.15em;cursor:pointer;border-radius:4px;transition:all .2s}
+.next-btn:hover{border-color:#444;color:var(--text)}
+.replay-btn{width:100%;margin-top:10px;background:var(--red);border:none;color:#fff;padding:15px;font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;border-radius:4px;transition:all .2s}
+.replay-btn:hover{background:#ff3333}
+
+.sdiv{border:none;border-top:1px solid var(--border);margin:20px 0}
+
+/* HINT */
+.hint-pop{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:rgba(217,48,48,.95);color:#fff;padding:9px 20px;border-radius:20px;font-size:11px;font-family:var(--mono);letter-spacing:.08em;opacity:0;transition:opacity .4s;pointer-events:none;white-space:nowrap;z-index:200}
+.hint-pop.show{opacity:1}
+
+/* GLITCH */
+@keyframes glitch{
+  0%{transform:translate(0);filter:none}
+  20%{transform:translate(-2px,1px);filter:hue-rotate(90deg)}
+  40%{transform:translate(2px,-1px);filter:brightness(1.5)}
+  60%{transform:translate(-1px,2px);filter:hue-rotate(-90deg)}
+  80%{transform:translate(1px,-1px);filter:brightness(.5)}
+  100%{transform:translate(0);filter:none}
+}
+.glitch{animation:glitch .12s steps(1) 7}
+
+@media(max-width:500px){.choice-btn{padding:12px 14px}.app-bal{font-size:28px}}
+</style>
+</head>
+<body>
+
+<!-- TITLE -->
+<div id="title-screen">
+  <div class="title-badge">⚠ 投資詐欺 啓発シミュレーション</div>
+  <div class="title-main">あなたは<br><em>気づけるか？</em></div>
+  <p class="title-sub">実際の詐欺手口を「体験する」インタラクティブ・ストーリー<br>選択肢によって結末が変わります</p>
+  <button class="start-btn" onclick="startGame()">▶ 体験スタート</button>
+  <p class="title-note">※ 実際の詐欺被害をもとにした啓発コンテンツです<br>金額・登場人物は一部変更しています</p>
+</div>
+
+<!-- GAME -->
+<div id="game">
+  <div class="status-bar">
+    <span class="status-left" id="status-label">SCENE 1</span>
+    <span class="status-damage">被害額 <span id="dmg-display">¥0</span></span>
+  </div>
+
+  <!-- ════ SCENE 1: SNS勧誘 ════ -->
+  <div class="scene active" id="s1">
+    <div class="scene-label">SCENE 01 — きっかけ</div>
+    <div class="scene-title">SNSで届いた<br>副業の勧誘</div>
+    <p class="narr">ある夜、妻がスマホを見せてきた。「ねえ、これ面白そう。クリックするだけで副業収入になるって」</p>
+
+    <div class="line-ui">
+      <div class="line-header">
+        <div class="line-avatar green">💬</div>
+        <div><div class="line-name">ETH運用サポート</div><div class="line-online">● オンライン</div></div>
+      </div>
+      <div class="line-body" id="lb1"></div>
+    </div>
+    <div id="s1-choices" style="display:none"></div>
+  </div>
+
+  <!-- ════ SCENE 2: 作業開始 ════ -->
+  <div class="scene" id="s2">
+    <div class="scene-label">SCENE 02 — 信頼構築</div>
+    <div class="scene-title">毎日クリックで<br>報酬が積み上がる</div>
+    <p class="narr">代表の言う通り、毎日10分のクリック作業。専用アプリの残高がじわじわ増えていく。</p>
+
+    <div class="app-ui">
+      <div class="app-header">
+        <div class="app-logo">⚡ Lightning<b>Core</b></div>
+        <div class="app-signal live" id="s2-sig">● LIVE</div>
+      </div>
+      <div class="app-balance-sec">
+        <div class="app-bal-label">累計報酬残高</div>
+        <div class="app-bal" id="s2-bal">¥0</div>
+        <div class="app-sub up" id="s2-sub">本日の稼ぎ ¥0</div>
+      </div>
+      <div class="app-trade-panel">
+        <div class="trade-label">本日の作業 — ETH/JPY</div>
+        <div class="trade-btns">
+          <button class="trade-btn rise" id="s2-rise" onclick="doTrade('rise')">▲ RISE<small>上昇に賭ける</small></button>
+          <button class="trade-btn fall" id="s2-fall" onclick="doTrade('fall')">▼ FALL<small>下落に賭ける</small></button>
+        </div>
+      </div>
+      <div class="app-timer">次の作業まで <span id="s2-timer">23:59:47</span></div>
+      <div class="app-reward-row"><span class="app-reward-label">参加日数</span><span class="app-reward-val" id="s2-days">1日目</span></div>
+    </div>
+
+    <div id="s2-line" style="display:none">
+      <div class="line-ui">
+        <div class="line-header">
+          <div class="line-avatar gold">👑</div>
+          <div><div class="line-name">代表 鈴木</div><div class="line-online">● オンライン</div></div>
+        </div>
+        <div class="line-body" id="lb2"></div>
+      </div>
+      <div id="s2-choices"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCENE 3: 特別イベント ════ -->
+  <div class="scene" id="s3">
+    <div class="scene-label">SCENE 03 — 特別イベント</div>
+    <div class="scene-title">「自己資金を9倍に」<br>特別イベント開催</div>
+
+    <div class="line-ui">
+      <div class="line-header">
+        <div class="line-avatar gold">👑</div>
+        <div><div class="line-name">代表 鈴木</div><div class="line-online">● オンライン</div></div>
+      </div>
+      <div class="line-body" id="lb3"></div>
+    </div>
+    <div id="s3-choices"></div>
+  </div>
+
+  <!-- ════ SCENE 4: 消失 ════ -->
+  <div class="scene" id="s4">
+    <div class="scene-label">SCENE 04 — 崩壊</div>
+    <div class="scene-title">目の前で<br>80万円が消えた</div>
+    <p class="narr">代表の指示通りに「RISE」を押す——画面が急に動き始めた。</p>
+
+    <div class="app-ui">
+      <div class="app-header">
+        <div class="app-logo">⚡ Lightning<b>Core</b></div>
+        <div class="app-signal" id="s4-sig">● LIVE</div>
+      </div>
+      <div class="app-balance-sec">
+        <div class="app-bal-label">運用残高</div>
+        <div class="app-bal" id="s4-bal">¥800,000</div>
+        <div class="app-sub" id="s4-sub" style="color:var(--dim)">待機中...</div>
+      </div>
+      <div class="app-notif" id="s4-notif">⚠ 急激な相場変動を検出しています...</div>
+      <div class="app-trade-panel">
+        <div class="trade-btns">
+          <button class="trade-btn rise" disabled>▲ RISE</button>
+          <button class="trade-btn fall" disabled>▼ FALL</button>
+        </div>
+      </div>
+    </div>
+
+    <button class="next-btn" id="s4-trigger" onclick="startDrain()">▶ RISEボタンを押す</button>
+
+    <div id="s4-after" style="display:none">
+      <div class="line-ui" style="margin-top:16px">
+        <div class="line-header">
+          <div class="line-avatar gold">👑</div>
+          <div><div class="line-name">代表 鈴木</div><div class="line-online">● オンライン</div></div>
+        </div>
+        <div class="line-body" id="lb4"></div>
+      </div>
+      <div id="s4-choices"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCENE 5: 追加投資・増殖 ════ -->
+  <div class="scene" id="s5">
+    <div class="scene-label">SCENE 05 — 増殖の幻</div>
+    <div class="scene-title">代表の指示通りに<br>ボタンを押す</div>
+    <p class="narr">代表が運用を引き受けた。LINEで指示が届くたびに、言われた通りのボタンを押す。</p>
+
+    <div class="app-ui">
+      <div class="app-header">
+        <div class="app-logo">⚡ Lightning<b>Core</b></div>
+        <div class="app-signal live" id="s5-sig">● RUNNING</div>
+      </div>
+      <div class="app-balance-sec">
+        <div class="app-bal-label">代表運用中 — 残高</div>
+        <div class="app-bal up" id="s5-bal">¥600,000</div>
+        <div class="app-sub up" id="s5-sub">+¥0 (+0%)</div>
+      </div>
+      <div class="app-trade-panel">
+        <div class="trade-label">↓ 代表の指示に従ってボタンを押してください</div>
+        <div class="trade-btns">
+          <button class="trade-btn rise" id="s5-rise-btn" onclick="s5trade('rise')" disabled>▲ RISE<small>上昇に賭ける</small></button>
+          <button class="trade-btn fall" id="s5-fall-btn" onclick="s5trade('fall')" disabled>▼ FALL<small>下落に賭ける</small></button>
+        </div>
+      </div>
+      <div class="app-timer">代表の指示を待っています...</div>
+    </div>
+
+    <div class="line-ui">
+      <div class="line-header">
+        <div class="line-avatar gold">👑</div>
+        <div><div class="line-name">代表 鈴木</div><div class="line-online">● オンライン</div></div>
+      </div>
+      <div class="line-body" id="lb5" style="min-height:120px"></div>
+    </div>
+
+    <div id="s5-complete" style="display:none">
+      <div class="alert yellow">🎉 運用完了！ 残高が540万円を超えました。いよいよ出金です。</div>
+      <div class="app-ui">
+        <div class="app-balance-sec">
+          <div class="app-bal-label">出金待機残高</div>
+          <div class="app-bal up">¥5,400,000</div>
+          <div class="app-sub up">+¥4,800,000 (+800%)</div>
+        </div>
+        <div class="app-notif" style="display:block">🔒 出金には各種手続き費用のお支払いが必要です</div>
+      </div>
+      <div class="line-ui">
+        <div class="line-header">
+          <div class="line-avatar gold">👑</div>
+          <div><div class="line-name">代表 鈴木</div></div>
+        </div>
+        <div class="line-body" id="lb5b" style="min-height:100px"></div>
+      </div>
+      <div id="s5-choices"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCENE 6: 出金ブロック地獄 ════ -->
+  <div class="scene" id="s6">
+    <div class="scene-label">SCENE 06 — 出金ブロック</div>
+    <div class="scene-title">「もう少しだけ」が<br>終わらない</div>
+    <p class="narr">108万円を払った。しかし出金できない。次々と「費用」が現れる。</p>
+
+    <div class="fee-table">
+      <div class="fee-head"><span>出金に必要と言われた費用</span><span>金額</span></div>
+      <div class="fee-row paid" id="fee1"><span>① 技術料（20%）</span><span class="amt">¥1,080,000</span></div>
+      <div class="fee-row" id="fee2" style="opacity:.3"><span>② 個人納税分</span><span class="amt">¥80,000</span></div>
+      <div class="fee-row" id="fee3" style="opacity:.3"><span>③ 関税</span><span class="amt">¥550,000</span></div>
+      <div class="fee-row" id="fee4" style="opacity:.3"><span>④ 支払手数料</span><span class="amt">¥550,000</span></div>
+      <div class="fee-row" id="fee5" style="opacity:.3"><span>⑤ 国際弁護士着手金</span><span class="amt">¥550,000</span></div>
+      <div class="fee-total"><span>累計追加請求額</span><span class="amt" id="fee-total-amt">¥1,080,000</span></div>
+    </div>
+
+    <div class="line-ui">
+      <div class="line-header">
+        <div class="line-avatar gold">👑</div>
+        <div><div class="line-name">代表 鈴木</div><div class="line-online">● オンライン</div></div>
+      </div>
+      <div class="line-body" id="lb6"></div>
+    </div>
+    <div id="s6-choices"></div>
+
+    <div id="s6-lawyer" style="display:none;margin-top:16px">
+      <div class="lawyer-card">
+        <div class="lawyer-photo">🧑🏿‍💼</div>
+        <div class="lawyer-info">
+          <div class="lawyer-name">Dr. James K. Morrison</div>
+          <div class="lawyer-title">International Financial Law Attorney</div>
+          <div class="lawyer-desc">大口送金の犯罪疑惑をクリアする専門家です。着手金のご確認後24時間以内に解決します。</div>
+          <span class="lawyer-badge">VERIFIED ✓</span>
+        </div>
+      </div>
+      <div class="alert red">🤔 この弁護士……顔の輪郭が不自然じゃないか？背景もおかしい。まるでAIが作ったような……</div>
+      <div id="s6-lawyer-choices"></div>
+    </div>
+  </div>
+
+  <!-- ════ SCENE 7: 最悪エンディング ════ -->
+  <div class="scene" id="s7">
+    <div class="scene-label">SCENE 07 — 結末</div>
+    <div class="ending-wrap">
+      <div class="ending-icon">💀</div>
+      <div class="ending-ttl bad">すべてが詐欺だった</div>
+      <p class="ending-body">弁護士費用まで払ったが、540万円は永遠に振り込まれなかった。問い詰めると代表は言い訳を並べ、やがて連絡が取れなくなった。<br><br>サイト名を検索すると——同じ手口の被害報告が無数に出てきた。</p>
+    </div>
+    <div class="damage-box">
+      <div class="damage-lbl">最終 被害総額</div>
+      <div class="damage-amt" id="s7-total">¥4,500,000</div>
+      <div class="damage-note">生命保険解約・兄弟からの借金で捻出した資金がすべて消えた</div>
+    </div>
+    <div class="alert red">警察に被害届を提出。捜査員が訪問し受理された。しかし「お金が返ってくる可能性はほぼない」と告げられた。</div>
+    <div class="sdiv"></div>
+    <div class="scene-title" style="font-size:18px;margin-bottom:14px">気づけたポイントは何度もあった</div>
+    <div class="check-list">
+      <div class="check-item">🔴 「自己資金ゼロ・クリックだけ」の副業勧誘</div>
+      <div class="check-item">🔴 出金できないまま残高だけ積み上がる</div>
+      <div class="check-item">🔴 「残り2枠・今週末限り」という焦らせ</div>
+      <div class="check-item">🔴 損失直後の「温情ある追加提案」</div>
+      <div class="check-item">🔴 出金前の「先払い技術料」要求</div>
+      <div class="check-item">🔴 次々と続く税金・関税・手数料</div>
+      <div class="check-item">🔴 AI生成の胡散臭い弁護士画像</div>
+    </div>
+    <div class="sdiv"></div>
+    <div class="scene-title" style="font-size:17px;margin-bottom:12px">被害に遭ったら</div>
+    <div class="contact-list">
+      <div class="contact-item"><div class="c-icon">🚔</div><div><div class="c-name">警察相談専用電話</div><div class="c-tel">#9110</div><div class="c-desc">被害届提出。証拠（スクショ・ログ）を保全すること</div></div></div>
+      <div class="contact-item"><div class="c-icon">📞</div><div><div class="c-name">消費者ホットライン</div><div class="c-tel">188</div><div class="c-desc">消費生活センターへ繋いでもらえる</div></div></div>
+      <div class="contact-item"><div class="c-icon">⚖️</div><div><div class="c-name">法テラス</div><div class="c-tel">0570-078374</div><div class="c-desc">弁護士費用の立替制度あり</div></div></div>
+      <div class="contact-item"><div class="c-icon">🏦</div><div><div class="c-name">口座凍結申請</div><div class="c-tel">送金先の銀行へ</div><div class="c-desc">不正送金として申告し口座凍結を要請する</div></div></div>
+    </div>
+    <button class="replay-btn" style="margin-top:24px" onclick="restartGame()">▶ もう一度プレイ（回避を目指す）</button>
+  </div>
+
+  <!-- ════ ESCAPE ENDINGS ════ -->
+  <div class="scene" id="se-good">
+    <div class="ending-wrap">
+      <div class="ending-icon" id="ending-icon">🛡️</div>
+      <div class="ending-ttl good" id="se-title">詐欺を回避！</div>
+      <p class="ending-body" id="se-body"></p>
+    </div>
+    <div class="damage-box" id="se-damage-box" style="display:none">
+      <div class="damage-lbl">この時点での被害額</div>
+      <div class="damage-amt" id="se-damage-amt"></div>
+      <div class="damage-note" id="se-damage-note"></div>
+    </div>
+    <div class="check-list" id="se-checks"></div>
+    <div class="contact-list" id="se-contacts" style="display:none">
+      <div class="contact-item"><div class="c-icon">🚔</div><div><div class="c-name">警察相談専用電話</div><div class="c-tel">#9110</div></div></div>
+      <div class="contact-item"><div class="c-icon">📞</div><div><div class="c-name">消費者ホットライン</div><div class="c-tel">188</div></div></div>
+    </div>
+    <button class="replay-btn" style="margin-top:20px" onclick="restartGame()">▶ もう一度プレイ</button>
+  </div>
+
+</div><!-- /game -->
+
+<div class="hint-pop" id="hint"></div>
+
+<script>
+// ════════════════════════════════════
+// STATE
+// ════════════════════════════════════
+let damage = 0;
+let s2tradeCount = 0;
+let s2balance = 0;
+let s2days = 1;
+let timerTick = null;
+
+// escape attempt counters per scene
+let escAttempts = {};
+
+function resetEsc(scene){ escAttempts[scene] = 0; }
+function tryEscape(scene, max, escapeFn, resistFn){
+  escAttempts[scene] = (escAttempts[scene]||0) + 1;
+  if(escAttempts[scene] >= max){ escapeFn(); }
+  else { resistFn(escAttempts[scene]); }
+}
+
+// ════════════════════════════════════
+// UTILITIES
+// ════════════════════════════════════
+function $id(id){ return document.getElementById(id); }
+function showHint(msg, dur=3000){
+  const p=$id('hint'); p.textContent=msg; p.classList.add('show');
+  setTimeout(()=>p.classList.remove('show'), dur);
+}
+function addDamage(amt){
+  damage += amt;
+  $id('dmg-display').textContent = '¥'+damage.toLocaleString();
+}
+function setScene(id){
+  document.querySelectorAll('.scene').forEach(s=>s.classList.remove('active'));
+  $id(id).classList.add('active');
+  const labelMap = {'s1':'SCENE 1','s2':'SCENE 2','s3':'SCENE 3','s4':'SCENE 4','s5':'SCENE 5','s6':'SCENE 6','s7':'SCENE 7','se-good':'ENDING','s1b':'ENDING','s2b':'ENDING','s3b':'ENDING','s4b':'ENDING','s5b':'ENDING'};
+  $id('status-label').textContent = labelMap[id] || id.toUpperCase();
+  window.scrollTo(0,0);
+}
+
+// ════════════════════════════════════
+// CHAT ENGINE
+// ════════════════════════════════════
+function chatRow(isMe, text, avClass){
+  const row = document.createElement('div');
+  row.className = 'chat-row' + (isMe?' mine':'');
+  const now = new Date();
+  const t = now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  if(isMe){
+    row.innerHTML=`<div class="chat-bubble-wrap"><div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div><div class="chat-time">${t}</div></div>`;
+  } else {
+    row.innerHTML=`<div class="chat-mini-av ${avClass||'green'}">💬</div><div class="chat-bubble-wrap"><div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div><div class="chat-time">${t}</div></div>`;
+  }
+  return row;
+}
+function typingRow(avClass, icon){
+  const row = document.createElement('div');
+  row.className = 'typing-row';
+  row.innerHTML=`<div class="chat-mini-av ${avClass||'green'}">${icon||'💬'}</div><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  return row;
+}
+
+// Queue-based chat sequencer
+// msgs: [{mine, text, delay}]
+// avClass: css class for avatar, avIcon: emoji
+function runChat(bodyId, msgs, avClass, avIcon, onDone){
+  const body = $id(bodyId);
+  let i=0;
+  let typing = null;
+
+  function next(){
+    if(i >= msgs.length){ if(onDone) setTimeout(onDone, 400); return; }
+    const m = msgs[i]; i++;
+
+    if(!m.mine){
+      // show typing
+      typing = typingRow(avClass, avIcon);
+      body.appendChild(typing);
+      setTimeout(()=>typing.classList.add('show'),50);
+      body.scrollTop = body.scrollHeight;
+    }
+
+    setTimeout(()=>{
+      if(typing){ typing.remove(); typing=null; }
+      const row = chatRow(m.mine, m.text, avClass);
+      body.appendChild(row);
+      body.scrollTop = body.scrollHeight;
+      setTimeout(()=>row.classList.add('show'), 40);
+      next();
+    }, m.mine ? 200 : (m.delay||1400));
+  }
+  next();
+}
+
+// Show choices in a container
+function showChoices(containerId, q, options){
+  const el = $id(containerId);
+  el.innerHTML = '';
+  if(q){ const p=document.createElement('p'); p.className='choice-q'; p.textContent=q; el.appendChild(p); }
+  const wrap = document.createElement('div');
+  wrap.className = 'choices-wrap';
+  options.forEach((opt,idx)=>{
+    const btn = document.createElement('button');
+    btn.className = 'choice-btn';
+    btn.innerHTML = `<span class="choice-num">${String.fromCharCode(65+idx)}</span><span>${opt.label}</span>`;
+    btn.onclick = ()=>{ el.innerHTML=''; opt.action(); };
+    wrap.appendChild(btn);
+  });
+  el.appendChild(wrap);
+  el.style.display='block';
+}
+
+// Player reply then opponent responds
+function playerReply(bodyId, avClass, avIcon, myText, theirMsgs, onDone){
+  const body = $id(bodyId);
+  // add my bubble
+  const myRow = chatRow(true, myText, avClass);
+  body.appendChild(myRow);
+  body.scrollTop = body.scrollHeight;
+  setTimeout(()=>myRow.classList.add('show'),40);
+
+  // then run their response
+  setTimeout(()=>{
+    runChat(bodyId, theirMsgs, avClass, avIcon, onDone);
+  }, 600);
+}
+
+// ════════════════════════════════════
+// START
+// ════════════════════════════════════
+function startGame(){
+  $id('title-screen').style.display='none';
+  $id('game').style.display='block';
+  initS1();
+}
+function restartGame(){
+  damage=0; s2tradeCount=0; s2balance=0; s2days=1; escAttempts={};
+  $id('dmg-display').textContent='¥0';
+  // reset app states
+  $id('s4-trigger').style.display='block';
+  $id('s4-after').style.display='none';
+  $id('s4-bal').textContent='¥800,000';
+  $id('s4-bal').className='app-bal';
+  $id('s4-sub').textContent='待機中...';
+  $id('s4-sub').style.color='var(--dim)';
+  $id('s4-sig').textContent='● LIVE';
+  $id('s4-sig').className='app-signal';
+  $id('s4-notif').style.display='none';
+  $id('s5-complete').style.display='none';
+  $id('s5-bal').textContent='¥600,000';
+  $id('s5-sub').textContent='+¥0 (+0%)';
+  $id('s6-lawyer').style.display='none';
+  ['lb1','lb2','lb3','lb4','lb5','lb5b','lb6'].forEach(id=>{ const el=$id(id); if(el) el.innerHTML=''; });
+  ['s1-choices','s2-choices','s3-choices','s4-choices','s5-choices','s6-choices','s6-lawyer-choices'].forEach(id=>{ const el=$id(id); if(el) el.innerHTML=''; });
+  // reset fee rows
+  ['fee2','fee3','fee4','fee5'].forEach(id=>{ const el=$id(id); if(el) el.style.opacity='.3'; });
+  $id('fee-total-amt').textContent='¥1,080,000';
+  if(timerTick) clearInterval(timerTick);
+  setScene('s1');
+  initS1();
+}
+
+// ════════════════════════════════════
+// SCENE 1: SNS勧誘
+// ════════════════════════════════════
+function initS1(){
+  resetEsc('s1');
+  $id('s1-choices').innerHTML='';
+  $id('s1-choices').style.display='none';
+  $id('lb1').innerHTML='';
+
+  runChat('lb1', [
+    {mine:false, text:'初めまして！Xでフォローさせていただきました😊\nイーサリアム運用のお手伝いをしています。', delay:1200},
+    {mine:false, text:'自己資金ゼロ・スマホだけで毎日10分。代表の資金を一緒に運用するだけで売上の10%をお渡しします。', delay:1600},
+    {mine:false, text:'リスクはゼロです✨ ご興味ありましたらぜひ！', delay:1400},
+  ], 'green', '💬', ()=>{
+    showChoices('s1-choices', 'どう返事しますか？', [
+      { label:'「詳しく教えてください！」',
+        action: ()=>s1reply(1) },
+      { label:'「副業に興味はありますが、怪しくないですか？」',
+        action: ()=>s1reply(2) },
+      { label:'「すみません、興味ありません」',
+        action: ()=>s1tryEscape() },
+    ]);
+    $id('s1-choices').style.display='block';
+  });
+}
+
+function s1reply(n){
+  if(n===1){
+    playerReply('lb1','green','💬','詳しく教えてください！', [
+      {mine:false, text:'ありがとうございます！専用アプリで毎日「RISE/FALL」を選ぶだけ。実績のある方々は月10万〜30万円の報酬を受け取られています😊', delay:1800},
+      {mine:false, text:'まずは無料でご参加いただけます。今日から始められますよ！', delay:1400},
+    ], ()=>{
+      showChoices('s1-choices', null, [
+        { label:'「わかりました。やってみます！」', action:()=>{ addDamage(0); s1confirm(); }},
+        { label:'「少し考えます」', action:()=>s1tryEscape() },
+      ]);
+    });
+  } else {
+    playerReply('lb1','green','💬','怪しくないですか？信頼できますか？', [
+      {mine:false, text:'ご心配はよく分かります！でも弊社は3年以上の実績があり、すでに1000名以上が稼いでいます💪', delay:1800},
+      {mine:false, text:'自己資金ゼロなのでリスクは一切ありません。まずは体験してみてください😊', delay:1400},
+    ], ()=>{
+      showChoices('s1-choices', null, [
+        { label:'「分かりました、試してみます」', action:()=>s1confirm() },
+        { label:'「やっぱりやめておきます」', action:()=>s1tryEscape() },
+      ]);
+    });
+  }
+}
+
+const s1escResist = [
+  {myText:'「でも……やっぱり少し気になります」', theirText:'そうですよね、最初は不安ですよね。でも自己資金ゼロなのでリスクはゼロです！本当に！'},
+  {myText:'「今週だけ…ですか」', theirText:'実は今週だけ特別に、体験参加を受け付けています。来週は枠が埋まってしまうかもです😅'},
+  {myText:'「証拠を見せてもらえますか」', theirText:'参加した方全員が最初はそう思っていました。でも今は毎月稼いでいます！写真お見せしますね📷'},
+  {myText:'「少しだけ考えます」', theirText:'…分かりました。もし気が変わったらいつでも連絡ください。でも本当にもったいないと思います😢'},
+];
+
+function s1tryEscape(){
+  tryEscape('s1', 4,
+    ()=>showGoodEnd('s1','🛡️','詐欺を回避！',
+      '「自己資金ゼロ」「クリックだけ」という組み合わせは詐欺の典型的な入口です。最初の段階で断ち切れたあなたは正解です。',
+      [{ok:true,text:'✅ リスクゼロを謳う副業は詐欺率が極めて高い'},{ok:true,text:'✅ SNS経由の副業勧誘は要注意'},{ok:true,text:'✅ 直感を信じること'}], false, 0),
+    function(attempt){
+      var r = s1escResist[attempt-1];
+      playerReply('lb1','green','💬', r.myText, [{mine:false,text:r.theirText,delay:1400}], function(){
+        showChoices('s1-choices',null,[{label:'「やってみます」',action:s1confirm},{label:'「やめます」',action:s1tryEscape}]);
+      });
+    }
+  );
+}
+
+function s1confirm(){
+  playerReply('lb1','green','💬','分かりました、やってみます！', [
+    {mine:false, text:'ありがとうございます！では専用アプリへのご招待リンクをお送りします。まずは今日の「作業」から始めましょう💪', delay:1600},
+  ], ()=>{ setTimeout(()=>{ setScene('s2'); initS2(); }, 800); });
+}
+
+// ════════════════════════════════════
+// SCENE 2: 作業フェーズ
+// ════════════════════════════════════
+function initS2(){
+  resetEsc('s2');
+  s2balance = 0; s2tradeCount = 0; s2days = 1;
+  $id('s2-bal').textContent='¥0';
+  $id('s2-sub').textContent='本日の稼ぎ ¥0';
+  $id('s2-days').textContent='1日目';
+  $id('s2-rise').disabled=false;
+  $id('s2-fall').disabled=false;
+  $id('s2-line').style.display='none';
+  $id('s2-choices').innerHTML='';
+
+  // Fake timer
+  let sec = 86399;
+  if(timerTick) clearInterval(timerTick);
+  timerTick = setInterval(()=>{
+    sec = Math.max(0, sec-1);
+    const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+    const el=$id('s2-timer'); if(el) el.textContent=`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  },1000);
+}
+
+function doTrade(dir){
+  $id('s2-rise').disabled=true;
+  $id('s2-fall').disabled=true;
+  const gain = 7000 + Math.floor(Math.random()*6000);
+  s2balance += gain;
+  s2tradeCount++;
+  s2days++;
+  $id('s2-bal').textContent='¥'+Math.floor(s2balance).toLocaleString();
+  $id('s2-sub').textContent='本日の稼ぎ +¥'+gain.toLocaleString();
+  $id('s2-days').textContent=s2days+'日目';
+  const bal=$id('s2-bal'); bal.classList.add('up'); setTimeout(()=>bal.classList.remove('up'),900);
+
+  if(s2tradeCount < 3){
+    showHint('✅ 報酬が増えました！');
+    setTimeout(()=>{ $id('s2-rise').disabled=false; $id('s2-fall').disabled=false; }, 1200);
+  } else {
+    // Enough trades — trigger event message
+    if(timerTick) clearInterval(timerTick);
+    setTimeout(()=>{ showS2Event(); }, 800);
+  }
+}
+
+function showS2Event(){
+  $id('s2-line').style.display='block';
+  runChat('lb2', [
+    {mine:false, text:'毎日お疲れ様です！順調に積み上がってますね😊', delay:1200},
+    {mine:false, text:'実は来週、特別な「収益倍増イベント」を開催します。自己資金をご用意いただければ、代表が直接運用して大幅増額をお約束します！', delay:1800},
+    {mine:false, text:'参加枠は限られています。ご興味ありますか？', delay:1400},
+  ], 'gold','👑',()=>{
+    showChoices('s2-choices','どう返事しますか？',[
+      {label:'「ぜひ参加したいです！」', action:()=>s2confirm()},
+      {label:'「少し考えます…」', action:()=>s2tryEscape()},
+    ]);
+  });
+}
+
+const s2escResist = [
+  '積み上がった報酬を見てください！このイベントでさらに増やせますよ😊 チャンスを逃すのはもったいない！',
+  '実は今回の枠、あなたの分だけキープしておきました。本当にもったいないです😢',
+  '他の参加者さんはもう申し込んでいますよ。あなただけですよ、迷っているのは…',
+  '最後にもう一度だけお願いします。絶対に後悔させません！信じてください🙏',
+];
+
+function s2tryEscape(){
+  tryEscape('s2', 4,
+    ()=>showGoodEnd('s2','🛡️','被害ゼロで回避！',
+      '出金できないまま報酬だけ積み上がる——この矛盾に気づいたあなたは正解です。残高がいくら増えても、出金できなければ架空の数字に過ぎません。',
+      [{ok:true,text:'✅ 出金できない「報酬」は架空の数字'},{ok:true,text:'✅ 「もうすぐ出金できる」と引き伸ばすのが手口'},{ok:true,text:'✅ 違和感を覚えたら立ち止まること'}], false, 0),
+    (attempt)=>{
+      playerReply('lb2','gold','👑','少し様子を見たいです…', [{mine:false,text:s2escResist[attempt-1],delay:1400}],()=>{
+        showChoices('s2-choices',null,[
+          {label:'「分かりました、参加します」', action:s2confirm},
+          {label:'「やっぱりやめます」', action:s2tryEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function s2confirm(){
+  playerReply('lb2','gold','👑','分かりました！参加します！', [
+    {mine:false,text:'ありがとうございます！では来週のイベントに向けて準備してください。詳細は別途ご連絡します😊',delay:1600},
+  ], ()=>{ setTimeout(()=>{ setScene('s3'); initS3(); },800); });
+}
+
+// ════════════════════════════════════
+// SCENE 3: 特別イベント
+// ════════════════════════════════════
+function initS3(){
+  resetEsc('s3');
+  $id('lb3').innerHTML='';
+  $id('s3-choices').innerHTML='';
+
+  runChat('lb3', [
+    {mine:false,text:'いよいよです！今回のイベントは「自己資金を最大9倍に運用」します。80万円をご用意ください。',delay:1400},
+    {mine:false,text:'今週末限り・参加者10名限定。残り2枠です。お早めに！',delay:1600},
+    {mine:false,text:'代表が責任を持って運用します。過去の参加者は全員、約束通りの金額を受け取っています👍',delay:1600},
+  ],'gold','👑',()=>{
+    showChoices('s3-choices','どうしますか？',[
+      {label:'「80万円用意します！」', action:s3confirm},
+      {label:'「大金なので少し考えさせてください」', action:s3tryEscape},
+    ]);
+  });
+}
+
+const s3escResist = [
+  '残り1枠になってしまいました！もし今決めていただければ枠をキープしますよ！',
+  '他の方がもう80万円を振り込まれました。あなたの分は明日まで待ちます😊',
+  '心配なのは分かります。でもこれまでの実績を見てください。絶対に大丈夫です💪',
+  '…最後のお願いです。これを逃したら次はいつになるか分かりません。今が一番のチャンスです🙏',
+];
+
+function s3tryEscape(){
+  tryEscape('s3', 4,
+    ()=>showGoodEnd('s3','🛡️','被害ゼロで回避！',
+      '「残り2枠」「今週末限り」——焦りを作り出して冷静な判断を奪うのが常套手段です。',
+      [{ok:true,text:'✅ 正規の投資が「期間限定・残り僅か」で迫ることはない'},{ok:true,text:'✅ 急かされたら必ず立ち止まる'},{ok:true,text:'✅ 第三者（家族・友人）に必ず相談する'}], false, 0),
+    (attempt)=>{
+      playerReply('lb3','gold','👑','もう少し考える時間をください…',[{mine:false,text:s3escResist[attempt-1],delay:1600}],()=>{
+        showChoices('s3-choices',null,[
+          {label:'「分かりました。参加します！」',action:s3confirm},
+          {label:'「やっぱり見送ります」',action:s3tryEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function s3confirm(){
+  addDamage(800000);
+  playerReply('lb3','gold','👑','分かりました。80万円、振り込みます！',[
+    {mine:false,text:'ありがとうございます！振込確認後、すぐにイベントを開始します😊 楽しみにしていてください！',delay:1600},
+  ],()=>{ setTimeout(()=>{ setScene('s4'); },800); });
+}
+
+// ════════════════════════════════════
+// SCENE 4: 消失
+// ════════════════════════════════════
+function startDrain(){
+  $id('s4-trigger').style.display='none';
+  const bal=$id('s4-bal'), sub=$id('s4-sub'), sig=$id('s4-sig'), notif=$id('s4-notif');
+
+  // Phase1: fake rising
+  let val=800000;
+  sig.textContent='● RISING'; sig.className='app-signal live';
+  bal.classList.add('up'); sub.style.color='var(--green)';
+
+  let rise=setInterval(()=>{
+    val += Math.floor(Math.random()*22000+8000);
+    bal.textContent='¥'+val.toLocaleString();
+    sub.textContent='+¥'+(val-800000).toLocaleString();
+  },100);
+
+  setTimeout(()=>{
+    clearInterval(rise);
+    notif.style.display='block';
+    sig.textContent='⚠ VOLATILITY'; sig.className='app-signal warn';
+    bal.classList.remove('up');
+
+    setTimeout(()=>{
+      sig.textContent='● CRASHING'; sig.className='app-signal';
+      sig.style.color='var(--red2)';
+      bal.classList.add('down'); sub.style.color='var(--red2)';
+
+      let drain=setInterval(()=>{
+        val -= Math.floor(Math.random()*95000+50000);
+        if(val<=0){
+          val=0; clearInterval(drain);
+          bal.textContent='¥0'; bal.className='app-bal zero'; bal.classList.add('glitch');
+          sub.textContent='−¥800,000 (−100%)';
+          sig.textContent='● CLOSED'; sig.className='app-signal dead';
+          setTimeout(showAfterDrain, 900);
+        } else {
+          bal.textContent='¥'+val.toLocaleString();
+          sub.textContent='−¥'+(800000-(val)).toLocaleString();
+        }
+      },75);
+    },1200);
+  },2400);
+}
+
+function showAfterDrain(){
+  $id('s4-after').style.display='block';
+  resetEsc('s4');
+
+  runChat('lb4', [
+    {mine:false,text:'😤 なぜあのタイミングでボタンを押したんですか！クリックのタイミングを間違えたからです！',delay:1200},
+    {mine:false,text:'…ごめんなさい、責めてしまって。私も悔しくて。',delay:1600},
+    {mine:false,text:'実は特別な対策があります。60万円をご用意いただければ、今度は代表自らが運用して9倍の540万円にします。絶対に取り戻しましょう💪',delay:1800},
+  ],'gold','👑',()=>{
+    showChoices('s4-choices','どうしますか？',[
+      {label:'「分かりました。60万円用意します」',action:s4confirm},
+      {label:'「これはもう無理です。やめます」',action:s4tryEscape},
+    ]);
+  });
+}
+
+const s4escResist = [
+  'ちょっと待ってください！80万円がゼロになったのに、諦めるんですか？取り戻すチャンスですよ！',
+  '今回は代表が直接運用します。絶対に失敗しません。信じてもらえませんか？',
+  'ここで止めたら80万円が永遠に戻ってきません。あと60万円で720万円になるんですよ？',
+  '最後のお願いです。一緒に乗り越えましょう。あなたのことを見捨てたくないんです🙏',
+];
+
+function s4tryEscape(){
+  tryEscape('s4', 4,
+    ()=>showGoodEnd('s4','⚠️','80万円の被害で止まれた',
+      '損失を出した直後の「追加提案」は詐欺の定番パターンです。損失回避バイアス（取り戻したい心理）を徹底的に利用されていました。',
+      [{ok:false,text:'⚠ 被害額 ¥800,000'},{ok:true,text:'✅ お金が消えた直後の追加提案は詐欺のシグナル'},{ok:true,text:'✅ 警察相談専用電話：#9110'}], true, 800000),
+    (attempt)=>{
+      playerReply('lb4','gold','👑','もう無理です…やめたいです',[{mine:false,text:s4escResist[attempt-1],delay:1600}],()=>{
+        showChoices('s4-choices',null,[
+          {label:'「分かりました…60万用意します」',action:s4confirm},
+          {label:'「それでもやめます」',action:s4tryEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function s4confirm(){
+  addDamage(600000);
+  playerReply('lb4','gold','👑','分かりました。60万円、用意します…',[
+    {mine:false,text:'ありがとうございます！絶対に取り戻しましょう！代表に伝えて、すぐ運用を開始します😊',delay:1600},
+  ],()=>{ setTimeout(()=>{ setScene('s5'); initS5(); },800); });
+}
+
+// ════════════════════════════════════
+// SCENE 5: 増殖（インタラクティブ版）
+// ════════════════════════════════════
+let s5current = 600000;
+const s5target = 5400000;
+const s5start = 600000;
+// rounds: [instruction, correct_btn, gain, loss]
+const s5rounds = [
+  {msg:'📈 チャートが上向きです。今すぐ【RISE】を押してください！', correct:'rise', gain:580000, loss:120000},
+  {msg:'📉 一時的に下がります。【FALL】を押すタイミングです！', correct:'fall', gain:650000, loss:150000},
+  {msg:'📈 大口の買い注文が入りました。【RISE】です！急いで！', correct:'rise', gain:720000, loss:130000},
+  {msg:'📉 利確のタイミングです。【FALL】を押してください！', correct:'fall', gain:680000, loss:140000},
+  {msg:'📈 最後の一押し！【RISE】で確定です！', correct:'rise', gain:1170000, loss:200000},
+];
+let s5roundIdx = 0;
+
+function initS5(){
+  resetEsc('s5');
+  s5current = s5start;
+  s5roundIdx = 0;
+  $id('s5-complete').style.display='none';
+  $id('s5-choices').innerHTML='';
+  $id('lb5').innerHTML='';
+  $id('s5-bal').textContent='¥'+s5current.toLocaleString();
+  $id('s5-sub').textContent='+¥0 (+0%)';
+  $id('s5-sig').textContent='● RUNNING';
+  $id('s5-rise-btn').disabled=true;
+  $id('s5-fall-btn').disabled=true;
+
+  // First message from 代表
+  setTimeout(()=>s5nextRound(), 800);
+}
+
+function s5nextRound(){
+  if(s5roundIdx >= s5rounds.length){
+    var rb = $id('s5-rise-btn'); if(rb) rb.disabled=true;
+    var fb = $id('s5-fall-btn'); if(fb) fb.disabled=true;
+    var sig = $id('s5-sig'); if(sig) sig.textContent='● COMPLETE';
+    smoothCount(s5current, s5target, 2000, function(v){
+      s5current = v; updateS5Bal();
+    }, function(){ setTimeout(showS5Complete, 600); });
+    return;
+  }
+  var round = s5rounds[s5roundIdx];
+  var body = $id('lb5');
+  if(!body) return;
+
+  // Disable buttons while waiting for instruction
+  var rb2 = $id('s5-rise-btn'); if(rb2) rb2.disabled=true;
+  var fb2 = $id('s5-fall-btn'); if(fb2) fb2.disabled=true;
+
+  // Show typing indicator for 2 seconds, then message
+  var trow = document.createElement('div');
+  trow.className = 'typing-row';
+  trow.innerHTML = '<div class="chat-mini-av gold">👑</div><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  body.appendChild(trow);
+  body.scrollTop = body.scrollHeight;
+  setTimeout(function(){ trow.classList.add('show'); }, 50);
+
+  // After 2s show the message, then wait 8 more seconds before enabling buttons
+  // Total ~10 seconds between each instruction
+  setTimeout(function(){
+    if(trow.parentNode) trow.remove();
+    var row = chatRow(false, round.msg, 'gold');
+    body.appendChild(row);
+    body.scrollTop = body.scrollHeight;
+    setTimeout(function(){ row.classList.add('show'); }, 40);
+
+    // Enable buttons after 1 second (give time to read)
+    setTimeout(function(){
+      var r = $id('s5-rise-btn'); if(r) r.disabled=false;
+      var f = $id('s5-fall-btn'); if(f) f.disabled=false;
+    }, 1000);
+  }, 2000);
+}
+
+function s5trade(dir){
+  var rb = $id('s5-rise-btn'); if(rb) rb.disabled=true;
+  var fb = $id('s5-fall-btn'); if(fb) fb.disabled=true;
+  var round = s5rounds[s5roundIdx];
+  var isCorrect = (dir === round.correct);
+  var change = isCorrect ? round.gain : -round.loss;
+  var newVal = Math.max(s5current + change, 300000);
+  var body = $id('lb5');
+
+  var myLabel = dir==='rise' ? '▲ RISEを押しました' : '▼ FALLを押しました';
+  var myRow = chatRow(true, myLabel, 'gold');
+  body.appendChild(myRow);
+  body.scrollTop = body.scrollHeight;
+  setTimeout(function(){ myRow.classList.add('show'); }, 40);
+
+  smoothCount(s5current, newVal, 1200, function(v){
+    s5current = v; updateS5Bal();
+  }, function(){
+    var okTexts = ['完璧です！✨ さすがです！どんどん増えていますよ！','素晴らしい！このまま続けましょう！','ナイスタイミング！順調に増えています😊','最高です！あと少しで目標達成です！','完璧！これで運用完了です！🎉'];
+    var ngTexts = ['あ…惜しかった！でも大丈夫、次で取り返せます！','タイミングが少しズレましたね。次は一緒に頑張りましょう','少し下がりましたが問題ありません。続けますよ！','残念でしたが、まだ挽回できます！','惜しい！でもここまで来たら最後まで行きましょう！'];
+    var replyText = (isCorrect ? okTexts : ngTexts)[Math.min(s5roundIdx, 4)];
+
+    setTimeout(function(){
+      var trow2 = document.createElement('div');
+      trow2.className = 'typing-row';
+      trow2.innerHTML = '<div class="chat-mini-av gold">👑</div><div class="typing-dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+      body.appendChild(trow2);
+      setTimeout(function(){ trow2.classList.add('show'); }, 50);
+      body.scrollTop = body.scrollHeight;
+      setTimeout(function(){
+        if(trow2.parentNode) trow2.remove();
+        var repRow = chatRow(false, replyText, 'gold');
+        body.appendChild(repRow);
+        setTimeout(function(){ repRow.classList.add('show'); }, 40);
+        body.scrollTop = body.scrollHeight;
+        s5roundIdx++;
+        setTimeout(s5nextRound, 8000);
+      }, 1500);
+    }, 400);
+  });
+}
+
+function updateS5Bal(){
+  const pct = Math.round(((s5current - s5start) / s5start) * 100);
+  const diff = s5current - s5start;
+  $id('s5-bal').textContent = '¥'+Math.floor(s5current).toLocaleString();
+  $id('s5-sub').textContent = (diff>=0?'+':'')+Math.floor(diff).toLocaleString()+' ('+pct+'%)';
+  const balEl = $id('s5-bal');
+  balEl.className = 'app-bal ' + (diff >= 0 ? 'up' : 'down');
+}
+
+function smoothCount(from, to, duration, onTick, onDone){
+  const steps = 40;
+  const interval = duration / steps;
+  const inc = (to - from) / steps;
+  let cur = from;
+  let i = 0;
+  const t = setInterval(()=>{
+    i++;
+    cur += inc;
+    if(i >= steps){ cur = to; clearInterval(t); onTick(Math.round(cur)); if(onDone) onDone(); }
+    else { onTick(Math.round(cur)); }
+  }, interval);
+}
+
+function showS5Complete(){
+  $id('s5-complete').style.display='block';
+  window.scrollTo(0, document.body.scrollHeight);
+
+  setTimeout(()=>{
+    runChat('lb5b',[
+      {mine:false,text:'🎉 完璧です！540万円になりました！いよいよ出金です！',delay:1200},
+      {mine:false,text:'ただ、最初にお伝えした通り、技術料20%（108万円）を先払いでお願いします。540万円から引くのではなく、規約上の先払いです。',delay:1800},
+      {mine:false,text:'お支払い確認後、すぐに540万円をお振込みします！',delay:1400},
+    ],'gold','👑',()=>{
+      showChoices('s5-choices','どうしますか？',[
+        {label:'「分かりました。108万円払います」',action:s5confirm},
+        {label:'「出金前に先払いはおかしいと思います」',action:s5tryEscape},
+      ]);
+    });
+  },800);
+}
+
+const s5escResist = [
+  '規約には最初から書いてありましたよ？スクロールしましたよね？確認してください。',
+  '540万円が目の前にあるんですよ。108万円払うだけで500万円以上手に入ります！',
+  '他の参加者さんは全員お支払いいただきました。あなただけが止まっています。',
+  'もし払えないなら、分割でも構いません。とにかく早く手続きを進めましょう🙏',
+];
+
+function s5tryEscape(){
+  tryEscape('s5', 4,
+    ()=>showGoodEnd('s5','⚠️','追加被害を防いだ',
+      '正規の出金処理で「先払い手数料」を要求することはありません。「大金が手に入る直前」という状況を作り判断力を失わせるのが手口です。',
+      [{ok:false,text:'⚠ この時点での被害額 ¥1,400,000'},{ok:true,text:'✅ 出金前の先払い要求は詐欺の鉄板手口'},{ok:true,text:'✅ 警察相談：#9110 / 消費者ホットライン：188'}], true, 1400000),
+    (attempt)=>{
+      playerReply('lb5','gold','👑','出金前の先払いはおかしいと思います…',[{mine:false,text:s5escResist[attempt-1],delay:1600}],()=>{
+        showChoices('s5-choices',null,[
+          {label:'「…分かりました。払います」',action:s5confirm},
+          {label:'「やっぱりおかしい。やめます」',action:s5tryEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function s5confirm(){
+  addDamage(1080000);
+  playerReply('lb5','gold','👑','分かりました。108万円、振り込みます',[
+    {mine:false,text:'ありがとうございます！確認できたらすぐ540万円を送金します！もう少しです！',delay:1600},
+  ],()=>{ setTimeout(()=>{ setScene('s6'); initS6(); },800); });
+}
+
+// ════════════════════════════════════
+// SCENE 6: 出金ブロック地獄
+// ════════════════════════════════════
+let s6feeStep = 0;
+let s6feeCumulative = 1080000;
+const s6fees = [
+  {id:'fee2',add:80000,label:'納税分（8万円）',msg:'申し訳ありません…個人納税分として8万円が必要になりました。イレギュラーが重なってしまって。でもこれを払えば540万円はあなたのものです！もう少しです！'},
+  {id:'fee3',add:550000,label:'関税（55万円）',msg:'海外送金のため関税55万円が発生しました。規定で必要なんです。払っていただければすぐ送金します。'},
+  {id:'fee4',add:550000,label:'支払手数料（55万円）',msg:'最後の手数料です！55万円だけです。本当に最後ですよ💪'},
+];
+
+function initS6(){
+  s6feeStep = 0;
+  s6feeCumulative = 1080000;
+  resetEsc('s6');
+  $id('lb6').innerHTML='';
+  $id('s6-choices').innerHTML='';
+  $id('s6-lawyer').style.display='none';
+  ['fee2','fee3','fee4','fee5'].forEach(id=>{ $id(id).style.opacity='.3'; });
+  $id('fee-total-amt').textContent='¥1,080,000';
+
+  setTimeout(()=>s6nextFee(), 600);
+}
+
+function s6nextFee(){
+  if(s6feeStep >= s6fees.length){
+    // all fees paid → lawyer
+    setTimeout(showLawyer, 600);
+    return;
+  }
+  const fee = s6fees[s6feeStep];
+  runChat('lb6',[{mine:false,text:fee.msg,delay:1600}],'gold','👑',()=>{
+    showChoices('s6-choices',null,[
+      {label:`「分かりました。${fee.label}を払います」`,action:()=>s6payFee()},
+      {label:'「もうやめます。これ以上払えません」',action:()=>s6tryEscape()},
+    ]);
+  });
+}
+
+function s6payFee(){
+  var fee = s6fees[s6feeStep];
+  if(!fee){ setTimeout(showLawyer, 400); return; } // guard: all fees done
+  addDamage(fee.add);
+  s6feeCumulative += fee.add;
+  $id('fee-total-amt').textContent='¥'+s6feeCumulative.toLocaleString();
+  playerReply('lb6','gold','👑','分かりました…'+fee.label+'を払います',[
+    {mine:false,text:'ありがとうございます！確認できたらすぐ送金します！もう少しです！',delay:1400},
+  ],function(){
+    $id(fee.id).style.opacity='1';
+    $id(fee.id).classList.add('paid');
+    s6feeStep++;
+    resetEsc('s6');
+    setTimeout(s6nextFee, 800);
+  });
+}
+
+const s6escResist = [
+  '540万円が目の前にあるんですよ！ここで止めたら全部無駄になります！',
+  '払ってくれた参加者には全員、約束通り送金しています。あなただけ特別扱いはできません。',
+  'もし今月厳しければ、来月に回すこともできます。でも早いほど良いですよ。',
+  'これが本当に最後の費用です。次は絶対に請求しません。信じてください🙏',
+];
+
+function s6tryEscape(){
+  tryEscape('s6', 4,
+    function(){ showLawyer(); },
+    function(attempt){
+      playerReply('lb6','gold','👑','もう限界です…やめたいです',[{mine:false,text:s6escResist[attempt-1],delay:1600}],function(){
+        showChoices('s6-choices',null,[
+          {label:'「…分かりました、払います」', action:function(){ s6payFee(); }},
+          {label:'「それでもやめます」', action:s6tryEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function showLawyer(){
+  const body = $id('lb6');
+
+  // Step 1: 送金が止まっているという連絡
+  const msgs_pre = [
+    {mine:false, text:'実は…銀行側から送金手続きが一時停止されてしまいました。大変申し訳ありません😰', delay:1600},
+    {mine:false, text:'どうやら540万円という大口送金が「不審な取引」として銀行のシステムに引っかかってしまったようです。', delay:1800},
+    {mine:false, text:'こういうケースは、専門の国際弁護士を通して「正規の送金であること」を証明する手続きが必要になります。', delay:1900},
+    {mine:false, text:'私の方でも弁護士を探したのですが、今回の件に詳しい先生を見つけました。紹介させていただきます。', delay:1600},
+  ];
+
+  runChat('lb6', msgs_pre, 'gold', '👑', ()=>{
+    // Show lawyer card
+    $id('s6-lawyer').style.display='block';
+    window.scrollTo(0, document.body.scrollHeight);
+
+    // Then more chat after lawyer card
+    setTimeout(()=>{
+      runChat('lb6', [
+        {mine:false, text:'Dr.Morrisonという先生です。国際送金トラブルを専門に扱っていて、過去にも同様のケースを多数解決されています。', delay:1600},
+        {mine:false, text:'着手金として55万円が必要になりますが、解決後は540万円から差し引いてお返しします。これが最後の手続きです！🙏', delay:1800},
+      ], 'gold', '👑', ()=>{
+        resetEsc('s6lawyer');
+        showChoices('s6-lawyer-choices', null, [
+          {label:'「分かりました。着手金55万円を払います」', action:s6lawyerPay},
+          {label:'「この弁護士……画像が不自然じゃないか？検索してみる」', action:s6lawyerEscape},
+        ]);
+      });
+    }, 600);
+  });
+}
+
+const s6lawyerEscResist = [
+  '問題ありません！Dr.Morrisonは国際的に有名な弁護士です。検索しても同名の先生は出てきませんよ。',
+  '今すぐ払えば24時間以内に解決します。検索している時間はありません！',
+  '540万円が手に入る直前なんですよ！55万円が惜しいですか？',
+  '…本当にこれが最後のお願いです。もし払っていただけないなら、私も責任が取れません🙏',
+];
+
+function s6lawyerEscape(){
+  tryEscape('s6lawyer', 4,
+    ()=>showGoodEnd('s6lawyer','🔍','ここで気づいた！',
+      'AI生成の弁護士画像に違和感を持ち、サイト名を検索したところ、同じ手口の詐欺事例が多数ヒット。ここで詐欺と確信できました。',
+      [{ok:false,text:'⚠ この時点での被害額 約¥'+damage.toLocaleString()},{ok:true,text:'✅ 証拠（スクショ・会話ログ）を全て保存する'},{ok:true,text:'✅ 警察相談：#9110'},{ok:true,text:'✅ 消費者ホットライン：188'},{ok:true,text:'✅ 送金先銀行に口座凍結申請'}], true, damage),
+    (attempt)=>{
+      playerReply('lb6','gold','👑','この弁護士、不自然じゃないですか？',[{mine:false,text:s6lawyerEscResist[attempt-1],delay:1600}],()=>{
+        showChoices('s6-lawyer-choices',null,[
+          {label:'「…払います」',action:s6lawyerPay},
+          {label:'「やっぱりおかしい。確認します」',action:s6lawyerEscape},
+        ]);
+      });
+    }
+  );
+}
+
+function s6lawyerPay(){
+  addDamage(550000);
+  $id('fee5').style.opacity='1';
+  $id('fee5').classList.add('paid');
+  s6feeCumulative += 550000;
+  $id('fee-total-amt').textContent='¥'+s6feeCumulative.toLocaleString();
+  playerReply('lb6','gold','👑','…分かりました。55万円、払います',[
+    {mine:false,text:'ありがとうございます！24時間以内に必ず解決します！お待ちください😊',delay:1600},
+  ],()=>{ setTimeout(()=>{ $id('s7-total').textContent='¥'+damage.toLocaleString(); setScene('s7'); },1000); });
+}
+
+// ════════════════════════════════════
+// GOOD ENDING
+// ════════════════════════════════════
+function showGoodEnd(sceneId, icon, title, body, checks, showContacts, damageAmt){
+  const isBad = checks.some(c=>!c.ok && c.ok!==undefined);
+  $id('se-title').textContent = title;
+  $id('se-title').className = 'ending-ttl ' + (damageAmt>0 ? 'warn' : 'good');
+  $id('ending-icon').textContent = icon;
+  $id('se-body').textContent = body;
+
+  const cl = $id('se-checks'); cl.innerHTML='';
+  checks.forEach(c=>{
+    const d=document.createElement('div');
+    d.className='check-item'+(c.ok===true?' ok':c.ok===false?' red':'');
+    d.textContent=c.text; cl.appendChild(d);
+  });
+
+  if(damageAmt>0){
+    $id('se-damage-box').style.display='block';
+    $id('se-damage-amt').textContent='¥'+damageAmt.toLocaleString();
+    $id('se-damage-note').textContent='';
+  } else {
+    $id('se-damage-box').style.display='none';
+  }
+
+  $id('se-contacts').style.display = showContacts ? 'flex' : 'none';
+  setScene('se-good');
+}
+
+// ════════════════════════════════════
+// INIT
+// ════════════════════════════════════
+window.onload = ()=>{ window.scrollTo(0,0); startGame(); };
+</script>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
