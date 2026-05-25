@@ -1,0 +1,1956 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ランサムウェア感染体験ゲーム（教育用）</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #06101f;
+      --panel: rgba(10, 24, 47, .86);
+      --panel-strong: rgba(12, 31, 61, .96);
+      --line: rgba(96, 165, 250, .28);
+      --line-hot: rgba(248, 113, 113, .75);
+      --text: #edf5ff;
+      --muted: #98abc5;
+      --blue: #55b7ff;
+      --green: #9cea64;
+      --violet: #b985ff;
+      --red: #ff5b5b;
+      --amber: #f7bf3c;
+      --cyan: #48d5c7;
+      --shadow: 0 24px 60px rgba(0, 0, 0, .34);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background:
+        radial-gradient(circle at 18% 12%, rgba(47, 120, 210, .26), transparent 34%),
+        radial-gradient(circle at 78% 9%, rgba(114, 68, 191, .16), transparent 28%),
+        linear-gradient(145deg, #031023 0%, #07192f 47%, #020712 100%);
+      color: var(--text);
+    }
+
+    button {
+      font: inherit;
+      color: inherit;
+    }
+
+    .app {
+      width: min(1480px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 24px 0 18px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 14px 18px 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .shield {
+      display: grid;
+      place-items: center;
+      width: 54px;
+      height: 62px;
+      flex: 0 0 auto;
+      background: linear-gradient(180deg, rgba(70, 184, 255, .28), rgba(56, 114, 224, .08));
+      clip-path: polygon(50% 0, 91% 16%, 84% 74%, 50% 100%, 16% 74%, 9% 16%);
+      border: 2px solid rgba(98, 188, 255, .8);
+      color: #dff3ff;
+      font-size: 25px;
+      text-shadow: 0 0 14px rgba(85, 183, 255, .8);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.25rem, 2vw, 2rem);
+      line-height: 1.12;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: .94rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tool-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 14px;
+      border: 1px solid rgba(159, 180, 209, .34);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .08);
+      cursor: pointer;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+    }
+
+    .tool-btn:hover { background: rgba(255, 255, 255, .13); }
+
+    .tool-btn[disabled] {
+      opacity: .48;
+      cursor: not-allowed;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .main-col,
+    .side-col {
+      display: grid;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(12, 30, 58, .94), rgba(5, 15, 31, .88));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .timeline-panel {
+      display: grid;
+      grid-template-columns: 160px minmax(0, 1fr);
+      gap: 18px;
+      padding: 18px;
+    }
+
+    .clock {
+      display: grid;
+      align-content: center;
+      gap: 8px;
+      padding: 16px;
+      border: 1px solid rgba(71, 154, 246, .52);
+      border-radius: 8px;
+      background: rgba(20, 55, 98, .48);
+    }
+
+    .clock span {
+      color: #9bc7fb;
+      font-size: .82rem;
+      font-weight: 700;
+    }
+
+    .clock strong {
+      font-size: 2.2rem;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .steps {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(110px, 1fr));
+      gap: 14px;
+      align-items: start;
+    }
+
+    .steps::before {
+      content: "";
+      position: absolute;
+      left: 25px;
+      right: 25px;
+      top: 16px;
+      height: 3px;
+      background: linear-gradient(90deg, #58b8ff var(--progress), rgba(89, 116, 160, .56) var(--progress));
+      border-radius: 99px;
+      box-shadow: 0 0 18px rgba(85, 183, 255, .38);
+    }
+
+    .step {
+      position: relative;
+      min-width: 0;
+      padding-top: 32px;
+      color: var(--muted);
+    }
+
+    .step::before {
+      content: "";
+      position: absolute;
+      top: 8px;
+      left: 20px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #3487dc;
+      background: #092245;
+      z-index: 1;
+    }
+
+    .step.done::before {
+      background: var(--blue);
+      box-shadow: 0 0 16px rgba(85, 183, 255, .8);
+    }
+
+    .step.current {
+      color: var(--text);
+    }
+
+    .step.current::before {
+      border-color: #ff7b7b;
+      background: #ff6868;
+      box-shadow: 0 0 16px rgba(255, 91, 91, .78);
+    }
+
+    .step time {
+      display: block;
+      margin-bottom: 6px;
+      font-size: .94rem;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .step strong {
+      display: block;
+      min-height: 2.6em;
+      color: inherit;
+      font-size: .95rem;
+      line-height: 1.32;
+    }
+
+    .step small {
+      display: block;
+      margin-top: 4px;
+      line-height: 1.35;
+    }
+
+    .incident {
+      display: grid;
+      grid-template-columns: minmax(280px, 430px) minmax(0, 1fr);
+      border-color: rgba(255, 91, 91, .6);
+    }
+
+    .visual {
+      position: relative;
+      min-height: 348px;
+      overflow: hidden;
+      background:
+        linear-gradient(rgba(7, 17, 32, .1), rgba(7, 17, 32, .34)),
+        linear-gradient(135deg, #192945, #07101f 58%, #170a12);
+    }
+
+    .visual::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, .05) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 255, 255, .04) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(90deg, black, transparent 86%);
+    }
+
+    .scene-image {
+      position: absolute;
+      inset: 22px 24px 28px;
+      width: calc(100% - 48px);
+      height: calc(100% - 50px);
+      object-fit: contain;
+      filter: drop-shadow(0 26px 34px rgba(0, 0, 0, .42));
+      z-index: 1;
+    }
+
+    .laptop {
+      position: absolute;
+      left: 50%;
+      right: auto;
+      bottom: 32px;
+      width: min(78%, 420px);
+      min-height: 118px;
+      transform: translateX(-50%);
+      border: 2px solid rgba(255, 91, 91, .55);
+      border-radius: 8px 8px 2px 2px;
+      background:
+        linear-gradient(90deg, rgba(255, 91, 91, .16) 1px, transparent 1px),
+        linear-gradient(0deg, rgba(255, 91, 91, .12) 1px, transparent 1px),
+        linear-gradient(160deg, #200d14, #080b14);
+      background-size: 34px 34px, 34px 34px, auto;
+      box-shadow: 0 0 34px rgba(255, 91, 91, .18);
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      z-index: 2;
+    }
+
+    .laptop::after {
+      content: "";
+      position: absolute;
+      left: -34px;
+      right: -34px;
+      bottom: -24px;
+      height: 22px;
+      border-radius: 0 0 18px 18px;
+      background: linear-gradient(90deg, #050a13, #172033, #050a13);
+    }
+
+    .ransom-note strong {
+      display: block;
+      color: #ff7878;
+      font-size: 1.05rem;
+      margin-bottom: 8px;
+    }
+
+    .ransom-note span {
+      display: block;
+      color: #d7e4f7;
+      font-size: .86rem;
+      line-height: 1.5;
+    }
+
+    .countdown {
+      margin-top: 12px;
+      font-size: 1.55rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .scene {
+      display: grid;
+      align-content: stretch;
+      min-width: 0;
+    }
+
+    .scene-copy {
+      padding: 22px 24px 16px;
+      border-bottom: 1px solid rgba(71, 154, 246, .18);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 28px;
+      padding: 0 10px;
+      margin-bottom: 12px;
+      border-radius: 6px;
+      background: rgba(255, 91, 91, .18);
+      color: #ffd2d2;
+      font-weight: 800;
+      font-size: .82rem;
+    }
+
+    .scene h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.45rem, 2vw, 2rem);
+      line-height: 1.18;
+      letter-spacing: 0;
+    }
+
+    .scene p {
+      margin: 0;
+      color: #c9d8ed;
+      line-height: 1.72;
+    }
+
+    .prompt {
+      margin-top: 16px;
+      color: #ff7777;
+      font-weight: 900;
+      font-size: 1.1rem;
+    }
+
+    .choices {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 16px;
+      align-self: end;
+    }
+
+    .feedback {
+      display: grid;
+      gap: 8px;
+      margin: 0 16px 16px;
+      padding: 14px;
+      border: 1px solid rgba(151, 170, 203, .26);
+      border-left: 4px solid var(--feedback-color, var(--blue));
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .055);
+    }
+
+    .feedback strong {
+      color: var(--feedback-color, var(--blue));
+      font-size: .95rem;
+    }
+
+    .feedback p {
+      margin: 0;
+      color: #c9d8ed;
+      line-height: 1.55;
+      font-size: .9rem;
+    }
+
+    .choice {
+      display: grid;
+      grid-template-columns: 44px minmax(0, 1fr);
+      gap: 12px;
+      min-height: 132px;
+      padding: 12px;
+      border: 1px solid rgba(96, 165, 250, .34);
+      border-radius: 8px;
+      background: rgba(13, 32, 62, .76);
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .choice:hover {
+      transform: translateY(-1px);
+      border-color: rgba(126, 202, 255, .72);
+      background: rgba(16, 48, 88, .86);
+    }
+
+    .choice:focus-visible,
+    .tool-btn:focus-visible {
+      outline: 2px solid #9bd2ff;
+      outline-offset: 3px;
+    }
+
+    .choice .choice-index {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 7px;
+      background: linear-gradient(135deg, var(--choice-color), rgba(255, 255, 255, .16));
+      font-size: 1.5rem;
+      font-weight: 900;
+      box-shadow: 0 0 24px color-mix(in srgb, var(--choice-color) 42%, transparent);
+    }
+
+    .choice strong {
+      display: block;
+      color: var(--choice-color);
+      margin-bottom: 7px;
+      line-height: 1.35;
+    }
+
+    .choice span {
+      display: block;
+      color: #c6d7ee;
+      line-height: 1.5;
+      font-size: .9rem;
+    }
+
+    .score-panel {
+      padding: 18px;
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: #dcecff;
+      font-weight: 800;
+    }
+
+    .meter-list {
+      display: grid;
+      gap: 13px;
+    }
+
+    .meter-row {
+      display: grid;
+      grid-template-columns: 104px minmax(0, 1fr) 64px;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .meter-label {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      color: var(--meter-color);
+      font-weight: 800;
+      font-size: .95rem;
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 99px;
+      background: rgba(143, 164, 196, .28);
+      overflow: hidden;
+    }
+
+    .bar i {
+      display: block;
+      width: var(--value);
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--meter-color), color-mix(in srgb, var(--meter-color) 72%, white));
+      box-shadow: 0 0 16px color-mix(in srgb, var(--meter-color) 52%, transparent);
+    }
+
+    .meter-value {
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .meter-row.changed,
+    .dept.changed {
+      animation: flashChange .7s ease;
+    }
+
+    .hint {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: .84rem;
+      line-height: 1.5;
+    }
+
+    .mode-group {
+      display: grid;
+      gap: 8px;
+      margin-top: 14px;
+    }
+
+    .mode-options {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .mode-btn {
+      min-height: 34px;
+      border: 1px solid rgba(159, 180, 209, .28);
+      border-radius: 7px;
+      background: rgba(255, 255, 255, .06);
+      color: #dcecff;
+      cursor: pointer;
+      font-weight: 800;
+      font-size: .84rem;
+    }
+
+    .mode-btn.active {
+      border-color: rgba(85, 183, 255, .82);
+      background: rgba(85, 183, 255, .16);
+      color: #9ed8ff;
+    }
+
+    .mode-btn[disabled] {
+      cursor: not-allowed;
+      opacity: .58;
+    }
+
+    .mode-note {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: .82rem;
+    }
+
+    .dept-panel,
+    .log-panel,
+    .review-panel,
+    .report-panel,
+    .final-panel {
+      padding: 16px;
+    }
+
+    .depts {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 9px;
+    }
+
+    .dept {
+      min-height: 150px;
+      padding: 12px;
+      border: 1px solid rgba(151, 170, 203, .28);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .055);
+      text-align: center;
+    }
+
+    .dept.danger { border-color: rgba(255, 91, 91, .78); background: rgba(255, 91, 91, .09); }
+    .dept.warn { border-color: rgba(247, 191, 60, .58); }
+    .dept.safe { border-color: rgba(92, 222, 149, .42); }
+
+    .dept strong {
+      display: block;
+      color: #cfe6ff;
+      margin-bottom: 7px;
+    }
+
+    .dept .icon {
+      font-size: 2rem;
+      line-height: 1;
+      margin-bottom: 8px;
+      color: #9fd0ff;
+    }
+
+    .ring {
+      --ring-color: var(--blue);
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 66px;
+      height: 66px;
+      margin: 10px auto 0;
+      border-radius: 50%;
+      background: conic-gradient(var(--ring-color) var(--ring), rgba(113, 134, 165, .24) 0);
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .ring::before {
+      content: "";
+      position: absolute;
+      width: 48px;
+      height: 48px;
+      border-radius: inherit;
+      background: #10233d;
+    }
+
+    .ring span {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dept small {
+      display: block;
+      color: var(--muted);
+      min-height: 1.35em;
+    }
+
+    .logs {
+      display: grid;
+      gap: 6px;
+      max-height: 190px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .log-line {
+      display: grid;
+      grid-template-columns: 54px minmax(0, 1fr) 24px;
+      gap: 10px;
+      align-items: start;
+      min-height: 28px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid rgba(144, 170, 207, .12);
+      color: #b9c9df;
+      line-height: 1.45;
+      font-size: .9rem;
+    }
+
+    .log-line time {
+      color: #8fa8c8;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .log-icon { text-align: center; }
+    .log-line.good .log-icon { color: var(--green); }
+    .log-line.bad .log-icon { color: var(--red); }
+    .log-line.info .log-icon { color: var(--blue); }
+    .log-line.warn .log-icon { color: var(--amber); }
+
+    .review-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .report-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .report-item {
+      display: grid;
+      gap: 8px;
+      padding: 12px;
+      border: 1px solid rgba(151, 170, 203, .24);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .045);
+    }
+
+    .report-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      color: #dcecff;
+      font-weight: 900;
+    }
+
+    .report-head time {
+      color: var(--muted);
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .report-choice {
+      color: var(--report-color, var(--blue));
+      font-weight: 800;
+      line-height: 1.4;
+    }
+
+    .report-note {
+      margin: 0;
+      color: #c5d4e8;
+      line-height: 1.5;
+      font-size: .9rem;
+    }
+
+    .report-delta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .delta-pill {
+      min-height: 26px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, .07);
+      color: #cfe0f6;
+      font-size: .82rem;
+      font-weight: 800;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .review-card {
+      min-height: 148px;
+      padding: 14px;
+      border: 1px solid rgba(151, 170, 203, .26);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, .045);
+    }
+
+    .review-card strong {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      color: var(--card-color);
+    }
+
+    .review-card ul {
+      margin: 0;
+      padding-left: 1.1rem;
+      color: #c5d4e8;
+      line-height: 1.5;
+      font-size: .9rem;
+    }
+
+    .final-panel {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 106px;
+      gap: 16px;
+      align-items: center;
+    }
+
+    .grade {
+      display: grid;
+      place-items: center;
+      min-height: 108px;
+      border: 1px solid rgba(85, 183, 255, .5);
+      border-radius: 8px;
+      background: rgba(42, 122, 204, .12);
+      color: #79caff;
+      font-size: 3.7rem;
+      font-weight: 900;
+    }
+
+    .final-title {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      color: #dcecff;
+      font-weight: 900;
+    }
+
+    .final-copy {
+      margin: 10px 0 0;
+      color: #b9c9df;
+      line-height: 1.5;
+      font-size: .9rem;
+    }
+
+    .hidden { display: none; }
+
+    .footer-note {
+      margin: 12px 0 0;
+      text-align: center;
+      color: #8ea0b7;
+      font-size: .82rem;
+    }
+
+    @keyframes flashChange {
+      0% { transform: translateY(0); background: rgba(255, 255, 255, .04); }
+      35% { transform: translateY(-2px); background: rgba(85, 183, 255, .16); }
+      100% { transform: translateY(0); background: transparent; }
+    }
+
+    @media print {
+      :root { color-scheme: light; }
+      body {
+        background: #fff;
+        color: #111827;
+      }
+      .app {
+        width: 100%;
+        padding: 0;
+      }
+      .topbar,
+      .timeline-panel,
+      .incident,
+      .score-panel,
+      .dept-panel,
+      .log-panel,
+      .footer-note {
+        display: none !important;
+      }
+      .layout,
+      .main-col,
+      .side-col {
+        display: block;
+      }
+      .panel {
+        break-inside: avoid;
+        border: 1px solid #cbd5e1;
+        box-shadow: none;
+        background: #fff;
+        color: #111827;
+      }
+      .review-panel,
+      .report-panel,
+      .final-panel {
+        display: block !important;
+        margin-bottom: 14px;
+      }
+      .review-card,
+      .report-item {
+        background: #fff;
+        border-color: #cbd5e1;
+      }
+      .review-card ul,
+      .report-note,
+      .final-copy {
+        color: #1f2937;
+      }
+      .grade {
+        min-height: 72px;
+        border-color: #94a3b8;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+    }
+
+    @media (max-width: 1120px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-col {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: start;
+      }
+
+      .score-panel { min-height: 100%; }
+    }
+
+    @media (max-width: 860px) {
+      .app { width: min(100% - 20px, 760px); padding-top: 12px; }
+      .topbar { align-items: flex-start; flex-direction: column; }
+      .top-actions { width: 100%; justify-content: stretch; }
+      .tool-btn { flex: 1; justify-content: center; }
+      .timeline-panel { grid-template-columns: 1fr; }
+      .steps { grid-template-columns: 1fr; }
+      .steps::before { left: 29px; right: auto; top: 17px; bottom: 12px; width: 3px; height: auto; background: linear-gradient(180deg, #58b8ff var(--progress), rgba(89, 116, 160, .56) var(--progress)); }
+      .step { padding-top: 0; padding-left: 62px; min-height: 72px; }
+      .step::before { top: 1px; left: 20px; }
+      .incident { grid-template-columns: 1fr; }
+      .visual { min-height: 260px; }
+      .scene-image { inset: 16px 18px 24px; width: calc(100% - 36px); height: calc(100% - 40px); }
+      .choices { grid-template-columns: 1fr; }
+      .side-col { grid-template-columns: 1fr; }
+      .depts, .review-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .report-head { display: grid; gap: 4px; }
+    }
+
+    @media (max-width: 560px) {
+      .brand { align-items: flex-start; }
+      .shield { width: 44px; height: 52px; font-size: 21px; }
+      .meter-row { grid-template-columns: 92px minmax(0, 1fr) 56px; }
+      .depts, .review-grid, .final-panel { grid-template-columns: 1fr; }
+      .laptop { width: min(84%, 360px); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand">
+        <div class="shield" aria-hidden="true">▣</div>
+        <div>
+          <h1>ランサムウェア感染体験ゲーム（教育用）</h1>
+          <p class="subtitle">防御判断を学ぶシミュレーションゲーム。被害を最小限に抑え、復旧まで導こう。</p>
+        </div>
+      </div>
+      <div class="top-actions">
+        <button class="tool-btn" id="hintButton" type="button">? 遊び方</button>
+        <button class="tool-btn" id="printButton" type="button" disabled>□ レポート印刷</button>
+        <button class="tool-btn" id="restartButton" type="button">↻ リセット</button>
+      </div>
+    </header>
+
+    <section class="layout" aria-label="ランサムウェア感染体験ゲーム">
+      <div class="main-col">
+        <section class="panel timeline-panel" aria-label="インシデントの時系列">
+          <div class="clock">
+            <span>ゲーム経過時間</span>
+            <strong id="gameClock">09:05</strong>
+            <small id="phaseText">/ 10:30 初動対応の結果</small>
+          </div>
+          <div class="steps" id="timeline" style="--progress: 0%"></div>
+        </section>
+
+        <section class="panel incident" aria-label="現在の重要事象">
+          <div class="visual" aria-hidden="true">
+            <img class="scene-image" id="sceneImage" alt="" />
+            <div class="laptop">
+              <div class="ransom-note">
+                <strong id="screenAlert">不審な添付ファイルを検知</strong>
+                <span>この画面は教育用の演出です。実際の攻撃手順や不正な操作は含みません。</span>
+                <div class="countdown" id="screenTime">--:--:--</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="scene">
+            <div class="scene-copy">
+              <div class="tag" id="severityTag">注意 09:05</div>
+              <h2 id="sceneTitle"></h2>
+              <p id="sceneBody"></p>
+              <div class="prompt">あなたはどのように対応しますか？</div>
+            </div>
+            <div class="feedback hidden" id="feedback" aria-live="polite"></div>
+            <div class="choices" id="choices"></div>
+          </div>
+        </section>
+
+        <section class="panel review-panel hidden" id="reviewPanel" aria-label="結果と学びの振り返り">
+          <div class="panel-title">結果・学びの振り返り</div>
+          <div class="review-grid">
+            <article class="review-card" style="--card-color: var(--green)">
+              <strong>● 良かった判断</strong>
+              <ul id="goodReview"></ul>
+            </article>
+            <article class="review-card" style="--card-color: var(--amber)">
+              <strong>▲ 改善すべき判断</strong>
+              <ul id="improveReview"></ul>
+            </article>
+            <article class="review-card" style="--card-color: var(--blue)">
+              <strong>◆ 現実の組織での備え</strong>
+              <ul>
+                <li>定期バックアップと復元テスト</li>
+                <li>インシデント対応手順の整備と訓練</li>
+                <li>従業員への継続的なセキュリティ教育</li>
+              </ul>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel report-panel hidden" id="reportPanel" aria-label="選択履歴レポート">
+          <div class="panel-title">選択履歴レポート</div>
+          <div class="report-list" id="choiceReport"></div>
+        </section>
+      </div>
+
+      <aside class="side-col">
+        <section class="panel score-panel" aria-label="現在のスコア">
+          <div class="panel-title">あなたの現在のスコア</div>
+          <div class="meter-list">
+            <div class="meter-row" style="--meter-color: var(--blue)">
+              <div class="meter-label">▾ セキュリティ</div>
+              <div class="bar"><i id="securityBar"></i></div>
+              <div class="meter-value"><span id="security">70</span>/100</div>
+            </div>
+            <div class="meter-row" style="--meter-color: var(--green)">
+              <div class="meter-label">⌁ 業務継続性</div>
+              <div class="bar"><i id="businessBar"></i></div>
+              <div class="meter-value"><span id="business">70</span>/100</div>
+            </div>
+            <div class="meter-row" style="--meter-color: var(--violet)">
+              <div class="meter-label">◇ 信頼</div>
+              <div class="bar"><i id="trustBar"></i></div>
+              <div class="meter-value"><span id="trust">70</span>/100</div>
+            </div>
+          </div>
+          <p class="hint" id="hintText">1つの対応だけでなく、状況に応じた優先順位が結果を左右します。</p>
+          <div class="mode-group" aria-label="難易度">
+            <div class="panel-title">難易度</div>
+            <div class="mode-options">
+              <button class="mode-btn active" type="button" data-mode="beginner">初級</button>
+              <button class="mode-btn" type="button" data-mode="standard">標準</button>
+              <button class="mode-btn" type="button" data-mode="advanced">上級</button>
+            </div>
+            <p class="mode-note" id="modeNote">初級: 初期スコアが高く、判断ミスの影響がやや小さくなります。</p>
+          </div>
+        </section>
+
+        <section class="panel dept-panel" aria-label="部門への影響状況">
+          <div class="panel-title">部門への影響状況</div>
+          <div class="depts" id="departments"></div>
+        </section>
+
+        <section class="panel log-panel" aria-label="インシデントログ">
+          <div class="panel-title">インシデントログ</div>
+          <div class="logs" id="log"></div>
+        </section>
+
+        <section class="panel final-panel hidden" id="finalPanel" aria-label="最終スコア">
+          <div>
+            <p class="final-title" id="finalTitle">最終スコア</p>
+            <div class="meter-list">
+              <div class="meter-row" style="--meter-color: var(--blue)">
+                <div class="meter-label">セキュリティ</div>
+                <div class="bar"><i id="finalSecurityBar"></i></div>
+                <div class="meter-value"><span id="finalSecurity">0</span>/100</div>
+              </div>
+              <div class="meter-row" style="--meter-color: var(--green)">
+                <div class="meter-label">継続性</div>
+                <div class="bar"><i id="finalBusinessBar"></i></div>
+                <div class="meter-value"><span id="finalBusiness">0</span>/100</div>
+              </div>
+              <div class="meter-row" style="--meter-color: var(--violet)">
+                <div class="meter-label">信頼</div>
+                <div class="bar"><i id="finalTrustBar"></i></div>
+                <div class="meter-value"><span id="finalTrust">0</span>/100</div>
+              </div>
+            </div>
+            <p class="final-copy" id="finalCopy"></p>
+          </div>
+          <div class="grade" id="grade">B</div>
+        </section>
+      </aside>
+    </section>
+
+    <p class="footer-note">このゲームは教育・学習目的のシミュレーションです。実際の攻撃手法を助長する内容は含みません。</p>
+  </main>
+
+  <script>
+    const timelineEvents = [
+      {
+        time: "09:05",
+        title: "不審メール",
+        short: "経理担当者が請求書メールを受信",
+        severity: "注意",
+        alert: "不審な添付ファイルを検知",
+        countdown: "--:--:--",
+        body: "経理担当者に、取引先を装った請求書メールが届きました。送信元の表記には見覚えがありますが、添付ファイルの形式と文面に違和感があります。",
+        choices: [
+          {
+            label: "送信元へ別経路で確認する",
+            detail: "メールには返信せず、電話や社内の連絡先台帳で確認する。",
+            color: "#55b7ff",
+            delta: { security: 12, business: -2, trust: 6, containment: 7, evidence: 2 },
+            dept: { it: -2, finance: -4, sales: 0, pr: 0 },
+            log: ["添付ファイルを開かず、送信元確認を開始しました。", "メールヘッダーと添付ファイル名を情シスへ共有しました。"],
+            good: "不審メールを別経路で確認し、初期侵入の可能性を下げた。",
+            improve: ""
+          },
+          {
+            label: "添付を開いて内容を確認する",
+            detail: "急ぎの請求に見えるため、そのままファイルを開く。",
+            color: "#ff5b5b",
+            delta: { security: -24, business: -10, trust: -8, containment: -8 },
+            dept: { it: 10, finance: 22, sales: 4, pr: 2 },
+            log: ["添付ファイルを開いた直後に不審な処理が検知されました。", "経理端末から通常より多いファイルアクセスが発生しています。"],
+            good: "",
+            improve: "急ぎの依頼でも添付ファイルを開く前に確認する必要があった。"
+          },
+          {
+            label: "SOC/情シスに判定を依頼する",
+            detail: "メールを保全し、チケット化して専門部署へ連携する。",
+            color: "#48d5c7",
+            delta: { security: 10, business: -1, trust: 4, containment: 6, evidence: 6 },
+            dept: { it: 4, finance: -2, sales: 0, pr: 0 },
+            log: ["メール原本を保全し、情シスへ判定依頼しました。", "類似メールの受信有無を社内で確認しています。"],
+            good: "メール原本を保全し、組織的な判定に回した。",
+            improve: ""
+          },
+          {
+            label: "部署内だけで注意喚起する",
+            detail: "経理内で共有し、正式な報告は後回しにする。",
+            color: "#f7bf3c",
+            delta: { security: -5, business: 1, trust: -2, communication: -4 },
+            dept: { it: 0, finance: 6, sales: 2, pr: 0 },
+            log: ["経理内で注意喚起しましたが、全社的な検知は遅れています。"],
+            good: "",
+            improve: "部署内共有だけで止めず、情シスやSOCへ早く連携したい。"
+          }
+        ]
+      },
+      {
+        time: "09:18",
+        title: "共有フォルダ暗号化",
+        short: "ファイルが暗号化され、身代金メッセージを確認",
+        severity: "重要事象",
+        alert: "ファイルが暗号化されました",
+        countdown: "71:59:23",
+        body: "経理部の共有フォルダ内の複数ファイルが暗号化され、身代金要求のメッセージが表示されています。社内の他PCでも同様の症状が報告されています。",
+        choices: [
+          {
+            label: "端末をネットワークから隔離する",
+            detail: "LANケーブルを抜き、Wi-Fiを切断して横展開を抑える。",
+            color: "#55b7ff",
+            delta: { security: 17, business: -7, trust: 5, containment: 16 },
+            dept: { it: 7, finance: -6, sales: -1, pr: 0 },
+            log: ["感染端末のネットワーク隔離を開始しました。", "共有フォルダのアクセス権を一時的に制限しました。"],
+            good: "端末隔離により横展開を抑止した。",
+            improve: ""
+          },
+          {
+            label: "情報システム部門へ緊急報告する",
+            detail: "時刻、端末名、表示内容、影響範囲をまとめて報告する。",
+            color: "#48d5c7",
+            delta: { security: 10, business: -3, trust: 7, communication: 12, evidence: 5 },
+            dept: { it: 8, finance: -3, sales: 0, pr: 0 },
+            log: ["情シスが緊急対応チャンネルを開設しました。", "感染端末と影響ファイルの一覧化を開始しました。"],
+            good: "状況を速やかに集約し、対応チームへつないだ。",
+            improve: ""
+          },
+          {
+            label: "バックアップの有無を確認する",
+            detail: "復旧可能性を確認するため、世代管理と復元テスト状況を見る。",
+            color: "#f7bf3c",
+            delta: { security: 7, business: 8, trust: 3, recovery: 13 },
+            dept: { it: 5, finance: -1, sales: -1, pr: 0 },
+            log: ["バックアップ世代と復元ポイントを確認しました。", "直近バックアップの一部は隔離された保管先にあります。"],
+            good: "復旧可能性を早期に確認した。",
+            improve: ""
+          },
+          {
+            label: "証拠を保全し、ログを確認する",
+            detail: "脅迫文、時刻、ログ、端末情報を保存して原因調査に備える。",
+            color: "#b985ff",
+            delta: { security: 8, business: -4, trust: 6, evidence: 13 },
+            dept: { it: 4, finance: -3, sales: 0, pr: 0 },
+            log: ["脅迫文のスクリーンショットと端末ログを保全しました。", "原因調査に必要な証跡を破壊しないよう注意しています。"],
+            good: "証拠保全により原因調査と再発防止につなげた。",
+            improve: ""
+          }
+        ]
+      },
+      {
+        time: "09:40",
+        title: "顧客から問い合わせ",
+        short: "取引先からシステム停止の連絡が入る",
+        severity: "外部連絡",
+        alert: "問い合わせが増加しています",
+        countdown: "71:37:10",
+        body: "一部の取引先から、納品データへアクセスできないという問い合わせが入りました。社外へ説明する内容が揃っておらず、社内でも情報が錯綜しています。",
+        choices: [
+          {
+            label: "広報・法務・経営へ連携する",
+            detail: "事実確認中であること、連絡窓口、更新予定を整理する。",
+            color: "#b985ff",
+            delta: { security: 3, business: -4, trust: 13, communication: 15 },
+            dept: { it: 2, finance: -1, sales: -3, pr: 8 },
+            log: ["外部向けの一次回答文を作成しました。", "問い合わせ窓口と更新時刻を統一しました。"],
+            good: "広報・法務・経営を巻き込み、説明の一貫性を保った。",
+            improve: ""
+          },
+          {
+            label: "営業に個別回答を任せる",
+            detail: "顧客ごとに急いで回答してもらい、正式発表は後回しにする。",
+            color: "#f7bf3c",
+            delta: { security: -2, business: 2, trust: -12, communication: -10 },
+            dept: { it: 0, finance: 0, sales: 15, pr: 12 },
+            log: ["顧客ごとに異なる説明が伝わり始めています。", "問い合わせの記録が分散しています。"],
+            good: "",
+            improve: "外部説明は窓口と表現を統一し、誤情報を避ける必要があった。"
+          },
+          {
+            label: "影響範囲を確認して更新予定を出す",
+            detail: "分かっている事実と未確認事項を分け、次回連絡時刻を決める。",
+            color: "#55b7ff",
+            delta: { security: 5, business: 2, trust: 9, communication: 10, evidence: 3 },
+            dept: { it: 5, finance: 0, sales: -1, pr: 4 },
+            log: ["影響範囲と未確認事項を分離して整理しました。", "30分後に状況を更新する方針を決めました。"],
+            good: "確認済み事実と未確認事項を分けて説明した。",
+            improve: ""
+          },
+          {
+            label: "沈黙して復旧を優先する",
+            detail: "復旧できれば説明は不要と考え、社外連絡を止める。",
+            color: "#ff5b5b",
+            delta: { security: 0, business: 4, trust: -18, communication: -15 },
+            dept: { it: 4, finance: 1, sales: 14, pr: 18 },
+            log: ["取引先から追加問い合わせが増えています。", "社外説明の遅れが信頼低下につながっています。"],
+            good: "",
+            improve: "復旧作業と並行して、必要な範囲へ事実ベースで連絡したい。"
+          }
+        ]
+      },
+      {
+        time: "10:05",
+        title: "業務への影響拡大",
+        short: "複数業務が一時停止し、復旧判断が必要",
+        severity: "復旧判断",
+        alert: "復旧方針を選択してください",
+        countdown: "71:12:34",
+        body: "基幹業務の一部が停止し、復旧の優先順位を決める必要があります。バックアップは存在しますが、復元前の安全確認を省くと再感染の恐れがあります。",
+        choices: [
+          {
+            label: "隔離環境で復元テストする",
+            detail: "バックアップを直接戻さず、検証環境で整合性と安全性を確認する。",
+            color: "#55b7ff",
+            delta: { security: 13, business: 7, trust: 7, recovery: 14, containment: 4 },
+            dept: { it: 8, finance: -2, sales: -2, pr: 0 },
+            log: ["隔離環境で復元テストを開始しました。", "復元手順の安全性を確認しています。"],
+            good: "隔離環境で復元テストを行い、再感染リスクを下げた。",
+            improve: ""
+          },
+          {
+            label: "未検証のまま本番へ復元する",
+            detail: "停止時間を短くするため、最短で本番環境へ戻す。",
+            color: "#ff5b5b",
+            delta: { security: -17, business: 7, trust: -9, recovery: -6 },
+            dept: { it: 16, finance: 8, sales: 2, pr: 3 },
+            log: ["復旧は早まりましたが、安全確認が不足しています。", "再発監視のアラートが増加しています。"],
+            good: "",
+            improve: "復旧を急ぐ場合でも、隔離環境での検証を挟むべきだった。"
+          },
+          {
+            label: "重要業務から段階復旧する",
+            detail: "優先順位を決め、限定した範囲からサービスを戻す。",
+            color: "#48d5c7",
+            delta: { security: 7, business: 12, trust: 7, recovery: 10, communication: 5 },
+            dept: { it: 5, finance: -3, sales: -4, pr: 0 },
+            log: ["重要業務を優先した段階復旧計画を作成しました。", "各部署に復旧予定を共有しました。"],
+            good: "重要業務を優先し、段階的に復旧する計画を立てた。",
+            improve: ""
+          },
+          {
+            label: "身代金の支払いを検討する",
+            detail: "復旧保証がないことを理解せず、支払いで解決しようとする。",
+            color: "#f7bf3c",
+            delta: { security: -11, business: -8, trust: -19, recovery: -8 },
+            dept: { it: 6, finance: 12, sales: 4, pr: 12 },
+            log: ["支払いは復旧を保証せず、追加要求のリスクもあります。", "経営判断として法務・関係機関との連携が必要です。"],
+            good: "",
+            improve: "支払いは復旧保証がなく、法務・経営・関係機関と慎重に判断すべき。"
+          }
+        ]
+      },
+      {
+        time: "10:30",
+        title: "初動対応の結果",
+        short: "判断の成果と次の備えを確認",
+        severity: "最終判断",
+        alert: "最終判断を選択してください",
+        countdown: "70:47:02",
+        body: "初動対応の山場を越えました。ここからは原因調査、再発防止、関係者への報告、訓練への反映が重要です。最後に、組織として何を残しますか。",
+        choices: [
+          {
+            label: "対応記録を残し、再発防止へつなげる",
+            detail: "時系列、判断理由、証跡、改善点をまとめて次の訓練に反映する。",
+            color: "#55b7ff",
+            delta: { security: 11, business: 4, trust: 10, evidence: 9, communication: 6 },
+            dept: { it: -4, finance: -5, sales: -2, pr: -4 },
+            log: ["インシデントの時系列と判断理由を整理しました。", "再発防止策と教育計画に反映しました。"],
+            good: "対応記録を残し、再発防止と訓練に接続した。",
+            improve: ""
+          },
+          {
+            label: "復旧できたので記録は省略する",
+            detail: "現場の負荷を下げるため、詳細な振り返りを行わない。",
+            color: "#ff5b5b",
+            delta: { security: -12, business: 2, trust: -8, evidence: -12 },
+            dept: { it: 4, finance: 0, sales: 0, pr: 2 },
+            log: ["復旧後の記録が不足し、原因分析が難しくなっています。"],
+            good: "",
+            improve: "復旧後こそ記録と振り返りを残し、再発防止へつなげたい。"
+          },
+          {
+            label: "バックアップ設計を見直す",
+            detail: "世代管理、オフライン保管、復元テストの頻度を改善する。",
+            color: "#48d5c7",
+            delta: { security: 9, business: 8, trust: 6, recovery: 10 },
+            dept: { it: -3, finance: -5, sales: -2, pr: 0 },
+            log: ["バックアップ設計と復元テストの見直しを決めました。"],
+            good: "バックアップ設計と復元テストの改善に踏み込んだ。",
+            improve: ""
+          },
+          {
+            label: "従業員向け訓練を実施する",
+            detail: "メール対応、報告経路、初動判断を短い訓練に落とし込む。",
+            color: "#b985ff",
+            delta: { security: 8, business: 3, trust: 8, communication: 8 },
+            dept: { it: -2, finance: -4, sales: -3, pr: -2 },
+            log: ["従業員向けの初動対応訓練を計画しました。"],
+            good: "従業員教育により、次回の初動判断を強化した。",
+            improve: ""
+          }
+        ]
+      }
+    ];
+
+    const modes = {
+      beginner: {
+        label: "初級",
+        note: "初級: 初期スコアが高く、判断ミスの影響がやや小さくなります。",
+        start: 76,
+        deltaScale: .82,
+        deptScale: .82,
+        hint: "初級モード: 選択肢の説明を読み、隔離・報告・証拠保全・復旧検証を順に考えましょう。"
+      },
+      standard: {
+        label: "標準",
+        note: "標準: 通常の研修向け。良い判断も悪い判断もそのまま結果に反映されます。",
+        start: 70,
+        deltaScale: 1,
+        deptScale: 1,
+        hint: "標準モード: 状況に応じた優先順位が結果を左右します。"
+      },
+      advanced: {
+        label: "上級",
+        note: "上級: 初期スコアが低く、判断ミスの影響が大きくなります。",
+        start: 62,
+        deltaScale: 1.22,
+        deptScale: 1.18,
+        hint: "上級モード: 業務継続だけでなく、証拠保全と外部説明の遅れにも注意してください。"
+      }
+    };
+
+    const state = {
+      idx: 0,
+      mode: "beginner",
+      finished: false,
+      security: modes.beginner.start,
+      business: modes.beginner.start,
+      trust: modes.beginner.start,
+      containment: 0,
+      evidence: 0,
+      recovery: 0,
+      communication: 0,
+      logs: [
+        { time: "09:03", text: "通常より多い添付ファイル付きメールを検知しました。", type: "info" }
+      ],
+      history: [],
+      lastFeedback: null,
+      lastDelta: {},
+      branchTrail: [],
+      branchSeen: new Set(),
+      changedMeters: new Set(),
+      changedDepts: new Set(),
+      good: [],
+      improve: [],
+      depts: {
+        it: { label: "情シス", icon: "▣", impact: 28 },
+        finance: { label: "経理", icon: "▥", impact: 35 },
+        sales: { label: "営業", icon: "●●", impact: 18 },
+        pr: { label: "広報", icon: "◀", impact: 8 }
+      }
+    };
+
+    const clamp = (value) => Math.max(0, Math.min(100, value));
+    const impactClamp = (value) => Math.max(0, Math.min(100, value));
+    const byId = (id) => document.getElementById(id);
+    const escapeHtml = (value) => String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+    function svgData(svg) {
+      return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+    }
+
+    function artFor(index, grade = "") {
+      const common = `
+        <defs>
+          <linearGradient id="panel" x1="0" x2="1" y1="0" y2="1">
+            <stop stop-color="#112b4f"/><stop offset="1" stop-color="#07101e"/>
+          </linearGradient>
+          <linearGradient id="hot" x1="0" x2="1">
+            <stop stop-color="#ff6666"/><stop offset="1" stop-color="#f7bf3c"/>
+          </linearGradient>
+          <filter id="glow"><feGaussianBlur stdDeviation="5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+        </defs>
+        <rect width="680" height="360" rx="28" fill="rgba(4,12,25,.18)"/>
+        <g opacity=".18" stroke="#6aaeff"><path d="M20 70h640M20 140h640M20 210h640M20 280h640M120 20v320M240 20v320M360 20v320M480 20v320M600 20v320"/></g>
+      `;
+      const scenes = [
+        `${common}
+        <g transform="translate(78 72)">
+          <rect x="0" y="38" width="230" height="150" rx="18" fill="url(#panel)" stroke="#55b7ff" stroke-width="3"/>
+          <path d="M18 58l97 73 97-73" fill="none" stroke="#8bd2ff" stroke-width="6" stroke-linecap="round"/>
+          <path d="M28 172l65-58M202 172l-65-58" fill="none" stroke="#2d75ba" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="204" cy="42" r="24" fill="#ff5b5b" filter="url(#glow)"/>
+          <text x="204" y="51" text-anchor="middle" font-family="Segoe UI, Arial" font-size="26" fill="white" font-weight="900">!</text>
+        </g>
+        <g transform="translate(366 72)">
+          <rect x="0" y="0" width="210" height="214" rx="16" fill="#0a1d38" stroke="#365f96" stroke-width="3"/>
+          <rect x="24" y="34" width="162" height="18" rx="9" fill="#55b7ff"/>
+          <rect x="24" y="74" width="128" height="12" rx="6" fill="#9fb5d1" opacity=".7"/>
+          <rect x="24" y="104" width="148" height="12" rx="6" fill="#9fb5d1" opacity=".45"/>
+          <rect x="24" y="144" width="96" height="34" rx="8" fill="#ff5b5b" opacity=".85"/>
+          <text x="72" y="167" text-anchor="middle" font-family="Segoe UI, Arial" font-size="16" fill="white" font-weight="800">CHECK</text>
+        </g>`,
+        `${common}
+        <g transform="translate(88 54)">
+          <rect x="38" y="46" width="378" height="206" rx="18" fill="#140b14" stroke="#ff5b5b" stroke-width="4"/>
+          <g opacity=".28" stroke="#ff5b5b"><path d="M38 96h378M38 146h378M38 196h378M100 46v206M170 46v206M240 46v206M310 46v206M380 46v206"/></g>
+          <path d="M140 130h174" stroke="#ff7878" stroke-width="12" stroke-linecap="round"/>
+          <path d="M166 166h122" stroke="#f7bf3c" stroke-width="8" stroke-linecap="round"/>
+          <rect x="160" y="78" width="134" height="54" rx="12" fill="#ff5b5b" opacity=".95"/>
+          <path d="M194 78V54a33 33 0 0166 0v24" fill="none" stroke="#ffd6d6" stroke-width="10"/>
+          <circle cx="227" cy="106" r="8" fill="#260813"/>
+          <path d="M227 114v16" stroke="#260813" stroke-width="6" stroke-linecap="round"/>
+          <path d="M0 278h500" stroke="#06101f" stroke-width="24" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(462 86)" filter="url(#glow)"><path d="M54 0l54 94H0z" fill="#ff5b5b"/><text x="54" y="73" text-anchor="middle" font-family="Segoe UI, Arial" font-size="48" fill="white" font-weight="900">!</text></g>`,
+        `${common}
+        <g transform="translate(70 72)">
+          <rect x="0" y="28" width="214" height="164" rx="18" fill="url(#panel)" stroke="#55b7ff" stroke-width="3"/>
+          <circle cx="68" cy="82" r="34" fill="#b985ff"/>
+          <path d="M34 154c15-34 53-42 84-20 14 10 24 25 29 44" fill="none" stroke="#d9c0ff" stroke-width="10" stroke-linecap="round"/>
+          <path d="M134 72h54M134 108h38M134 144h62" stroke="#9fb5d1" stroke-width="10" stroke-linecap="round"/>
+        </g>
+        <g transform="translate(334 82)">
+          <path d="M0 45h164" stroke="#48d5c7" stroke-width="8" stroke-linecap="round"/>
+          <path d="M124 18l40 27-40 27" fill="none" stroke="#48d5c7" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="198" y="0" width="136" height="92" rx="16" fill="#10264a" stroke="#48d5c7" stroke-width="3"/>
+          <path d="M226 30h80M226 58h52" stroke="#b9fff7" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="318" cy="18" r="18" fill="#f7bf3c" filter="url(#glow)"/>
+        </g>
+        <g transform="translate(210 230)">
+          <rect x="0" y="0" width="260" height="52" rx="26" fill="#0a1d38" stroke="#365f96"/>
+          <path d="M34 27h190" stroke="#55b7ff" stroke-width="8" stroke-linecap="round"/>
+        </g>`,
+        `${common}
+        <g transform="translate(84 62)">
+          <rect x="0" y="42" width="230" height="154" rx="16" fill="#0a1d38" stroke="#55b7ff" stroke-width="3"/>
+          <rect x="26" y="74" width="178" height="24" rx="8" fill="#1d4675"/>
+          <rect x="26" y="118" width="132" height="18" rx="8" fill="#1d4675"/>
+          <path d="M78 196v42h78v-42" fill="none" stroke="#55b7ff" stroke-width="10" stroke-linecap="round"/>
+          <path d="M292 134h86" stroke="#f7bf3c" stroke-width="10" stroke-linecap="round"/>
+          <path d="M346 98l48 36-48 36" fill="none" stroke="#f7bf3c" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="420" y="34" width="150" height="204" rx="18" fill="#0a1d38" stroke="#9cea64" stroke-width="3"/>
+          <path d="M454 88h82M454 124h58M454 160h70" stroke="#d7ffc6" stroke-width="10" stroke-linecap="round"/>
+          <circle cx="496" cy="222" r="26" fill="#9cea64" filter="url(#glow)"/>
+          <path d="M483 222l10 10 22-28" fill="none" stroke="#0b1d14" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>`,
+        `${common}
+        <g transform="translate(86 58)">
+          <rect x="0" y="0" width="508" height="242" rx="22" fill="#0a1d38" stroke="#55b7ff" stroke-width="3"/>
+          <path d="M58 172c24-58 78-98 142-98 72 0 132 51 146 119" fill="none" stroke="#365f96" stroke-width="30" stroke-linecap="round"/>
+          <path d="M58 172c24-58 78-98 142-98 38 0 74 14 101 38" fill="none" stroke="url(#hot)" stroke-width="30" stroke-linecap="round"/>
+          <text x="200" y="178" text-anchor="middle" font-family="Segoe UI, Arial" font-size="62" fill="white" font-weight="900">${grade || "B"}</text>
+          <g transform="translate(372 64)">
+            <circle cx="40" cy="40" r="40" fill="#9cea64" opacity=".95"/>
+            <path d="M22 42l14 14 28-36" fill="none" stroke="#102014" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M0 122h112M0 154h82" stroke="#9fb5d1" stroke-width="10" stroke-linecap="round"/>
+          </g>
+        </g>`
+      ];
+      return svgData(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 360">${scenes[index] || scenes[4]}</svg>`);
+    }
+
+    function setBar(id, value) {
+      byId(id).style.setProperty("--value", `${value}%`);
+    }
+
+    function pulseElement(element) {
+      element.classList.remove("changed");
+      void element.offsetWidth;
+      element.classList.add("changed");
+    }
+
+    function renderScores() {
+      ["security", "business", "trust"].forEach((key) => {
+        byId(key).textContent = state[key];
+        setBar(`${key}Bar`, state[key]);
+        const row = byId(`${key}Bar`).closest(".meter-row");
+        if (state.changedMeters.has(key) && row) pulseElement(row);
+      });
+      state.changedMeters.clear();
+    }
+
+    function renderModeControls() {
+      [...document.querySelectorAll("[data-mode]")].forEach((button) => {
+        const active = button.dataset.mode === state.mode;
+        button.classList.toggle("active", active);
+        button.disabled = state.idx > 0 || state.finished;
+        button.setAttribute("aria-pressed", String(active));
+      });
+      byId("modeNote").textContent = modes[state.mode].note;
+    }
+
+    function branchVariant(index) {
+      if (index === 1) {
+        if (state.containment < 0 || state.security < 58) return {
+          key: "rapid-spread",
+          branch: "感染拡大ルート",
+          title: "共有フォルダ暗号化が拡大",
+          short: "添付実行後、複数端末で暗号化を確認",
+          severity: "緊急",
+          alert: "暗号化が拡大しています",
+          countdown: "71:42:08",
+          body: "添付ファイルの実行後、経理端末から共有フォルダへの大量アクセスが発生しました。複数部署でファイル名の変更と身代金メッセージが確認され、横展開を止める判断が急務です。",
+          log: "添付実行を起点に、暗号化の影響が複数部署へ広がりました。"
+        };
+        if (state.containment >= 6 && state.evidence >= 4) return {
+          key: "early-contained",
+          branch: "早期検知ルート",
+          title: "暗号化の兆候を早期検知",
+          short: "被害拡大前に不審アクセスを検出",
+          severity: "重要",
+          alert: "暗号化の兆候を検知",
+          countdown: "72:10:35",
+          body: "メールを開かずに保全・連携したため、暗号化は一部の試行にとどまっています。ただし類似メールが他部署にも届いており、隔離・報告・証拠保全を組み合わせた初動が必要です。",
+          log: "早期連携により、暗号化の兆候を被害拡大前に検知しました。"
+        };
+      }
+
+      if (index === 2) {
+        if (state.communication < 0 || state.trust < 58) return {
+          key: "rumor-risk",
+          branch: "説明混乱ルート",
+          title: "顧客問い合わせが急増",
+          short: "回答のばらつきで不安が拡大",
+          severity: "外部連絡・高",
+          alert: "問い合わせが急増しています",
+          countdown: "71:19:44",
+          body: "社内連携が遅れた影響で、営業・サポート・広報に異なる情報が届いています。取引先からの問い合わせが増え、事実確認中の内容と未確認情報を切り分ける必要があります。",
+          log: "説明のばらつきにより、顧客問い合わせが増えています。"
+        };
+        if (state.communication >= 8 && state.trust >= 75) return {
+          key: "message-aligned",
+          branch: "説明統制ルート",
+          title: "顧客説明の準備",
+          short: "窓口と一次回答を整理",
+          severity: "外部連絡",
+          alert: "一次回答を準備中",
+          countdown: "71:48:12",
+          body: "情シスと関係部署の情報が整理され、外部向けの一次回答を準備できる状態です。ここからは説明の一貫性と更新予定の明確化が信頼維持の鍵になります。",
+          log: "早い段階で情報が集約され、外部説明の準備が整いつつあります。"
+        };
+      }
+
+      if (index === 3) {
+        if (state.containment < 10 || state.security < 55) return {
+          key: "operations-hit",
+          branch: "業務停止拡大ルート",
+          title: "業務停止が拡大",
+          short: "封じ込め不足で復旧判断が難化",
+          severity: "復旧判断・高",
+          alert: "業務停止が拡大しています",
+          countdown: "70:58:20",
+          body: "封じ込めが遅れたため、復旧対象の安全性が不明なまま業務停止が広がっています。急いで戻すほど再感染の危険が増すため、復元前の検証と優先順位付けが重要です。",
+          log: "封じ込め不足により、復旧対象の安全確認が難しくなっています。"
+        };
+        if (state.recovery >= 13 && state.evidence >= 10) return {
+          key: "recovery-ready",
+          branch: "復旧準備ルート",
+          title: "復旧計画の具体化",
+          short: "バックアップと証跡を確認済み",
+          severity: "復旧判断",
+          alert: "復旧計画を選択してください",
+          countdown: "71:24:48",
+          body: "バックアップ世代と証跡が整理され、復旧方針を具体化できる段階です。重要業務の再開を急ぎつつ、検証不足による再感染を避ける必要があります。",
+          log: "バックアップと証跡が揃い、復旧計画を具体化できる状態です。"
+        };
+      }
+
+      if (index === 4) {
+        if (state.security >= 80 && state.trust >= 80 && state.recovery >= 20) return {
+          key: "controlled-ending",
+          branch: "被害抑制ルート",
+          title: "初動対応の成果確認",
+          short: "被害を抑えて再発防止へ移行",
+          severity: "最終判断",
+          alert: "成果を記録してください",
+          countdown: "70:55:30",
+          body: "封じ込め、外部説明、復旧準備が概ね機能し、被害は限定的に抑えられました。最後に、対応記録や訓練への反映をどう残すかを決めます。",
+          log: "被害を抑えた状態で、再発防止の検討へ移行しました。"
+        };
+        if (state.security < 55 || state.trust < 50) return {
+          key: "hard-lesson-ending",
+          branch: "教訓整理ルート",
+          title: "混乱後の立て直し",
+          short: "被害と信頼低下を踏まえて改善へ",
+          severity: "最終判断・要改善",
+          alert: "教訓を整理してください",
+          countdown: "70:33:12",
+          body: "初動の遅れや説明不足により、被害と混乱が大きくなりました。ここからは原因、判断理由、再発防止策を記録し、次の訓練につなげることが重要です。",
+          log: "初動の課題を踏まえ、教訓整理が必要な状態です。"
+        };
+      }
+
+      return null;
+    }
+
+    function eventFor(index) {
+      const base = timelineEvents[index];
+      const variant = branchVariant(index);
+      return variant ? { ...base, ...variant, choices: base.choices } : base;
+    }
+
+    function registerBranch(index) {
+      const variant = branchVariant(index);
+      if (!variant || state.branchSeen.has(variant.key)) return;
+      state.branchSeen.add(variant.key);
+      state.branchTrail.push({ time: timelineEvents[index].time, title: variant.branch, text: variant.log });
+      state.logs.push({ time: timelineEvents[index].time, text: variant.log, type: "info" });
+    }
+
+    function deptClass(impact) {
+      if (impact >= 70) return "danger";
+      if (impact >= 42) return "warn";
+      return "safe";
+    }
+
+    function deptText(impact) {
+      if (impact >= 75) return "重大な影響";
+      if (impact >= 45) return "対応中";
+      if (impact >= 18) return "軽度の影響";
+      return "影響なし";
+    }
+
+    function renderDepartments() {
+      byId("departments").innerHTML = Object.entries(state.depts).map(([key, dept]) => {
+        const color = dept.impact >= 70 ? "var(--red)" : dept.impact >= 42 ? "var(--amber)" : "var(--blue)";
+        return `
+          <article class="dept ${deptClass(dept.impact)} ${state.changedDepts.has(key) ? "changed" : ""}">
+            <strong>${dept.label}</strong>
+            <div class="icon">${dept.icon}</div>
+            <small>${deptText(dept.impact)}</small>
+            <div class="ring" style="--ring: ${dept.impact}%; --ring-color: ${color}"><span>${dept.impact}%</span></div>
+          </article>
+        `;
+      }).join("");
+      state.changedDepts.clear();
+    }
+
+    function renderTimeline() {
+      const progress = Math.min(100, Math.round((state.idx / (timelineEvents.length - 1)) * 100));
+      byId("timeline").style.setProperty("--progress", `${progress}%`);
+      byId("timeline").innerHTML = timelineEvents.map((baseEvent, index) => {
+        const event = index <= state.idx ? eventFor(index) : baseEvent;
+        const status = index < state.idx ? "done" : index === state.idx ? "current" : "";
+        return `
+          <article class="step ${status}">
+            <time>${event.time}</time>
+            <strong>${event.title}</strong>
+            <small>${event.short}</small>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function renderLog() {
+      byId("log").innerHTML = state.logs.slice(-8).map((entry) => `
+        <div class="log-line ${entry.type}">
+          <time>${entry.time}</time>
+          <span>${entry.text}</span>
+          <span class="log-icon">${entry.type === "good" ? "✓" : entry.type === "bad" ? "!" : entry.type === "warn" ? "▲" : "i"}</span>
+        </div>
+      `).join("");
+    }
+
+    function feedbackFor(choice, logType) {
+      if (choice.good) return {
+        title: "この判断のポイント",
+        text: choice.good,
+        color: choice.color
+      };
+      if (choice.improve) return {
+        title: logType === "bad" ? "注意したいポイント" : "改善の余地",
+        text: choice.improve,
+        color: logType === "bad" ? "var(--red)" : "var(--amber)"
+      };
+      return {
+        title: "判断のポイント",
+        text: "状況を確認し、次の対応で封じ込め・証拠保全・復旧をバランスよく進めましょう。",
+        color: choice.color
+      };
+    }
+
+    function renderFeedback() {
+      const feedback = byId("feedback");
+      if (!state.lastFeedback) {
+        feedback.classList.add("hidden");
+        feedback.innerHTML = "";
+        return;
+      }
+      feedback.classList.remove("hidden");
+      feedback.style.setProperty("--feedback-color", state.lastFeedback.color);
+      feedback.innerHTML = `
+        <strong>${escapeHtml(state.lastFeedback.title)}</strong>
+        <p>${escapeHtml(state.lastFeedback.text)}</p>
+      `;
+    }
+
+    function deltaText(delta) {
+      const labels = {
+        security: "セキュリティ",
+        business: "継続性",
+        trust: "信頼",
+        containment: "封じ込め",
+        evidence: "証拠",
+        recovery: "復旧",
+        communication: "連絡"
+      };
+      return Object.entries(labels)
+        .filter(([key]) => delta[key])
+        .map(([key, label]) => `<span class="delta-pill">${label} ${delta[key] > 0 ? "+" : ""}${delta[key]}</span>`)
+        .join("");
+    }
+
+    function scaledDelta(delta) {
+      const scale = modes[state.mode].deltaScale;
+      return Object.fromEntries(Object.entries(delta).map(([key, value]) => {
+        if (value === 0) return [key, 0];
+        return [key, Math.round(value * scale)];
+      }));
+    }
+
+    function scaledDeptDelta(delta) {
+      const scale = modes[state.mode].deptScale;
+      return Object.fromEntries(Object.entries(delta).map(([key, value]) => {
+        if (value === 0) return [key, 0];
+        return [key, Math.round(value * scale)];
+      }));
+    }
+
+    function renderChoiceReport() {
+      const branchItems = state.branchTrail.map((item) => `
+        <article class="report-item" style="--report-color: var(--cyan)">
+          <div class="report-head">
+            <span>分岐した展開</span>
+            <time>${escapeHtml(item.time)}</time>
+          </div>
+          <div class="report-choice">${escapeHtml(item.title)}</div>
+          <p class="report-note">${escapeHtml(item.text)}</p>
+        </article>
+      `);
+      const historyItems = state.history.map((item) => `
+        <article class="report-item" style="--report-color: ${item.color}">
+          <div class="report-head">
+            <span>${escapeHtml(item.title)} / ${escapeHtml(item.mode)}</span>
+            <time>${escapeHtml(item.time)}</time>
+          </div>
+          <div class="report-choice">${escapeHtml(item.choice)}</div>
+          <p class="report-note">${escapeHtml(item.note)}</p>
+          <div class="report-delta">${deltaText(item.delta)}</div>
+        </article>
+      `);
+      byId("choiceReport").innerHTML = [...branchItems, ...historyItems].join("");
+    }
+
+    function renderScene() {
+      const event = eventFor(state.idx);
+      byId("gameClock").textContent = event.time;
+      byId("phaseText").textContent = `/ ${timelineEvents[timelineEvents.length - 1].time} 初動対応の結果`;
+      byId("screenAlert").textContent = event.alert;
+      byId("screenTime").textContent = event.countdown;
+      byId("sceneImage").src = artFor(state.idx);
+      byId("severityTag").textContent = `${event.severity} ${event.time}${event.branch ? ` / ${event.branch}` : ""}`;
+      byId("sceneTitle").textContent = event.title;
+      byId("sceneBody").textContent = event.body;
+      renderFeedback();
+
+      byId("choices").innerHTML = event.choices.map((choice, index) => `
+        <button class="choice" type="button" data-choice="${index}" style="--choice-color: ${choice.color}">
+          <span class="choice-index">${index + 1}</span>
+          <span>
+            <strong>${choice.label}</strong>
+            <span>${choice.detail}</span>
+          </span>
+        </button>
+      `).join("");
+
+      [...document.querySelectorAll("[data-choice]")].forEach((button) => {
+        button.addEventListener("click", () => choose(Number(button.dataset.choice)));
+      });
+    }
+
+    function setMode(mode) {
+      if (!modes[mode] || state.idx > 0 || state.finished) return;
+      state.mode = mode;
+      state.security = modes[mode].start;
+      state.business = modes[mode].start;
+      state.trust = modes[mode].start;
+      byId("hintText").textContent = modes[mode].hint;
+      renderAll();
+    }
+
+    function applyDelta(delta) {
+      ["security", "business", "trust", "containment", "evidence", "recovery", "communication"].forEach((key) => {
+        const before = state[key];
+        state[key] = clamp(state[key] + (delta[key] || 0));
+        if (["security", "business", "trust"].includes(key) && state[key] !== before) {
+          state.changedMeters.add(key);
+        }
+      });
+    }
+
+    function choose(choiceIndex) {
+      const event = eventFor(state.idx);
+      const choice = event.choices[choiceIndex];
+      const delta = scaledDelta(choice.delta);
+      const deptDelta = scaledDeptDelta(choice.dept);
+      applyDelta(delta);
+      Object.entries(deptDelta).forEach(([key, delta]) => {
+        const before = state.depts[key].impact;
+        state.depts[key].impact = impactClamp(state.depts[key].impact + delta);
+        if (state.depts[key].impact !== before) state.changedDepts.add(key);
+      });
+
+      const logType = delta.security < -8 || delta.trust < -10 ? "bad" : delta.business < -6 ? "warn" : "good";
+      choice.log.forEach((text) => state.logs.push({ time: event.time, text, type: logType }));
+      state.lastFeedback = feedbackFor(choice, logType);
+      state.lastDelta = delta;
+      state.history.push({
+        time: event.time,
+        title: event.title,
+        choice: choice.label,
+        note: state.lastFeedback.text,
+        color: state.lastFeedback.color,
+        mode: modes[state.mode].label,
+        delta
+      });
+      if (choice.good) state.good.push(choice.good);
+      if (choice.improve) state.improve.push(choice.improve);
+
+      state.idx += 1;
+      if (state.idx >= timelineEvents.length) {
+        finishGame();
+        return;
+      }
+      registerBranch(state.idx);
+      renderAll();
+    }
+
+    function gradeFor(score) {
+      if (score >= 88) return "S";
+      if (score >= 76) return "A";
+      if (score >= 62) return "B";
+      if (score >= 48) return "C";
+      return "D";
+    }
+
+    function endingCopy(score) {
+      if (score >= 82) return "早期封じ込めと復旧判断が機能し、被害をかなり抑えられました。記録と訓練に反映すれば、次の備えも強くなります。";
+      if (score >= 64) return "大きな混乱は抑えましたが、連絡・復旧・証拠保全のどこかに改善余地があります。次回は優先順位をさらに明確にしましょう。";
+      if (score >= 48) return "復旧まで進めたものの、初動の遅れや情報共有の不足が被害を広げました。事前準備と報告経路の見直しが必要です。";
+      return "被害が大きく広がりました。添付確認、端末隔離、バックアップ検証、外部説明を訓練として再設計しましょう。";
+    }
+
+    function finishGame() {
+      const score = Math.round((state.security + state.business + state.trust) / 3);
+      const grade = gradeFor(score);
+      state.finished = true;
+      byId("finalPanel").classList.remove("hidden");
+      byId("reviewPanel").classList.remove("hidden");
+      byId("reportPanel").classList.remove("hidden");
+      byId("printButton").disabled = false;
+      byId("finalTitle").textContent = `総合評価 ${score}/100`;
+      byId("grade").textContent = grade;
+      byId("finalCopy").textContent = endingCopy(score);
+
+      byId("finalSecurity").textContent = state.security;
+      byId("finalBusiness").textContent = state.business;
+      byId("finalTrust").textContent = state.trust;
+      setBar("finalSecurityBar", state.security);
+      setBar("finalBusinessBar", state.business);
+      setBar("finalTrustBar", state.trust);
+
+      byId("goodReview").innerHTML = (state.good.length ? state.good : ["被害状況を確認しながら、最後まで対応を進めた。"])
+        .slice(0, 4).map((text) => `<li>${text}</li>`).join("");
+      byId("improveReview").innerHTML = (state.improve.length ? state.improve : ["より高い評価を目指すなら、隔離・証拠保全・復旧検証をバランスよく選ぶ。"])
+        .slice(0, 4).map((text) => `<li>${text}</li>`).join("");
+      renderChoiceReport();
+
+      const finalEvent = eventFor(timelineEvents.length - 1);
+      byId("gameClock").textContent = finalEvent.time;
+      byId("phaseText").textContent = "/ 初動対応完了";
+      byId("screenAlert").textContent = `総合評価 ${grade}`;
+      byId("screenTime").textContent = `${score}/100`;
+      byId("sceneImage").src = artFor(4, grade);
+      byId("severityTag").textContent = `結果 ${finalEvent.time}`;
+      byId("sceneTitle").textContent = "初動対応の振り返り";
+      byId("sceneBody").textContent = endingCopy(score);
+      renderFeedback();
+      byId("choices").innerHTML = `<button class="choice" type="button" id="againButton" style="--choice-color: var(--blue)">
+        <span class="choice-index">↻</span>
+        <span><strong>もう一度プレイ</strong><span>別の判断を試して、結果の違いを確認する。</span></span>
+      </button>`;
+      byId("againButton").addEventListener("click", () => location.reload());
+      state.logs.push({ time: "10:30", text: `ゲーム終了。総合評価は ${grade}、スコアは ${score}/100 です。`, type: "info" });
+      renderScores();
+      renderDepartments();
+      renderTimeline();
+      renderLog();
+      renderModeControls();
+    }
+
+    function renderAll() {
+      renderScores();
+      renderDepartments();
+      renderTimeline();
+      renderLog();
+      renderScene();
+      renderModeControls();
+    }
+
+    byId("restartButton").addEventListener("click", () => location.reload());
+    byId("printButton").addEventListener("click", () => {
+      if (state.finished) window.print();
+    });
+    byId("hintButton").addEventListener("click", () => {
+      byId("hintText").textContent = `ヒント: ${modes[state.mode].hint}`;
+    });
+    [...document.querySelectorAll("[data-mode]")].forEach((button) => {
+      button.addEventListener("click", () => setMode(button.dataset.mode));
+    });
+    document.addEventListener("keydown", (event) => {
+      if (state.finished || event.altKey || event.ctrlKey || event.metaKey) return;
+      const choiceIndex = Number(event.key) - 1;
+      const eventChoices = eventFor(state.idx).choices;
+      if (choiceIndex >= 0 && choiceIndex < eventChoices.length) choose(choiceIndex);
+    });
+
+    renderAll();
+  </script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
