@@ -1,0 +1,845 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>プロンプト匿名化メーカー</title>
+  <style>
+    :root {
+      --bg: #f4f7f8;
+      --panel: #ffffff;
+      --panel-soft: #eef4f3;
+      --ink: #182225;
+      --muted: #627174;
+      --line: #d7e0df;
+      --accent: #0f8b8d;
+      --accent-dark: #0a6768;
+      --warn: #c2410c;
+      --danger: #b42318;
+      --safe: #13795b;
+      --shadow: 0 18px 50px rgba(21, 39, 45, 0.12);
+      font-family: "Segoe UI", "Yu Gothic UI", "Meiryo", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        linear-gradient(135deg, rgba(15, 139, 141, 0.12), transparent 32%),
+        linear-gradient(315deg, rgba(241, 181, 67, 0.16), transparent 28%),
+        var(--bg);
+      color: var(--ink);
+    }
+
+    button,
+    textarea,
+    input,
+    select {
+      font: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 36px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 22px;
+    }
+
+    .eyebrow {
+      margin: 0 0 8px;
+      color: var(--accent-dark);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(28px, 4vw, 46px);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+
+    .lead {
+      max-width: 760px;
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 16px;
+      line-height: 1.75;
+    }
+
+    .privacy-pill {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 13px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--safe);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .panel,
+    .side-panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      min-height: 62px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 15px 16px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(248, 251, 251, 0.9);
+    }
+
+    .panel-title {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      font-size: 15px;
+    }
+
+    .icon {
+      width: 28px;
+      height: 28px;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 7px;
+      background: var(--panel-soft);
+      color: var(--accent-dark);
+      font-weight: 800;
+    }
+
+    .sample-row,
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tool-btn {
+      min-height: 36px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 8px 11px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: var(--panel);
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 700;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .tool-btn:hover {
+      transform: translateY(-1px);
+      border-color: #9ab8b7;
+      background: #f7fbfb;
+    }
+
+    .tool-btn.primary {
+      border-color: var(--accent);
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .tool-btn.primary:hover {
+      background: var(--accent-dark);
+    }
+
+    .tool-btn.danger {
+      color: var(--danger);
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 420px;
+      display: block;
+      resize: vertical;
+      padding: 18px;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: var(--ink);
+      font-size: 15px;
+      line-height: 1.75;
+    }
+
+    textarea.output {
+      background: #fbfdfc;
+    }
+
+    .meter-wrap {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+      background: #fff;
+    }
+
+    .score-line {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .score-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .score-value {
+      font-size: 28px;
+      font-weight: 800;
+      line-height: 1;
+    }
+
+    .meter {
+      height: 10px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #e7eeee;
+    }
+
+    .meter-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: var(--safe);
+      transition: width 0.25s ease, background 0.25s ease;
+    }
+
+    .status {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.65;
+    }
+
+    .side-section {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .side-section:last-child {
+      border-bottom: 0;
+    }
+
+    .side-title {
+      margin: 0 0 10px;
+      font-size: 14px;
+    }
+
+    .chips,
+    .rule-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 30px;
+      padding: 6px 9px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #f8fbfb;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .chip.danger {
+      border-color: #f0b5ad;
+      background: #fff4f2;
+      color: var(--danger);
+    }
+
+    .chip.warn {
+      border-color: #efc59f;
+      background: #fff7ed;
+      color: var(--warn);
+    }
+
+    .chip.safe {
+      border-color: #a7d8c7;
+      background: #eefbf5;
+      color: var(--safe);
+    }
+
+    .rule-list {
+      display: grid;
+    }
+
+    .rule {
+      display: grid;
+      gap: 4px;
+      padding: 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+      font-size: 13px;
+    }
+
+    .rule strong {
+      overflow-wrap: anywhere;
+    }
+
+    .rule span {
+      color: var(--muted);
+      overflow-wrap: anywhere;
+    }
+
+    .tips {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.75;
+    }
+
+    .manual-input {
+      width: 100%;
+      min-height: 92px;
+      resize: vertical;
+      padding: 10px 11px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdfc;
+      color: var(--ink);
+      font-size: 13px;
+      line-height: 1.6;
+      outline: 0;
+    }
+
+    .manual-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(15, 139, 141, 0.12);
+    }
+
+    .hint {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .toast {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      max-width: min(360px, calc(100% - 40px));
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #142226;
+      color: #fff;
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(10px);
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 980px) {
+      .layout,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      textarea {
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .app {
+        width: min(100% - 20px, 1180px);
+        padding-top: 18px;
+      }
+
+      .topbar {
+        display: grid;
+      }
+
+      .privacy-pill {
+        width: fit-content;
+        white-space: normal;
+      }
+
+      .panel-head {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .tool-btn {
+        flex: 1 1 auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Local prompt sanitizer</p>
+        <h1>プロンプト匿名化メーカー</h1>
+        <p class="lead">AIに相談したい文章を貼ると、氏名・会社名・メール・電話番号・金額などをルールベースで匿名化します。処理はブラウザ内だけで完結します。</p>
+      </div>
+      <div class="privacy-pill"><span aria-hidden="true">□</span> 外部送信なし</div>
+    </header>
+
+    <section class="layout">
+      <div class="workspace">
+        <section class="panel" aria-label="元文章">
+          <div class="panel-head">
+            <h2 class="panel-title"><span class="icon">In</span> 元文章</h2>
+            <div class="sample-row">
+              <button class="tool-btn" type="button" data-sample="business">サンプル</button>
+              <button class="tool-btn danger" type="button" id="clearBtn">消去</button>
+            </div>
+          </div>
+          <textarea id="sourceText" spellcheck="false" placeholder="ここにAIへ入力したい文章を貼り付けます。例：山田太郎様からABC商事の新規案件について電話がありました。電話番号は090-1234-5678、見積金額は380万円です。"></textarea>
+        </section>
+
+        <section class="panel" aria-label="匿名化済みプロンプト">
+          <div class="panel-head">
+            <h2 class="panel-title"><span class="icon">Out</span> 匿名化済みプロンプト</h2>
+            <div class="action-row">
+              <button class="tool-btn primary" type="button" id="copyBtn">コピー</button>
+              <button class="tool-btn" type="button" id="copyRulesBtn">置換表</button>
+            </div>
+          </div>
+          <textarea id="outputText" class="output" spellcheck="false" readonly placeholder="匿名化後の文章がここに表示されます。"></textarea>
+        </section>
+      </div>
+
+      <aside class="side-panel" aria-label="分析結果">
+        <div class="meter-wrap">
+          <div class="score-line">
+            <span class="score-label">入力リスク</span>
+            <span class="score-value" id="riskScore">0</span>
+          </div>
+          <div class="meter" aria-hidden="true"><div class="meter-bar" id="riskBar"></div></div>
+          <p class="status" id="riskMessage">文章を貼ると、検出した情報の種類からリスクを見積もります。</p>
+        </div>
+
+        <div class="side-section">
+          <h2 class="side-title">検出カテゴリ</h2>
+          <div class="chips" id="categoryChips">
+            <span class="chip safe">未検出</span>
+          </div>
+        </div>
+
+        <div class="side-section">
+          <h2 class="side-title">追加で伏せたい語句</h2>
+          <textarea id="manualTerms" class="manual-input" spellcheck="false" placeholder="1行に1語句&#10;例：山田 太郎&#10;例：社内プロジェクトX"></textarea>
+          <p class="hint">自動判定が難しい人名・案件名・製品名をここで指定できます。</p>
+        </div>
+
+        <div class="side-section">
+          <h2 class="side-title">置換ルール</h2>
+          <div class="rule-list" id="ruleList">
+            <div class="rule"><strong>まだありません</strong><span>文章を貼るとここに表示されます。</span></div>
+          </div>
+        </div>
+
+        <div class="side-section">
+          <h2 class="side-title">安全な聞き方</h2>
+          <ul class="tips" id="tipsList">
+            <li>固有名詞、連絡先、未公開情報を削ってからAIに相談しましょう。</li>
+            <li>社内規程がある場合は、必ずそちらを優先してください。</li>
+          </ul>
+        </div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const samples = {
+      business: `山田太郎様から、ABC商事の新規案件について電話がありました。
+電話番号は090-1234-5678、メールは yamada.taro@example.co.jp です。
+2026年6月10日までに、見積金額380万円で返信メールを作りたいです。
+住所は東京都千代田区丸の内1-1-1です。
+なお、この案件はNDA締結済みで、未発表の製品仕様を含みます。`
+    };
+
+    const detectors = [
+      {
+        id: "email",
+        label: "メール",
+        risk: 18,
+        level: "danger",
+        replacement: "[メールアドレス削除]",
+        pattern: /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi,
+        tip: "メールアドレスは削除し、必要なら「顧客の連絡先」と一般化します。"
+      },
+      {
+        id: "phone",
+        label: "電話番号",
+        risk: 18,
+        level: "danger",
+        replacement: "[電話番号削除]",
+        pattern: /(?:0\d{1,4}[-\s]?\d{1,4}[-\s]?\d{3,4})/g,
+        tip: "電話番号や内線番号はAIに貼らず、連絡手段の有無だけに置き換えます。"
+      },
+      {
+        id: "address",
+        label: "住所",
+        risk: 15,
+        level: "danger",
+        replacement: "[住所削除]",
+        pattern: /(?:北海道|東京都|京都府|大阪府|.{2,3}県)[^\n、。]{2,}(?:市|区|町|村)[^\n、。]*/g,
+        tip: "住所は地域レベルまで丸めるか、削除してから相談します。"
+      },
+      {
+        id: "secret",
+        label: "機密ワード",
+        risk: 24,
+        level: "danger",
+        replacement: "[機密情報]",
+        pattern: /NDA|秘密保持|未発表|未公開|社外秘|極秘|機密|開発中|新製品仕様|製品仕様/gi,
+        tip: "未公開情報やNDA対象は、社内承認済みの環境以外に入力しない前提で扱います。"
+      },
+      {
+        id: "person",
+        label: "氏名",
+        risk: 15,
+        level: "danger",
+        replacement: makeSequential("人物"),
+        pattern: /[一-龠]{1,3}[ 　]*(?:太郎|花子|一郎|次郎|三郎|美咲|健太|真由|直樹)[ 　]*(?:様|さん|氏)?/g,
+        tip: "氏名は「顧客A」「担当者B」のように役割名へ置き換えます。"
+      },
+      {
+        id: "company",
+        label: "会社名",
+        risk: 14,
+        level: "warn",
+        replacement: makeSequential("会社"),
+        pattern: /(?:株式会社|有限会社|合同会社)?[A-ZＡ-Ｚ一-龠ァ-ヶー]{2,}(?:商事|工業|製作所|銀行|大学|病院|株式会社|有限会社|合同会社|社)/g,
+        tip: "会社名や学校名は「取引先A」「所属組織B」のように伏せます。"
+      },
+      {
+        id: "money",
+        label: "金額",
+        risk: 10,
+        level: "warn",
+        replacement: "[概算金額]",
+        pattern: /\d{1,3}(?:,\d{3})*(?:万|億)?円/g,
+        tip: "金額は必要に応じて「数百万円規模」などの粒度へ落とします。"
+      },
+      {
+        id: "date",
+        label: "日付",
+        risk: 6,
+        level: "warn",
+        replacement: "[日付]",
+        pattern: /\d{4}年\d{1,2}月\d{1,2}日|\d{1,2}月\d{1,2}日|\d{4}[/-]\d{1,2}[/-]\d{1,2}/g,
+        tip: "厳密な日付が不要なら「近日」「来月中」などに丸めます。"
+      }
+    ];
+
+    const sourceText = document.getElementById("sourceText");
+    const outputText = document.getElementById("outputText");
+    const riskScore = document.getElementById("riskScore");
+    const riskBar = document.getElementById("riskBar");
+    const riskMessage = document.getElementById("riskMessage");
+    const categoryChips = document.getElementById("categoryChips");
+    const ruleList = document.getElementById("ruleList");
+    const tipsList = document.getElementById("tipsList");
+    const manualTerms = document.getElementById("manualTerms");
+    const toast = document.getElementById("toast");
+
+    let latestRules = [];
+
+    function makeSequential(prefix) {
+      const seen = new Map();
+      return function(value) {
+        if (!seen.has(value)) {
+          seen.set(value, `${prefix}${toAlphabet(seen.size)}`);
+        }
+        return seen.get(value);
+      };
+    }
+
+    function toAlphabet(index) {
+      return String.fromCharCode(65 + (index % 26));
+    }
+
+    function resetSequentialDetectors() {
+      detectors.forEach((detector) => {
+        if (detector.id === "person") detector.replacement = makeSequential("人物");
+        if (detector.id === "company") detector.replacement = makeSequential("会社");
+      });
+    }
+
+    function anonymize() {
+      resetSequentialDetectors();
+      const original = sourceText.value;
+      let sanitized = original;
+      const matches = [];
+      const categories = new Map();
+      const tips = new Set();
+
+      detectors.forEach((detector) => {
+        sanitized = sanitized.replace(detector.pattern, (value) => {
+          const replacement = typeof detector.replacement === "function"
+            ? detector.replacement(value)
+            : detector.replacement;
+          matches.push({
+            label: detector.label,
+            level: detector.level,
+            before: value,
+            after: replacement,
+            risk: detector.risk
+          });
+          categories.set(detector.label, detector.level);
+          tips.add(detector.tip);
+          return replacement;
+        });
+      });
+
+      getManualTerms().forEach((term, index) => {
+        const replacement = `[指定語句${toAlphabet(index)}]`;
+        const pattern = new RegExp(escapeRegExp(term), "g");
+        sanitized = sanitized.replace(pattern, (value) => {
+          matches.push({
+            label: "手動指定",
+            level: "danger",
+            before: value,
+            after: replacement,
+            risk: 16
+          });
+          categories.set("手動指定", "danger");
+          tips.add("自動検出できない人名、案件名、製品名は手動指定で確実に伏せます。");
+          return replacement;
+        });
+      });
+
+      latestRules = compactRules(matches);
+      outputText.value = sanitized;
+      renderRisk(matches, original.length);
+      renderCategories(categories);
+      renderRules(latestRules);
+      renderTips(tips);
+    }
+
+    function compactRules(matches) {
+      const map = new Map();
+      matches.forEach((item) => {
+        const key = `${item.before}::${item.after}`;
+        if (!map.has(key)) {
+          map.set(key, { ...item, count: 0 });
+        }
+        map.get(key).count += 1;
+      });
+      return Array.from(map.values());
+    }
+
+    function renderRisk(matches, textLength) {
+      const rawScore = matches.reduce((sum, item) => sum + item.risk, 0);
+      const lengthPenalty = textLength > 500 ? 8 : textLength > 250 ? 4 : 0;
+      const score = Math.min(100, rawScore + lengthPenalty);
+      riskScore.textContent = String(score);
+      riskBar.style.width = `${score}%`;
+
+      if (score >= 70) {
+        riskBar.style.background = "var(--danger)";
+        riskMessage.textContent = "高リスクです。そのままAIへ入力せず、社内規程に沿って削除・一般化・承認確認を行ってください。";
+      } else if (score >= 35) {
+        riskBar.style.background = "var(--warn)";
+        riskMessage.textContent = "注意が必要です。匿名化後の文章を確認し、残った固有名詞や未公開情報がないか見直してください。";
+      } else if (score > 0) {
+        riskBar.style.background = "var(--safe)";
+        riskMessage.textContent = "軽微な検出があります。用途に応じて、匿名化済みプロンプトをさらに一般化すると安心です。";
+      } else {
+        riskBar.style.background = "var(--safe)";
+        riskMessage.textContent = "検出されたリスク要素はありません。公開情報かどうか、利用規約上の扱いは別途確認しましょう。";
+      }
+    }
+
+    function renderCategories(categories) {
+      if (categories.size === 0) {
+        categoryChips.innerHTML = '<span class="chip safe">未検出</span>';
+        return;
+      }
+      categoryChips.innerHTML = Array.from(categories.entries())
+        .map(([label, level]) => `<span class="chip ${level}">${escapeHtml(label)}</span>`)
+        .join("");
+    }
+
+    function renderRules(rules) {
+      if (rules.length === 0) {
+        ruleList.innerHTML = '<div class="rule"><strong>まだありません</strong><span>文章を貼るとここに表示されます。</span></div>';
+        return;
+      }
+      ruleList.innerHTML = rules
+        .map((rule) => `
+          <div class="rule">
+            <strong>${escapeHtml(rule.before)} → ${escapeHtml(rule.after)}</strong>
+            <span>${escapeHtml(rule.label)} / ${rule.count}件</span>
+          </div>
+        `)
+        .join("");
+    }
+
+    function renderTips(tips) {
+      const defaultTips = [
+        "固有名詞、連絡先、未公開情報を削ってからAIに相談しましょう。",
+        "社内規程がある場合は、必ずそちらを優先してください。"
+      ];
+      const items = tips.size ? Array.from(tips).slice(0, 5) : defaultTips;
+      tipsList.innerHTML = items.map((tip) => `<li>${escapeHtml(tip)}</li>`).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function escapeRegExp(value) {
+      return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    function getManualTerms() {
+      return manualTerms.value
+        .split(/\r?\n/)
+        .map((term) => term.trim())
+        .filter((term, index, list) => term.length > 0 && list.indexOf(term) === index)
+        .sort((a, b) => b.length - a.length);
+    }
+
+    async function copyText(value, message) {
+      if (!value.trim()) {
+        showToast("コピーする内容がありません。");
+        return;
+      }
+      if (copyWithHiddenTextarea(value)) {
+        showToast(message);
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(value);
+        showToast(message);
+      } catch {
+        showToast("コピーできませんでした。テキストを選択して手動でコピーしてください。");
+      }
+    }
+
+    function copyWithHiddenTextarea(value) {
+      const copyArea = document.createElement("textarea");
+      copyArea.value = value;
+      copyArea.setAttribute("readonly", "");
+      copyArea.style.position = "fixed";
+      copyArea.style.left = "-9999px";
+      copyArea.style.top = "0";
+      document.body.appendChild(copyArea);
+      copyArea.focus();
+      copyArea.select();
+      let ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch {
+        ok = false;
+      }
+      document.body.removeChild(copyArea);
+      return ok;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    document.querySelector("[data-sample]").addEventListener("click", () => {
+      sourceText.value = samples.business;
+      anonymize();
+      showToast("サンプルを読み込みました。");
+    });
+
+    document.getElementById("clearBtn").addEventListener("click", () => {
+      sourceText.value = "";
+      anonymize();
+      sourceText.focus();
+    });
+
+    document.getElementById("copyBtn").addEventListener("click", () => {
+      copyText(outputText.value, "匿名化済みプロンプトをコピーしました。");
+    });
+
+    document.getElementById("copyRulesBtn").addEventListener("click", () => {
+      const rulesText = latestRules
+        .map((rule) => `${rule.before} => ${rule.after} (${rule.label})`)
+        .join("\n");
+      copyText(rulesText, "置換表をコピーしました。");
+    });
+
+    sourceText.addEventListener("input", anonymize);
+    manualTerms.addEventListener("input", anonymize);
+    sourceText.value = samples.business;
+    anonymize();
+  </script>
+</body>
+</html>

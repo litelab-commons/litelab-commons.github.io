@@ -20,6 +20,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 | SNS型投資詐欺 診断シミュレーション | Simulation | 公開中 | https://litelab-commons.github.io/sns-fraud-simulation/ |
 | 仮想通貨投資詐欺シミュレーション | Security | 開発中 | - |
 | ネットワーク接続診断ミニツール | Tool | 公開中 | https://litelab-commons.github.io/netmonitor-tkinter/ |
+| プロンプト匿名化メーカー | Tool | 公開中 | https://litelab-commons.github.io/prompt-anonymizer/ |
 | ITリテラシー診断アンケート | Tool | 準備中 | - |
 
 ## ライセンス
