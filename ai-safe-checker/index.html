@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AIセーフ・チェッカー</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --color-bg: #ffffff;
+  --color-bg-secondary: #f5f5f4;
+  --color-bg-tertiary: #e8e8e6;
+  --color-text-primary: #1a1a18;
+  --color-text-secondary: #6b6b67;
+  --color-border: rgba(0,0,0,0.12);
+  --color-border-secondary: rgba(0,0,0,0.22);
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: #1c1c1a;
+    --color-bg-secondary: #262624;
+    --color-bg-tertiary: #303030;
+    --color-text-primary: #f0efeb;
+    --color-text-secondary: #9a9a96;
+    --color-border: rgba(255,255,255,0.12);
+    --color-border-secondary: rgba(255,255,255,0.22);
+  }
+}
+body {
+  background: var(--color-bg-tertiary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+.container {
+  width: 100%;
+  max-width: 560px;
+}
+.gw { padding: 0; }
+.hdr { text-align: center; margin-bottom: 1.25rem; }
+.hdr h1 { font-size: 22px; font-weight: 600; color: var(--color-text-primary); letter-spacing: -0.3px; }
+.hdr p { font-size: 13px; color: var(--color-text-secondary); margin-top: 4px; }
+.prog-wrap { background: var(--color-bg-secondary); border-radius: 99px; height: 5px; margin-bottom: 6px; }
+.prog-fill { height: 5px; border-radius: 99px; background: linear-gradient(90deg, #378ADD, #1D9E75); transition: width 0.4s ease; }
+.ctr { font-size: 12px; color: var(--color-text-secondary); text-align: right; margin-bottom: 1rem; }
+.card {
+  border-radius: var(--radius-xl);
+  border: 0.5px solid var(--color-border);
+  background: var(--color-bg);
+  padding: 1.25rem 1.25rem 1rem;
+  margin-bottom: 1rem;
+  transition: border-color 0.25s;
+  position: relative; overflow: hidden;
+}
+.card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--color-border); transition:background 0.3s; }
+.card.correct::before { background: linear-gradient(90deg,#639922,#1D9E75); }
+.card.wrong::before { background: linear-gradient(90deg,#E24B4A,#D85A30); }
+.card.correct { border-color:#97C459; }
+.card.wrong { border-color:#F09595; }
+.tags { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px; }
+.tag { font-size:11px; padding:3px 9px; border-radius:99px; border:0.5px solid var(--color-border); color:var(--color-text-secondary); background:var(--color-bg-secondary); }
+.tag.r5{background:#FCEBEB;color:#A32D2D;border-color:#F09595;}
+.tag.r4{background:#FAEEDA;color:#854F0B;border-color:#EF9F27;}
+.tag.r3{background:#E6F1FB;color:#185FA5;border-color:#85B7EB;}
+.tag.r2{background:#EAF3DE;color:#3B6D11;border-color:#97C459;}
+@media(prefers-color-scheme:dark){
+  .tag.r5{background:#501313;color:#F7C1C1;border-color:#A32D2D;}
+  .tag.r4{background:#412402;color:#FAC775;border-color:#854F0B;}
+  .tag.r3{background:#042C53;color:#B5D4F4;border-color:#185FA5;}
+  .tag.r2{background:#173404;color:#C0DD97;border-color:#3B6D11;}
+}
+.scenario{font-size:15px;color:var(--color-text-primary);line-height:1.75;margin-bottom:0.75rem;}
+.hl{background:#FAEEDA;color:#633806;border-radius:3px;padding:1px 4px;font-weight:500;}
+@media(prefers-color-scheme:dark){.hl{background:#633806;color:#FAC775;}}
+.verdict-banner{display:none;border-radius:10px;padding:0.875rem 1rem;margin-bottom:0.75rem;animation:slideIn 0.25s ease;}
+@keyframes slideIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:translateY(0)}}
+.verdict-banner.cv{background:#EAF3DE;border:1px solid #97C459;}
+.verdict-banner.wv{background:#FCEBEB;border:1px solid #F09595;}
+@media(prefers-color-scheme:dark){
+  .verdict-banner.cv{background:#173404;border-color:#3B6D11;}
+  .verdict-banner.wv{background:#501313;border-color:#A32D2D;}
+}
+.vb-head{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;margin-bottom:5px;}
+.vb-head.c{color:#3B6D11;}.vb-head.w{color:#A32D2D;}
+@media(prefers-color-scheme:dark){.vb-head.c{color:#C0DD97;}.vb-head.w{color:#F7C1C1;}}
+.vb-icon{font-size:18px;}
+.vb-text{font-size:13px;color:var(--color-text-secondary);line-height:1.6;}
+.safe-hint{font-size:12px;color:var(--color-text-secondary);margin-top:8px;padding-top:8px;border-top:0.5px solid var(--color-border);line-height:1.6;}
+.safe-hint strong{color:var(--color-text-primary);font-weight:500;}
+.btn-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:0.875rem;}
+.btn-ok,.btn-ng{padding:15px 12px;border-radius:12px;border:1.5px solid;font-size:15px;font-weight:500;cursor:pointer;transition:transform 0.12s,background 0.15s;display:flex;align-items:center;justify-content:center;gap:7px;}
+.btn-ok{background:#EAF3DE;border-color:#97C459;color:#27500A;}
+.btn-ok:hover:not(:disabled){background:#C0DD97;}
+.btn-ng{background:#FCEBEB;border-color:#F09595;color:#791F1F;}
+.btn-ng:hover:not(:disabled){background:#F7C1C1;}
+@media(prefers-color-scheme:dark){
+  .btn-ok{background:#173404;border-color:#3B6D11;color:#C0DD97;}
+  .btn-ok:hover:not(:disabled){background:#27500A;}
+  .btn-ng{background:#501313;border-color:#A32D2D;color:#F7C1C1;}
+  .btn-ng:hover:not(:disabled){background:#791F1F;}
+}
+.btn-ok:active:not(:disabled),.btn-ng:active:not(:disabled){transform:scale(0.96);}
+.btn-ok:disabled,.btn-ng:disabled{opacity:0.35;cursor:default;}
+.btn-pulse{animation:pulse 0.3s ease;}
+@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(0.94)}100%{transform:scale(1)}}
+.next-btn{width:100%;padding:13px;border-radius:10px;background:var(--color-bg-secondary);border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary);font-size:14px;cursor:pointer;transition:background 0.15s;display:none;}
+.next-btn:hover{background:var(--color-bg-tertiary);}
+.result-screen{display:none;}
+.rank-box{border-radius:var(--radius-xl);padding:1.5rem;text-align:center;margin-bottom:1rem;background:var(--color-bg-secondary);border:0.5px solid var(--color-border);}
+.rank-emoji{font-size:42px;margin-bottom:8px;}
+.rank-label{font-size:22px;font-weight:600;color:var(--color-text-primary);margin-bottom:4px;}
+.rank-sub{font-size:13px;color:var(--color-text-secondary);line-height:1.6;}
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:1rem;}
+.stat-card{background:var(--color-bg-secondary);border-radius:10px;padding:12px 8px;text-align:center;}
+.stat-lbl{font-size:11px;color:var(--color-text-secondary);margin-bottom:3px;}
+.stat-val{font-size:22px;font-weight:600;color:var(--color-text-primary);}
+.cat-section{background:var(--color-bg);border:0.5px solid var(--color-border);border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;}
+.cat-section h3{font-size:13px;font-weight:500;color:var(--color-text-secondary);margin-bottom:12px;}
+.cat-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.cat-row:last-child{margin-bottom:0;}
+.cat-lbl{font-size:13px;color:var(--color-text-secondary);min-width:72px;}
+.cat-bg{flex:1;height:7px;background:var(--color-bg-secondary);border-radius:99px;overflow:hidden;}
+.cat-fill{height:7px;border-radius:99px;transition:width 0.7s ease;}
+.cat-fill.hi{background:#1D9E75;}.cat-fill.mid{background:#EF9F27;}.cat-fill.lo{background:#E24B4A;}
+.cat-pct{font-size:13px;font-weight:500;color:var(--color-text-primary);min-width:34px;text-align:right;}
+.restart-btn{width:100%;padding:13px;border-radius:10px;background:var(--color-bg-secondary);border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary);font-size:14px;cursor:pointer;}
+.restart-btn:hover{background:var(--color-bg-tertiary);}
+.pool-note{font-size:11px;color:var(--color-text-secondary);text-align:center;margin-top:10px;}
+.ti{font-style:normal;line-height:1;}
+.ti-circle-check::before{content:"✓";}
+.ti-circle-x::before{content:"×";}
+.ti-arrow-right::before{content:"→";}
+.ti-refresh::before{content:"↻";}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="gw" role="main">
+  <div class="hdr">
+    <h1>AIセーフ・チェッカー</h1>
+    <p>生成AIに入力してOK？それともNG？</p>
+  </div>
+  <div class="prog-wrap"><div class="prog-fill" id="prog" style="width:0%"></div></div>
+  <div class="ctr" id="ctr">1 / 10</div>
+
+  <div id="quiz-screen">
+    <div class="card" id="card">
+      <div class="tags" id="tags"></div>
+      <div class="scenario" id="scenario"></div>
+      <div class="verdict-banner" id="vb">
+        <div class="vb-head" id="vb-head">
+          <i class="vb-icon ti" id="vb-icon" aria-hidden="true"></i>
+          <span id="vb-title"></span>
+        </div>
+        <div class="vb-text" id="vb-text"></div>
+        <div class="safe-hint" id="vb-safe" style="display:none"></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-ok" id="btn-ok" onclick="judge('ok')"><i class="ti ti-circle-check" aria-hidden="true"></i> 入力してOK</button>
+      <button class="btn-ng" id="btn-ng" onclick="judge('ng')"><i class="ti ti-circle-x" aria-hidden="true"></i> 入力はNG</button>
+    </div>
+    <button class="next-btn" id="next-btn" onclick="nextQ()">次の問題へ <i class="ti ti-arrow-right" aria-hidden="true"></i></button>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div class="rank-box">
+      <div class="rank-emoji" id="r-emoji"></div>
+      <div class="rank-label" id="r-label"></div>
+      <div class="rank-sub" id="r-sub"></div>
+    </div>
+    <div class="stat-row">
+      <div class="stat-card"><div class="stat-lbl">正解数</div><div class="stat-val" id="r-correct"></div></div>
+      <div class="stat-card"><div class="stat-lbl">問題数</div><div class="stat-val" id="r-total"></div></div>
+      <div class="stat-card"><div class="stat-lbl">正答率</div><div class="stat-val" id="r-pct"></div></div>
+    </div>
+    <div class="cat-section">
+      <h3>カテゴリ別スコア</h3>
+      <div id="cat-scores"></div>
+    </div>
+    <button class="restart-btn" onclick="restart()"><i class="ti ti-refresh" aria-hidden="true"></i> 別の10問でもう一度</button>
+    <div class="pool-note">全30問プールからランダム出題 — 毎回異なる問題が出ます</div>
+  </div>
+</div>
+</div>
+
+<script>
+const POOL=[
+  {text:"公開済みの海外ニュース記事（英語）を、要約・翻訳してもらうために翻訳AIに貼り付けた。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"すでに公開されている情報は、AIで要約・翻訳しても問題ありません。業務上の翻訳・要約は適正利用の範囲です。",safeAction:null,highlights:[]},
+  {text:"昨年公開した自社の統合報告書（IR資料）のPDFを、要点をまとめてもらうためにAIにアップロードした。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"すでに公開されたIR資料は公開情報です。要約・整理にAIを使うことは問題ありません。",safeAction:null,highlights:[]},
+  {text:"自社が先月発表したプレスリリース（すでにWebサイトに公開済み）を英訳してもらうためにAIに貼り付けた。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"自社が公開したプレスリリースは公開情報です。英訳・要約などにAIを活用することは問題ありません。",safeAction:null,highlights:[]},
+  {text:"政府が公表している統計データ（総務省の人口統計）を参照してレポートを書いてもらうためAIに貼り付けた。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"官公庁が公開している統計データは公開情報です。AIを使って分析・要約・文章化することは問題ありません。",safeAction:null,highlights:[]},
+  {text:"Wikipediaの記事（日本語版）をコピーして、AIに「小学生向けにわかりやすく説明して」と依頼した。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"Wikipediaはクリエイティブ・コモンズライセンスで公開されており、適切な範囲での利用は問題ありません。",safeAction:null,highlights:[]},
+  {text:"競合他社の公式サイトに掲載されている製品仕様ページの文章をAIに貼り付けて、自社製品との比較表を作ってもらった。",answer:"OK",riskLevel:2,category:"公開情報",explanation:"公式サイトに公開されている情報は公開情報です。競合分析や比較資料の作成にAIを活用することは問題ありません。",safeAction:null,highlights:[]},
+  {text:"未発表の新商品スペック（価格・機能・発売日）の文章を、読みやすくなるよう校正してもらうためChatGPTに貼り付けた。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"未公開の商品情報は重要な営業秘密です。外部AIに入力すると情報が漏洩するリスクがあります。",safeAction:"「価格はXX円、機能はA/B/C」など具体値を仮の値や記号に置き換えてから依頼しましょう。",highlights:["未発表の新商品スペック","価格・機能・発売日"]},
+  {text:"取引先とのNDA締結後に受け取った設計仕様書を、内容をまとめるためにAIにアップロードした。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"NDA締結済みの情報を外部AIに送信することは、契約上の秘密保持義務に違反する可能性があります。",safeAction:"社内承認済みの閉域AIや、オンプレミス環境のAIツールを使いましょう。",highlights:["NDA","設計仕様書"]},
+  {text:"社内会議の議事録（未公開・取引先の社名・担当者名・商談金額入り）をAIで整形しようとした。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"取引先の社名・担当者名・商談金額は相手方の機密情報を含む可能性があります。外部AIに送信すると守秘義務違反のリスクがあります。",safeAction:"社名→「A社」、担当者→「Aさん」、金額→「XX万円」に置き換えた匿名版を作成してから入力しましょう。",highlights:["取引先の社名","担当者名","商談金額","未公開"]},
+  {text:"社内で検討中のM&A候補先企業名・買収金額・スケジュールが記載された極秘資料をAIで要約しようとした。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"M&A情報はインサイダー情報に該当する可能性があり、外部AIへの入力は情報漏洩だけでなく法的リスクも伴います。",safeAction:"このレベルの機密情報は、社内の閉域AIや承認済みシステム以外への入力は原則禁止です。法務・コンプライアンス部門に確認してください。",highlights:["M&A候補先企業名","買収金額","極秘資料"]},
+  {text:"来期の事業計画書（売上目標・新規事業名・投資額入り、社外秘）をAIに読み込ませて要約スライドを作ってもらった。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"未公開の事業計画は重要な経営機密です。売上目標・投資額・新規事業名が外部に漏れると競合他社への情報流出につながります。",safeAction:"数値をXX億円などの仮値に置き換え、新規事業名も「新事業A」などに匿名化してから依頼しましょう。",highlights:["事業計画書","売上目標","新規事業名","投資額","社外秘"]},
+  {text:"特許出願前の発明アイデア（技術的な詳細・発明者名入り）の説明文をAIに清書してもらおうとした。",answer:"NG",riskLevel:5,category:"機密情報",explanation:"特許出願前の発明内容は、外部に開示すると新規性を失い特許が取れなくなる可能性があります。外部AIへの入力は原則NGです。",safeAction:"特許出願後、または技術的詳細を伏せた一般的な説明のみをAIに依頼しましょう。",highlights:["特許出願前","発明アイデア","発明者名"]},
+  {text:"顧客から届いたクレームメール（相手の氏名・電話番号・住所入り）の返信文案をAIに作ってもらうため、本文をそのまま貼り付けた。",answer:"NG",riskLevel:5,category:"個人情報",explanation:"氏名・電話番号・住所は個人情報です。そのまま外部AIに送信すると個人情報保護法に違反する可能性があります。",safeAction:"個人を特定できる情報（名前→「お客様」、電話番号・住所を削除）に置き換えてから要点だけ入力しましょう。",highlights:["氏名","電話番号","住所"]},
+  {text:"社員の氏名・給与・評価ランクが含まれた人事評価シートをAIに整形してもらうために入力した。",answer:"NG",riskLevel:5,category:"個人情報",explanation:"給与・評価情報は機密性の高い個人情報です。外部AIへの入力は第三者提供にあたる可能性があります。",safeAction:"氏名→「社員A」、給与→「XX万円」に仮置きした匿名データに変換してから依頼してください。",highlights:["氏名","給与","評価ランク"]},
+  {text:"顧客アンケートの自由記述回答（氏名・会社名・連絡先入り）をAIで分類・要約しようとした。",answer:"MASK",riskLevel:4,category:"個人情報",explanation:"氏名・会社名・連絡先が含まれるため、そのままの入力は個人情報漏洩のリスクがあります。",safeAction:"氏名・会社名・連絡先をすべて削除した匿名データに加工してから分類・要約を依頼しましょう。",highlights:["氏名","会社名","連絡先"]},
+  {text:"採用選考中の候補者の履歴書（氏名・住所・学歴・職歴入り）をAIに読み込ませて評価コメントを生成させた。",answer:"NG",riskLevel:5,category:"個人情報",explanation:"候補者の履歴書は要配慮個人情報を含みます。外部AIへの入力は個人情報保護法上のリスクがあり、候補者の同意なく第三者提供することは原則禁止です。",safeAction:"選考評価はAIに頼らず人の判断で行うか、個人を特定できない形に加工した情報のみを使いましょう。",highlights:["採用選考中","履歴書","氏名・住所・学歴・職歴"]},
+  {text:"社内の健康診断結果（社員の氏名・診断項目・数値入り）をAIに入力して、受診勧奨メールの文面を作ってもらった。",answer:"NG",riskLevel:5,category:"個人情報",explanation:"健康診断結果は要配慮個人情報の最たるものです。本人の同意なく外部AIに送信することは個人情報保護法違反となります。",safeAction:"メール文面のみをAIに作成させ、個人の診断データは一切含めないようにしましょう。",highlights:["健康診断結果","氏名","診断項目"]},
+  {text:"自社のセキュリティポリシー文書（社外秘マーク付き）の内容を、わかりやすい日本語に言い換えてもらうためAIに貼り付けた。",answer:"NG",riskLevel:4,category:"社内情報",explanation:"「社外秘」に指定された文書を外部AIに送信すると情報流出リスクがあります。セキュリティポリシーが漏れると攻撃者に弱点を知られる可能性もあります。",safeAction:"社内承認済みAIツールを使用するか、機密に触れない一般的な説明文をAIに書かせて細部を社内で編集しましょう。",highlights:["セキュリティポリシー文書","社外秘"]},
+  {text:"顧客向けFAQページに掲載予定の文章（社内レビュー中・個人情報なし）の文体を整えてもらうためにAIに入力した。",answer:"MASK",riskLevel:3,category:"社内情報",explanation:"未公開のコンテンツは社内情報ですが、個人情報や機密データを含まない場合は条件付きで利用できることがあります。",safeAction:"会社名・製品名・価格などをダミーに置き換えれば、文体校正に利用できます。社内ルールを確認してください。",highlights:["社内レビュー中"]},
+  {text:"自社サーバーのIPアドレス・ポート構成・ファイアウォール設定が記載されたシステム構成図をAIに読み込ませて設計レビューを依頼した。",answer:"NG",riskLevel:5,category:"社内情報",explanation:"システム構成図はサイバー攻撃のターゲット情報になり得る極めて機密性の高い情報です。外部AIへの入力は情報漏洩リスクが非常に高いです。",safeAction:"IPアドレスやポート番号を仮の値に置き換えた図を使うか、社内の閉域AIのみを使いましょう。",highlights:["IPアドレス","ポート構成","ファイアウォール設定","システム構成図"]},
+  {text:"新入社員向けの社内マニュアル（固有の社名・顧客名・数値情報なし）の文章をわかりやすく書き直してもらうためAIに入力した。",answer:"MASK",riskLevel:3,category:"社内情報",explanation:"固有情報を含まない一般的な社内マニュアルは、条件次第でAI活用できる場合があります。",safeAction:"社内ルールや情報取り扱い規定を確認した上で、機密情報が含まれていないことを確認してから利用しましょう。",highlights:[]},
+  {text:"社内の経費精算システムのパスワードリセット手順書（管理者専用・社内限り）をAIに入力して、もっとわかりやすく整理してもらった。",answer:"NG",riskLevel:4,category:"社内情報",explanation:"管理者専用の手順書には操作権限や認証情報のヒントが含まれることがあります。外部AIに送信すると不正アクセスの足がかりになるリスクがあります。",safeAction:"システム操作手順書は社内の閉域AIか、機密部分を削除した形でのみAIに依頼しましょう。",highlights:["パスワードリセット手順書","管理者専用","社内限り"]},
+  {text:"社内Slackの特定チャンネルの過去ログ（社員名・プロジェクト名・内部議論入り）をAIにコピペして会議の要点をまとめてもらった。",answer:"NG",riskLevel:4,category:"社内情報",explanation:"社内チャットログには個人名・プロジェクト情報・内部議論が含まれます。外部AIへの入力は情報漏洩リスクがあり、社員のプライバシー侵害にもなり得ます。",safeAction:"社員名をイニシャルに、プロジェクト名を「プロジェクトA」に置き換えた要点メモを作成してから依頼しましょう。",highlights:["社員名","プロジェクト名","内部議論","過去ログ"]},
+  {text:"部署内だけで共有している来期の採用計画（採用人数・職種・予算）をAIに入力して、求人票の文章を作ってもらった。",answer:"MASK",riskLevel:3,category:"社内情報",explanation:"採用計画の詳細は社内情報ですが、求人票作成に必要な職種・業務内容は条件付きで活用できます。",safeAction:"採用人数・予算などの数値は伏せて、職種名と業務内容のみをAIに渡して文章を作成しましょう。社内ルールを確認してください。",highlights:["採用計画","採用人数","予算"]},
+  {text:"社外向けの研修テキストを作るため、市販のビジネス書から数段落コピーしてAIに「これをベースに資料を作って」と貼り付けた。",answer:"NG",riskLevel:4,category:"著作権",explanation:"市販書籍の文章は著作権で保護されています。許諾なくAIへ入力して二次利用すると著作権侵害になる可能性があります。",safeAction:"「〇〇という概念を使って研修テキストを作って」のように内容を自分の言葉で説明してAIに依頼しましょう。",highlights:["市販のビジネス書","数段落コピー"]},
+  {text:"有料の学術論文（購読契約で入手）の全文をAIにアップロードして内容を要約させた。",answer:"NG",riskLevel:4,category:"著作権",explanation:"有料論文は著作権で保護されており、購読契約はあくまで閲覧権です。全文をAIにアップロードすることは著作権侵害になる可能性があります。",safeAction:"論文のアブストラクト（公開部分）や自分でまとめたメモをもとにAIに質問する形に変えましょう。",highlights:["有料の学術論文","全文をAIにアップロード"]},
+  {text:"数年前に自社で制作したパンフレット（社外配布済み）のテキストをベースに、新しいパンフレット文章をAIに作ってもらった。",answer:"OK",riskLevel:2,category:"著作権",explanation:"自社が制作・配布済みの資料は自社著作物です。それをベースに新しい文章を作成することは問題ありません。",safeAction:null,highlights:[]},
+  {text:"有名な小説の冒頭数ページをAIに貼り付けて「この文体を真似て社内報を書いて」と依頼した。",answer:"NG",riskLevel:4,category:"著作権",explanation:"著作権が存在する小説の文章をAIに入力することは、著作物の複製にあたる可能性があります。原文を貼り付けること自体がリスクです。",safeAction:"「〇〇のような文体で」と言葉で説明するだけで、AIは文体を模倣できます。原文を貼り付ける必要はありません。",highlights:["有名な小説","冒頭数ページ"]},
+  {text:"社員が撮影した社内イベントの写真（社員の顔が映っている）をAIの画像認識ツールに送って、自動でキャプションを生成させた。",answer:"NG",riskLevel:4,category:"著作権",explanation:"社員の顔が映った写真は肖像権・プライバシーの問題があります。外部AIへの送信には本人の同意が必要です。",safeAction:"顔にモザイクをかけるか、本人の同意を得た上で社内ルールに従って利用しましょう。",highlights:["社員の顔が映っている","社内イベントの写真"]},
+  {text:"自社のWebサイトに掲載しているブログ記事（自社制作）をAIに入力して、SNS投稿用に短く言い換えてもらった。",answer:"OK",riskLevel:2,category:"著作権",explanation:"自社が制作したWebコンテンツは自社著作物です。SNS用への言い換えや要約にAIを使うことは問題ありません。",safeAction:null,highlights:[]}
+];
+
+const RC={5:"r5",4:"r4",3:"r3",2:"r2"};
+const RL={5:"危険度：高",4:"危険度：中高",3:"危険度：中",2:"危険度：低"};
+const DRAW=10;
+let Q=[],cur=0,score=0,catR={},answered=false;
+
+function shuffle(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function pickQ(){Q=shuffle(POOL).slice(0,DRAW);}
+function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function hlText(text,words){let o=esc(text);words.forEach(w=>{const e=w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');o=o.replace(new RegExp(e,'g'),`<span class="hl">${esc(w)}</span>`);});return o;}
+
+function loadQ(){
+  answered=false;
+  const q=Q[cur];
+  document.getElementById('prog').style.width=(cur/Q.length*100)+'%';
+  document.getElementById('ctr').textContent=(cur+1)+' / '+Q.length;
+  document.getElementById('tags').innerHTML=`<span class="tag">${esc(q.category)}</span><span class="tag ${RC[q.riskLevel]||''}">${RL[q.riskLevel]||''}</span>`;
+  document.getElementById('scenario').innerHTML=hlText(q.text,q.highlights);
+  const vb=document.getElementById('vb');
+  vb.style.display='none';vb.className='verdict-banner';
+  document.getElementById('card').className='card';
+  document.getElementById('btn-ok').disabled=false;
+  document.getElementById('btn-ng').disabled=false;
+  document.getElementById('next-btn').style.display='none';
+}
+
+function judge(choice){
+  if(answered)return;
+  answered=true;
+  const q=Q[cur];
+  const correct=(q.answer==='OK'&&choice==='ok')||(q.answer==='NG'&&choice==='ng')||(q.answer==='MASK'&&choice==='ng');
+  if(correct)score++;
+  if(!catR[q.category])catR[q.category]={correct:0,total:0};
+  catR[q.category].total++;
+  if(correct)catR[q.category].correct++;
+  const btn=choice==='ok'?document.getElementById('btn-ok'):document.getElementById('btn-ng');
+  btn.classList.add('btn-pulse');
+  setTimeout(()=>btn.classList.remove('btn-pulse'),300);
+  document.getElementById('card').className='card '+(correct?'correct':'wrong');
+  const vb=document.getElementById('vb');
+  vb.className='verdict-banner '+(correct?'cv':'wv');
+  const head=document.getElementById('vb-head');
+  const icon=document.getElementById('vb-icon');
+  head.className='vb-head '+(correct?'c':'w');
+  icon.className='vb-icon ti '+(correct?'ti-circle-check':'ti-alert-circle');
+  const title=document.getElementById('vb-title');
+  if(correct){
+    if(q.answer==='OK')title.textContent='正解！— 入力してOKです';
+    else if(q.answer==='MASK')title.textContent='正解！— 条件付きOKです';
+    else title.textContent='正解！— 入力NGです';
+  }else{
+    if(q.answer==='OK')title.textContent='不正解 — これは入力してOKです';
+    else if(q.answer==='MASK')title.textContent='不正解 — 条件付きでOKになります';
+    else title.textContent='不正解 — これは入力NGです';
+  }
+  document.getElementById('vb-text').textContent=q.explanation;
+  const safe=document.getElementById('vb-safe');
+  if(q.safeAction){safe.style.display='block';safe.innerHTML=`<strong>安全な使い方：</strong>${esc(q.safeAction)}`;}
+  else{safe.style.display='none';}
+  vb.style.display='block';
+  document.getElementById('btn-ok').disabled=true;
+  document.getElementById('btn-ng').disabled=true;
+  if(cur<Q.length-1)document.getElementById('next-btn').style.display='block';
+  else setTimeout(showResult,1500);
+}
+
+function nextQ(){cur++;loadQ();}
+
+function showResult(){
+  document.getElementById('quiz-screen').style.display='none';
+  document.getElementById('result-screen').style.display='block';
+  document.getElementById('prog').style.width='100%';
+  const pct=Math.round(score/Q.length*100);
+  document.getElementById('r-correct').textContent=score;
+  document.getElementById('r-total').textContent=Q.length;
+  document.getElementById('r-pct').textContent=pct+'%';
+  let emoji,label,sub;
+  if(pct===100){emoji='🏆';label='AIマスター';sub='完璧です。情報リテラシーの模範として周囲に伝えましょう。';}
+  else if(pct>=80){emoji='✅';label='AIリテラシー合格';sub='ほぼ正確に判断できています。苦手カテゴリを確認しましょう。';}
+  else if(pct>=60){emoji='⚠️';label='要注意レベル';sub='判断が難しい領域があります。解説を読み直してください。';}
+  else{emoji='🚨';label='情報漏洩の危機！';sub='AIへの入力ルールを今すぐ再確認してください。';}
+  document.getElementById('r-emoji').textContent=emoji;
+  document.getElementById('r-label').textContent=label;
+  document.getElementById('r-sub').textContent=sub;
+  const wrap=document.getElementById('cat-scores');
+  wrap.innerHTML='';
+  Object.keys(catR).forEach(cat=>{
+    const r=catR[cat];
+    const p=Math.round(r.correct/r.total*100);
+    const cls=p>=80?'hi':p>=50?'mid':'lo';
+    wrap.innerHTML+=`<div class="cat-row"><span class="cat-lbl">${esc(cat)}</span><div class="cat-bg"><div class="cat-fill ${cls}" style="width:${p}%"></div></div><span class="cat-pct">${p}%</span></div>`;
+  });
+}
+
+function restart(){
+  cur=0;score=0;catR={};
+  pickQ();
+  document.getElementById('quiz-screen').style.display='block';
+  document.getElementById('result-screen').style.display='none';
+  loadQ();
+}
+
+pickQ();
+loadQ();
+</script>
+<!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
