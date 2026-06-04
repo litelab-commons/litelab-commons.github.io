@@ -22,6 +22,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 | ネットワーク接続診断ミニツール | Tool | 公開中 | https://litelab-commons.github.io/netmonitor-tkinter/ |
 | プロンプト匿名化メーカー | Tool | 公開中 | https://litelab-commons.github.io/prompt-anonymizer/ |
 | AIセーフ・チェッカー | Tool | 公開中 | https://litelab-commons.github.io/ai-safe-checker/ |
+| Site Checker: 不審サイト確認ミニツール | Tool | 公開中 | https://litelab-commons.github.io/site-checker/ |
 | ITリテラシー診断アンケート | Tool | 準備中 | - |
 
 ## ライセンス
