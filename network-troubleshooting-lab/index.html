@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ネットワーク探偵団 v2 — 障害切り分け編 🔧</title>
+<style>
+  :root {
+    --bg: #0a0f1e;
+    --surface: #111827;
+    --card: #1a2234;
+    --border: #2a3a5c;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --success: #22c55e;
+    --error: #ef4444;
+    --warn: #f59e0b;
+    --purple: #a78bfa;
+    --font-sans: "Segoe UI", "Yu Gothic UI", Meiryo, system-ui, -apple-system, sans-serif;
+    --font-mono: Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: var(--font-sans);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none; z-index: 0;
+  }
+  .container { max-width: 920px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+
+  header { text-align: center; padding: 24px 0 12px; }
+  .logo {
+    font-size: 2rem; font-weight: 900;
+    background: linear-gradient(90deg, var(--accent2), var(--warn));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    letter-spacing: -1px;
+  }
+  .tagline { color: var(--muted); font-size: 0.85rem; margin-top: 4px; font-family: var(--font-mono); }
+
+  /* MISSION BAR */
+  .mission {
+    background: linear-gradient(135deg, rgba(255,107,53,0.12), rgba(245,158,11,0.06));
+    border: 1px solid var(--accent2);
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin: 16px 0;
+  }
+  .mission-label { font-size: 0.7rem; color: var(--accent2); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+  .mission-text { font-size: 1rem; margin-top: 6px; line-height: 1.5; }
+  .mission-meta { display: flex; gap: 16px; margin-top: 10px; flex-wrap: wrap; font-family: var(--font-mono); font-size: 0.78rem; color: var(--muted); }
+  .mission-meta b { color: var(--accent); }
+
+  /* NETWORK MAP */
+  .netmap-wrap {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 12px;
+    margin-bottom: 16px;
+    overflow-x: auto;
+  }
+  .netmap {
+    display: flex; align-items: center; justify-content: space-between;
+    min-width: 640px; gap: 2px;
+  }
+  .hop { display: flex; flex-direction: column; align-items: center; gap: 5px; flex-shrink: 0; width: 92px; }
+  .hop-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    border: 2px solid var(--border); background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; transition: all 0.3s; position: relative;
+  }
+  .hop-icon.probing { border-color: var(--accent); box-shadow: 0 0 14px rgba(0,212,255,0.4); animation: pulse 0.5s ease; }
+  .hop-icon.ok { border-color: var(--success); box-shadow: 0 0 10px rgba(34,197,94,0.3); }
+  .hop-icon.fault {
+    border-color: var(--error); box-shadow: 0 0 18px rgba(239,68,68,0.6);
+    animation: faultBlink 1s infinite;
+  }
+  @keyframes pulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.12)} }
+  @keyframes faultBlink { 0%,100%{opacity:1} 50%{opacity:0.45} }
+  .hop-label { font-size: 0.62rem; color: var(--muted); font-family: var(--font-mono); text-align: center; line-height: 1.2; }
+  .hop-ip { font-size: 0.58rem; color: var(--accent); font-family: var(--font-mono); }
+  .hop-fault-tag {
+    position: absolute; top: -8px; right: -8px;
+    background: var(--error); color: #fff; font-size: 0.85rem;
+    width: 20px; height: 20px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+  }
+  .hop-icon.fault .hop-fault-tag { display: flex; }
+  .link { flex: 1; height: 2px; background: var(--border); min-width: 12px; position: relative; }
+  .link.ok { background: var(--success); }
+  .link.fault { background: var(--error); }
+  .link.fault::after {
+    content: '✕'; position: absolute; top: -9px; left: 50%; transform: translateX(-50%);
+    color: var(--error); font-size: 0.9rem; background: var(--card); padding: 0 2px;
+  }
+
+  /* TERMINAL */
+  .terminal { background: #050d1a; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 14px; }
+  .terminal-bar { background: var(--card); padding: 8px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ef4444; } .dot-y { background: #f59e0b; } .dot-g { background: #22c55e; }
+  .terminal-title { color: var(--muted); font-size: 0.72rem; font-family: var(--font-mono); margin-left: 8px; }
+  .terminal-body { padding: 14px; font-family: var(--font-mono); font-size: 0.82rem; min-height: 160px; max-height: 280px; overflow-y: auto; }
+  .terminal-body::-webkit-scrollbar { width: 4px; }
+  .terminal-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  .t-line { margin-bottom: 3px; line-height: 1.5; white-space: pre-wrap; }
+  .t-prompt { color: var(--accent3); }
+  .t-output { color: #94a3b8; }
+  .t-success { color: var(--success); }
+  .t-error { color: var(--error); }
+  .t-warn { color: var(--warn); }
+  .t-highlight { color: var(--accent); }
+  .t-info { color: var(--accent2); }
+  .t-muted { color: var(--muted); }
+
+  /* DIAGNOSTIC BUTTONS */
+  .section-title { font-size: 0.92rem; font-weight: 900; color: var(--accent); margin: 18px 0 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 1px; }
+  .diag-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  @media(max-width: 560px){ .diag-grid { grid-template-columns: 1fr; } }
+  .diag-btn {
+    padding: 11px 14px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--card); color: var(--text); cursor: pointer; text-align: left;
+    font-family: var(--font-mono); font-size: 0.8rem; transition: all 0.15s;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .diag-btn:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,212,255,0.06); transform: translateY(-1px); }
+  .diag-btn:disabled { opacity: 0.5; cursor: default; }
+  .diag-btn .cmd { color: var(--accent); font-weight: bold; }
+  .diag-btn .desc { color: var(--muted); font-size: 0.68rem; font-family: var(--font-sans); }
+  .diag-btn .done-mark { color: var(--success); }
+
+  /* BUTTONS */
+  .btn { padding: 11px 22px; border-radius: 8px; border: none; cursor: pointer; font-family: var(--font-sans); font-weight: 700; font-size: 0.9rem; transition: all 0.15s; }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+  .btn-primary { background: var(--accent); color: var(--bg); }
+  .btn-primary:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  .btn-accent { background: var(--accent2); color: #fff; }
+  .btn-accent:hover:not(:disabled) { opacity: 0.85; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+
+  /* CHOICE PANEL */
+  .panel {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; margin-bottom: 16px; display: none; animation: fadeIn 0.25s ease;
+  }
+  .panel.show { display: block; }
+  .panel h3 { font-size: 1.05rem; margin-bottom: 6px; }
+  .panel .sub { color: var(--muted); font-size: 0.82rem; margin-bottom: 14px; font-family: var(--font-mono); }
+  .choices { display: grid; gap: 9px; }
+  .choice {
+    padding: 13px 16px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer; text-align: left;
+    font-size: 0.9rem; line-height: 1.4; transition: all 0.15s;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .choice:hover:not(:disabled) { border-color: var(--accent); background: rgba(0,212,255,0.06); }
+  .choice .ico { font-size: 1.2rem; flex-shrink: 0; }
+  .choice.correct { border-color: var(--success); background: rgba(34,197,94,0.14); color: var(--success); }
+  .choice.wrong { border-color: var(--error); background: rgba(239,68,68,0.1); color: #f87171; }
+  .choice:disabled { cursor: default; }
+
+  .feedback { margin-top: 14px; padding: 13px 16px; border-radius: 8px; font-size: 0.9rem; line-height: 1.55; display: none; }
+  .feedback.show { display: block; }
+  .feedback.ok { background: rgba(34,197,94,0.1); border: 1px solid var(--success); color: #86efac; }
+  .feedback.ng { background: rgba(239,68,68,0.08); border: 1px solid var(--error); color: #f87171; }
+
+  .info-box {
+    background: rgba(0,212,255,0.06); border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 8px; padding: 12px 16px; font-size: 0.84rem; line-height: 1.6;
+    margin-bottom: 14px; color: #94a3b8;
+  }
+  .info-box strong { color: var(--accent); }
+
+  /* RESULT */
+  .result { text-align: center; padding: 36px 20px; display: none; }
+  .result.show { display: block; animation: fadeIn 0.4s ease; }
+  .result-emoji { font-size: 3.5rem; margin-bottom: 10px; }
+  .result-title { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+  .result-sub { color: var(--muted); font-size: 0.9rem; line-height: 1.6; }
+
+  /* STREAK / SCORE */
+  .scorebar { display: flex; justify-content: center; gap: 22px; background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 12px 24px; margin: 12px 0; flex-wrap: wrap; }
+  .score-item { text-align: center; }
+  .score-label { font-size: 0.68rem; color: var(--muted); font-family: var(--font-mono); text-transform: uppercase; }
+  .score-val { font-size: 1.35rem; font-weight: 900; color: var(--accent2); }
+
+  .securio-hint {
+    display: flex; gap: 10px; align-items: flex-start;
+    background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.3);
+    border-radius: 10px; padding: 12px 14px; margin-bottom: 14px; font-size: 0.85rem; line-height: 1.5;
+  }
+  .securio-hint .fox { font-size: 1.5rem; flex-shrink: 0; }
+  .securio-hint .says b { color: var(--purple); }
+
+  @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo">🔧 障害切り分け編</div>
+    <div class="tagline">ネットワーク探偵団 v2 // troubleshooting_division</div>
+  </header>
+
+  <div class="scorebar">
+    <div class="score-item"><div class="score-label">解決した事件</div><div class="score-val" id="solved">0</div></div>
+    <div class="score-item"><div class="score-label">連続正解</div><div class="score-val" id="streak">0</div></div>
+    <div class="score-item"><div class="score-label">今回の手数</div><div class="score-val" id="moves">0</div></div>
+  </div>
+
+  <div class="mission">
+    <div class="mission-label">▶ 通報</div>
+    <div class="mission-text" id="missionText">「インターネットに繋がらないんです！」── 通報が入った。原因を切り分けて、復旧させよう。</div>
+    <div class="mission-meta">
+      <span>事件番号: <b id="caseNo">#0001</b></span>
+      <span>状況: <b id="caseStatus">調査中</b></span>
+    </div>
+  </div>
+
+  <div class="securio-hint">
+    <div class="fox">🦊</div>
+    <div class="says"><b>セキュリオ：</b><span id="securioText">まずは足元から確認しよう。下のレイヤー（自分のPC）から順番に上（インターネット）へ調べていくのがトラブルシュートの鉄則だよ。</span></div>
+  </div>
+
+  <!-- NETWORK MAP -->
+  <div class="netmap-wrap">
+    <div class="netmap" id="netmap">
+      <div class="hop"><div class="hop-icon" id="hop-pc">💻<span class="hop-fault-tag">!</span></div><div class="hop-label">自分のPC</div><div class="hop-ip" id="ip-pc">192.168.1.5</div></div>
+      <div class="link" id="link-0"></div>
+      <div class="hop"><div class="hop-icon" id="hop-hub">🔀<span class="hop-fault-tag">!</span></div><div class="hop-label">HUB<br>(集線装置)</div><div class="hop-ip">L2</div></div>
+      <div class="link" id="link-1"></div>
+      <div class="hop"><div class="hop-icon" id="hop-router">📡<span class="hop-fault-tag">!</span></div><div class="hop-label">ルーター</div><div class="hop-ip">192.168.1.1</div></div>
+      <div class="link" id="link-2"></div>
+      <div class="hop"><div class="hop-icon" id="hop-onu">🔌<span class="hop-fault-tag">!</span></div><div class="hop-label">ONU/回線</div><div class="hop-ip">WAN</div></div>
+      <div class="link" id="link-3"></div>
+      <div class="hop"><div class="hop-icon" id="hop-dns">🗂️<span class="hop-fault-tag">!</span></div><div class="hop-label">DNS</div><div class="hop-ip">8.8.8.8</div></div>
+      <div class="link" id="link-4"></div>
+      <div class="hop"><div class="hop-icon" id="hop-web">🌐<span class="hop-fault-tag">!</span></div><div class="hop-label">Webサーバー</div><div class="hop-ip">example.com</div></div>
+    </div>
+  </div>
+
+  <!-- TERMINAL -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
+      <div class="terminal-title">診断ターミナル — C:\Users\Tantei</div>
+    </div>
+    <div class="terminal-body" id="termBody">
+      <div class="t-line t-success">診断ターミナル起動。コマンドで原因を切り分けよう。</div>
+      <div class="t-line t-muted">────────────────────────────────────</div>
+    </div>
+  </div>
+
+  <!-- DIAGNOSTIC TOOLS -->
+  <div class="section-title">// 診断コマンド（下のレイヤーから順に）</div>
+  <div class="diag-grid" id="diagGrid"></div>
+
+  <div class="btn-row">
+    <button class="btn btn-accent" id="diagnoseBtn" onclick="openDiagnose()">🔍 原因を特定する</button>
+    <button class="btn btn-secondary" onclick="newCase()">🔄 別の事件に挑戦</button>
+  </div>
+
+  <!-- DIAGNOSE PANEL -->
+  <div class="panel" id="diagnosePanel">
+    <h3>🔍 原因はどれだ？</h3>
+    <div class="sub">診断結果から、障害の原因を1つ選べ</div>
+    <div class="choices" id="diagnoseChoices"></div>
+    <div class="feedback" id="diagnoseFb"></div>
+  </div>
+
+  <!-- SCOPE PANEL (物理障害の範囲切り分け) -->
+  <div class="panel" id="scopePanel">
+    <h3>📍 範囲で切り分けよう</h3>
+    <div class="sub" id="scopeSub">物理層の障害だ。でもケーブル抜け？ HUB故障？ 周りに聞いて確かめよう</div>
+    <div class="choices" id="scopeChoices"></div>
+    <div class="feedback" id="scopeFb"></div>
+  </div>
+
+  <!-- REPAIR PANEL -->
+  <div class="panel" id="repairPanel">
+    <h3>🛠️ どう復旧する？</h3>
+    <div class="sub">正しい対処を選んで復旧させよう</div>
+    <div class="choices" id="repairChoices"></div>
+    <div class="feedback" id="repairFb"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="panel" id="resultPanel">
+    <div class="result show">
+      <div class="result-emoji" id="resultEmoji">🎉</div>
+      <div class="result-title" id="resultTitle"></div>
+      <div class="result-sub" id="resultSub"></div>
+      <br>
+      <button class="btn btn-primary" onclick="newCase()">▶ 次の事件へ</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ==================== 障害シナリオ定義 ====================
+// 各コマンドの結果は障害ごとに変わる。切り分けの肝は「どこで初めて失敗するか」。
+
+// 物理層の障害（ケーブル抜け / HUB故障）は診断コマンドの結果が同じ。
+// コマンドでは「物理層が切れている」ことまでしか分からず、最後は“範囲”で見分ける。
+const PHYS_RESULTS = {
+  ipconfig: { cls: 't-error', lines: [
+    'イーサネット アダプター:',
+    '   メディアの状態. . . . . : メディアは接続されていません  ← ⚠',
+  ], note: '⚠「メディアは接続されていません」＝ケーブル/HUBなど物理層が切れているサイン。' },
+  loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ PC内部のTCP/IPは生きている。' },
+  gw:   { cls: 't-error', lines: ['192.168.1.1: 要求がタイムアウトしました ×4'], note: '⚠ ルーターに全く届かない。物理的に繋がっていない可能性大。' },
+  ext:  { cls: 't-error', lines: ['8.8.8.8: 要求がタイムアウトしました ×4'], note: '⚠ 当然、外にも出られない。' },
+  dns:  { cls: 't-error', lines: ['DNS要求がタイムアウトしました。'], note: '⚠ 名前解決も不可。' },
+  web:  { cls: 't-error', lines: ['example.com: ホストが見つかりません。'], note: '⚠ Webにも到達不可。' },
+};
+
+const FAULTS = {
+  dhcp: {
+    name: 'DHCPアドレス取得失敗',
+    icon: '📋',
+    faultHop: 'pc',
+    faultLink: null,
+    story: '「ネットに繋がらない。さっき再起動したら急に…」',
+    explain: 'PCがIPアドレスを自動取得（DHCP）できず、正しいネットワーク設定を持てていない状態。ipconfigで 169.254.x.x という見慣れないアドレス（APIPA）が出ているのが決定的なサイン。これでは誰とも通信できない。',
+    badIp: '169.254.218.44',
+    results: {
+      ipconfig: { cls: 't-error', lines: [
+        'IPv4 アドレス. . . . . . : 169.254.218.44  ← ⚠ APIPA!',
+        'サブネット マスク . . . . : 255.255.0.0',
+        'デフォルト ゲートウェイ . : (未設定)',
+      ], note: '⚠ 169.254 で始まるのはDHCP失敗のサイン！正しいIPがもらえていない。' },
+      loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ TCP/IPスタック自体は正常。' },
+      gw:   { cls: 't-error', lines: ['192.168.1.1: 要求がタイムアウトしました ×4'], note: '⚠ そもそも正しいIPが無いのでゲートウェイに届かない。' },
+      ext:  { cls: 't-error', lines: ['8.8.8.8: 要求がタイムアウトしました ×4'], note: '⚠ 外にも出られない。' },
+      dns:  { cls: 't-error', lines: ['DNS要求がタイムアウトしました。'], note: '⚠ 名前解決も不可。' },
+      web:  { cls: 't-error', lines: ['example.com: ホストが見つかりません。'], note: '⚠ Webにも到達不可。' },
+    },
+    repair: 'renew',
+  },
+  cable: {
+    name: 'LANケーブルの抜け（自分のPCだけ）',
+    icon: '🔌',
+    physical: true,
+    scope: 'self',
+    faultHop: null,
+    faultLink: '0',
+    story: '「画面の右下に赤いバツ印が出てます。私の席だけかも…？」',
+    explain: '自分のPCのLANケーブルが抜けている（または断線している）状態。物理層の障害なので、HUB故障と診断結果は全く同じ。だが「繋がらないのは自分のPCだけ」という“範囲”が、HUB故障との決定的な違い。',
+    results: PHYS_RESULTS,
+    repair: 'cable_fix',
+  },
+  hub: {
+    name: 'HUB（集線装置）の故障（フロア全員）',
+    icon: '🔀',
+    physical: true,
+    scope: 'all',
+    faultHop: 'hub',
+    faultLink: '0',
+    story: '「このフロアの人、みんな繋がらないって騒いでます」',
+    explain: 'PCとルーターの間にあるHUB（集線装置）が故障した状態。物理層の障害なので、ケーブル抜けと診断結果は全く同じ。違いは“範囲”──HUBにぶら下がっている端末が全員まとめて繋がらなくなるのが特徴。',
+    results: PHYS_RESULTS,
+    repair: 'hub_fix',
+  },
+  router: {
+    name: 'ルーターのダウン',
+    icon: '📡',
+    faultHop: 'router',
+    faultLink: '1',
+    story: '「みんな繋がらないって言ってます。フロア全体かも」',
+    explain: 'ルーターがフリーズ・ダウンしている状態。IPアドレスはリースが生きているので正常（ipconfigはOK）だが、ゲートウェイ＝ルーターに ping しても応答がない。複数人が同時に繋がらないのもルーター障害の典型。',
+    results: {
+      ipconfig: { cls: 't-success', lines: [
+        'IPv4 アドレス. . . . . . : 192.168.1.5',
+        'サブネット マスク . . . . : 255.255.255.0',
+        'デフォルト ゲートウェイ . : 192.168.1.1',
+      ], note: '✅ IP設定は正常。アドレスは持てている。' },
+      loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ 自分のPCは正常。' },
+      gw:   { cls: 't-error', lines: ['192.168.1.1: 要求がタイムアウトしました ×4'], note: '⚠ IPは正常なのにゲートウェイ（ルーター）が応答しない＝ルーター自体が怪しい。' },
+      ext:  { cls: 't-error', lines: ['8.8.8.8: 要求がタイムアウトしました ×4'], note: '⚠ ルーターが死んでいるので外には出られない。' },
+      dns:  { cls: 't-error', lines: ['DNS要求がタイムアウトしました。'], note: '⚠ 名前解決も不可。' },
+      web:  { cls: 't-error', lines: ['example.com: 要求がタイムアウトしました。'], note: '⚠ Webにも到達不可。' },
+    },
+    repair: 'reboot_router',
+  },
+  line: {
+    name: '回線障害（ISP側）',
+    icon: '🔌',
+    faultHop: 'onu',
+    faultLink: '2',
+    story: '「社内のプリンタには繋がるのに、ネットだけダメで」',
+    explain: 'LAN内（自分→ルーター）は正常だが、プロバイダ側の回線（WAN）で障害が出ている状態。ルーターまでは ping が通るのに、その先の外部IP（8.8.8.8）に届かないのが切り分けのポイント。自社では直せず、ISPへの連絡が必要なことが多い。',
+    results: {
+      ipconfig: { cls: 't-success', lines: [
+        'IPv4 アドレス. . . . . . : 192.168.1.5',
+        'デフォルト ゲートウェイ . : 192.168.1.1',
+      ], note: '✅ IP設定は正常。' },
+      loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ 自分のPCは正常。' },
+      gw:   { cls: 't-success', lines: ['192.168.1.1 からの応答: 時間 =2ms TTL=64 ×4'], note: '✅ ルーターまでは届く！LAN内は健全。' },
+      ext:  { cls: 't-error', lines: ['8.8.8.8: 要求がタイムアウトしました ×4'], note: '⚠ ルーターは生きているのに外部IPに届かない＝回線（ISP）側の障害が濃厚。' },
+      dns:  { cls: 't-error', lines: ['DNS要求がタイムアウトしました。'], note: '⚠ 外に出られないので名前解決もできない。' },
+      web:  { cls: 't-error', lines: ['example.com: 要求がタイムアウトしました。'], note: '⚠ Webにも到達不可。' },
+    },
+    repair: 'isp',
+  },
+  dns: {
+    name: 'DNSサーバーの応答不能',
+    icon: '🗂️',
+    faultHop: 'dns',
+    faultLink: '3',
+    story: '「アドレス打っても“見つかりません”って出る。でも変だな…」',
+    explain: '回線は生きていて外部IP（8.8.8.8）にも届くのに、名前解決だけができない状態。「IPアドレス直打ちなら通るが、ドメイン名だと通らない」が決定的サイン。電話帳（DNS）だけが壊れているイメージ。',
+    results: {
+      ipconfig: { cls: 't-success', lines: [
+        'IPv4 アドレス. . . . . . : 192.168.1.5',
+        'デフォルト ゲートウェイ . : 192.168.1.1',
+      ], note: '✅ IP設定は正常。' },
+      loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ 自分のPCは正常。' },
+      gw:   { cls: 't-success', lines: ['192.168.1.1 からの応答: 時間 =2ms TTL=64 ×4'], note: '✅ ルーターまで届く。' },
+      ext:  { cls: 't-success', lines: ['8.8.8.8 からの応答: 時間 =14ms TTL=118 ×4'], note: '✅ 外部IPに届く！インターネット回線は生きている。' },
+      dns:  { cls: 't-error', lines: ['DNSサーバー 192.168.1.1 が応答しません。', 'タイムアウトしました。'], note: '⚠ 回線は生きているのに名前解決だけ失敗＝DNSの問題！' },
+      web:  { cls: 't-error', lines: ['example.com: ホスト名を解決できませんでした。'], note: '⚠ 名前→IP変換ができないのでドメイン名ではアクセス不可。（IP直打ちなら通る）' },
+    },
+    repair: 'change_dns',
+  },
+  server: {
+    name: '宛先Webサーバーのダウン',
+    icon: '🌐',
+    faultHop: 'web',
+    faultLink: '4',
+    story: '「あの取引先のサイトだけ開けない。他のサイトは見れる」',
+    explain: '自分側のネットワークは完全に正常で、アクセスしたい相手のサーバーだけが落ちている状態。DNSでの名前解決も成功し、他サイトは見られるのに、特定の宛先だけ応答がない。自分では直せない＝相手の復旧待ち。',
+    results: {
+      ipconfig: { cls: 't-success', lines: [
+        'IPv4 アドレス. . . . . . : 192.168.1.5',
+        'デフォルト ゲートウェイ . : 192.168.1.1',
+      ], note: '✅ IP設定は正常。' },
+      loopback: { cls: 't-success', lines: ['127.0.0.1 からの応答: 時間 <1ms TTL=128 ×4'], note: '✅ 自分のPCは正常。' },
+      gw:   { cls: 't-success', lines: ['192.168.1.1 からの応答: 時間 =2ms TTL=64 ×4'], note: '✅ ルーターまで届く。' },
+      ext:  { cls: 't-success', lines: ['8.8.8.8 からの応答: 時間 =14ms TTL=118 ×4'], note: '✅ 外部IPに届く。回線は健全。' },
+      dns:  { cls: 't-success', lines: ['名前: example.com', 'Address: 93.184.216.34'], note: '✅ 名前解決も成功！DNSは正常。' },
+      web:  { cls: 't-error', lines: ['93.184.216.34: 要求がタイムアウトしました ×4'], note: '⚠ 名前解決はできるのに、その宛先サーバーだけ応答なし＝相手のサーバーがダウン。' },
+    },
+    repair: 'wait_server',
+  },
+};
+
+// 診断コマンド一覧（下のレイヤー順）
+const DIAG_CMDS = [
+  { id: 'ipconfig', cmd: 'ipconfig',          full: 'ipconfig /all',      desc: '① 自分のIP設定を確認' },
+  { id: 'loopback', cmd: 'ping 127.0.0.1',    full: 'ping 127.0.0.1',     desc: '② 自分のTCP/IPスタック確認' },
+  { id: 'gw',       cmd: 'ping 192.168.1.1',  full: 'ping 192.168.1.1',   desc: '③ ルーター（ゲートウェイ）まで届くか' },
+  { id: 'ext',      cmd: 'ping 8.8.8.8',      full: 'ping 8.8.8.8',       desc: '④ 外部IPに届くか（回線確認）' },
+  { id: 'dns',      cmd: 'nslookup',          full: 'nslookup example.com', desc: '⑤ 名前解決できるか（DNS確認）' },
+  { id: 'web',      cmd: 'ping example.com',  full: 'ping example.com',   desc: '⑥ 宛先サーバーが生きているか' },
+];
+
+// 復旧アクション選択肢（正解は障害ごとに異なる）
+const REPAIR_OPTIONS = {
+  renew:        { ico: '🔄', text: 'IPアドレスを再取得する（ipconfig /renew）' },
+  cable_fix:    { ico: '🔌', text: '自分のPCのLANケーブルを挿し直す・交換する' },
+  hub_fix:      { ico: '🔀', text: 'HUB（集線装置）の電源を入れ直す・交換する' },
+  reboot_router:{ ico: '♻️', text: 'ルーターを再起動する' },
+  isp:          { ico: '📞', text: 'ONUを再起動し、直らなければISP（プロバイダ）に連絡する' },
+  change_dns:   { ico: '🗂️', text: 'DNSサーバーを 8.8.8.8 などに変更する' },
+  wait_server:  { ico: '⏳', text: '自分側は正常。相手サーバーの復旧を待つ／管理者に確認する' },
+  format:       { ico: '💥', text: 'とりあえずPCを初期化する' },
+  reinstall:    { ico: '📦', text: 'OSを再インストールする' },
+};
+
+// 障害ごとの復旧選択肢（正解＋ダミー3つ）
+const REPAIR_SETS = {
+  dhcp:   ['renew', 'cable_fix', 'change_dns', 'format'],
+  cable:  ['cable_fix', 'hub_fix', 'renew', 'reinstall'],
+  hub:    ['hub_fix', 'cable_fix', 'reboot_router', 'reinstall'],
+  router: ['reboot_router', 'isp', 'cable_fix', 'format'],
+  line:   ['isp', 'reboot_router', 'change_dns', 'reinstall'],
+  dns:    ['change_dns', 'renew', 'isp', 'format'],
+  server: ['wait_server', 'reboot_router', 'change_dns', 'reinstall'],
+};
+
+// ==================== STATE ====================
+let state = {
+  solved: 0,
+  streak: 0,
+  moves: 0,
+  caseNum: 0,
+  currentFault: null,
+  ranCmds: new Set(),
+  diagnosed: false,
+};
+
+function $(id){ return document.getElementById(id); }
+
+// ==================== 新しい事件 ====================
+function newCase() {
+  const keys = Object.keys(FAULTS);
+  const pick = keys[Math.floor(Math.random() * keys.length)];
+  state.currentFault = pick;
+  state.moves = 0;
+  state.ranCmds = new Set();
+  state.diagnosed = false;
+  state.caseNum++;
+
+  const f = FAULTS[pick];
+  $('caseNo').textContent = '#' + String(1000 + state.caseNum).slice(1).padStart(4, '0');
+  $('caseStatus').textContent = '調査中';
+  $('caseStatus').style.color = 'var(--warn)';
+  $('missionText').innerHTML = `${f.story}<br><span style="color:var(--muted);font-size:0.85rem">── 原因を切り分けて、復旧させよう。</span>`;
+  $('moves').textContent = '0';
+
+  // セキュリオのヒント
+  $('securioText').textContent = 'まずは足元から確認しよう。下のレイヤー（自分のPC）から順番に上（インターネット）へ調べていくのがトラブルシュートの鉄則だよ。';
+
+  // ターミナルリセット
+  $('termBody').innerHTML =
+    '<div class="t-line t-success">診断ターミナル起動。コマンドで原因を切り分けよう。</div>' +
+    '<div class="t-line t-muted">────────────────────────────────────</div>';
+
+  // マップリセット
+  document.querySelectorAll('.hop-icon').forEach(h => h.classList.remove('ok','fault','probing'));
+  document.querySelectorAll('.link').forEach(l => l.classList.remove('ok','fault'));
+
+  // パネルリセット
+  $('diagnosePanel').classList.remove('show');
+  $('scopePanel').classList.remove('show');
+  $('repairPanel').classList.remove('show');
+  $('resultPanel').classList.remove('show');
+  $('diagnoseBtn').disabled = false;
+
+  renderDiagButtons();
+}
+
+// ==================== 診断ボタン描画 ====================
+function renderDiagButtons() {
+  const grid = $('diagGrid');
+  grid.innerHTML = DIAG_CMDS.map(c => {
+    const done = state.ranCmds.has(c.id);
+    return `<button class="diag-btn" onclick="runDiag('${c.id}')">
+      <span class="cmd">$ ${c.full} ${done ? '<span class="done-mark">✓</span>' : ''}</span>
+      <span class="desc">${c.desc}</span>
+    </button>`;
+  }).join('');
+}
+
+// ==================== 診断コマンド実行 ====================
+let diagBusy = false;
+function runDiag(cmdId) {
+  if (diagBusy) return;
+  const f = FAULTS[state.currentFault];
+  const cmd = DIAG_CMDS.find(c => c.id === cmdId);
+  const res = f.results[cmdId];
+  const body = $('termBody');
+
+  state.moves++;
+  $('moves').textContent = state.moves;
+  state.ranCmds.add(cmdId);
+
+  // コマンドをエコー
+  appendTerm('t-prompt', `C:\\Users\\Tantei> ${cmd.full}`);
+
+  diagBusy = true;
+  // 処理中表示
+  const spin = appendTerm('t-muted', '実行中...');
+
+  setTimeout(() => {
+    spin.remove();
+    res.lines.forEach((ln, i) => {
+      appendTerm(res.cls, ln);
+    });
+    if (res.note) appendTerm('t-info', '   ' + res.note);
+    appendTerm('t-muted', '────────────────────────────────────');
+    body.scrollTop = body.scrollHeight;
+    diagBusy = false;
+    renderDiagButtons();
+  }, 500);
+}
+
+function appendTerm(cls, txt) {
+  const body = $('termBody');
+  const d = document.createElement('div');
+  d.className = `t-line ${cls}`;
+  d.style.animation = 'fadeIn 0.15s ease';
+  d.textContent = txt;
+  body.appendChild(d);
+  body.scrollTop = body.scrollHeight;
+  return d;
+}
+
+// ==================== 原因特定 ====================
+// 物理障害(cable/hub)は診断結果が同じなので、選択肢では「物理層の障害」に統合する
+const DIAGNOSE_CATEGORIES = [
+  { key: 'dhcp',     icon: '📋', label: 'DHCPアドレス取得失敗' },
+  { key: 'physical', icon: '🔌', label: '物理層の障害（LANケーブル / HUB）' },
+  { key: 'router',   icon: '📡', label: 'ルーターのダウン' },
+  { key: 'line',     icon: '🔌', label: '回線障害（ISP側）' },
+  { key: 'dns',      icon: '🗂️', label: 'DNSサーバーの応答不能' },
+  { key: 'server',   icon: '🌐', label: '宛先Webサーバーのダウン' },
+];
+
+function openDiagnose() {
+  $('diagnosePanel').classList.add('show');
+  const choices = $('diagnoseChoices');
+  const cats = DIAGNOSE_CATEGORIES.slice().sort(() => Math.random() - 0.5);
+  choices.innerHTML = cats.map(c =>
+    `<button class="choice" onclick="checkDiagnose('${c.key}', this)">
+      <span class="ico">${c.icon}</span><span>${c.label}</span>
+    </button>`
+  ).join('');
+  $('diagnoseFb').className = 'feedback';
+  $('diagnosePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function checkDiagnose(pick, el) {
+  if (state.diagnosed) return;
+  const f = FAULTS[state.currentFault];
+  const isPhysical = !!f.physical;
+  // 物理障害は 'physical' を選べば正解、それ以外は障害キー一致で正解
+  const isCorrect = isPhysical ? (pick === 'physical') : (pick === state.currentFault);
+
+  const choices = document.querySelectorAll('#diagnoseChoices .choice');
+  const fb = $('diagnoseFb');
+
+  if (isCorrect) {
+    state.diagnosed = true;
+    choices.forEach(c => c.disabled = true);
+    el.classList.add('correct');
+    $('diagnoseBtn').disabled = true;
+    if (isPhysical) {
+      // 物理障害 → 範囲で切り分けるステップへ
+      fb.className = 'feedback show ok';
+      fb.innerHTML = `✅ <b>物理層の障害だ！</b> ipconfigが「メディアは接続されていません」を示している。<br>でも原因はケーブル抜けか、HUB故障か── 次は“範囲”で切り分けよう。`;
+      setTimeout(() => openScope(), 800);
+    } else {
+      fb.className = 'feedback show ok';
+      fb.innerHTML = `✅ <b>正解！</b> 原因は「${f.name}」。<br>${f.explain}`;
+      revealFault(f);
+      setTimeout(() => openRepair(), 700);
+    }
+  } else {
+    el.classList.add('wrong');
+    // 正解カテゴリをハイライト
+    const correctKey = isPhysical ? 'physical' : state.currentFault;
+    const correctLabel = DIAGNOSE_CATEGORIES.find(c => c.key === correctKey).label;
+    choices.forEach(c => { if (c.textContent.includes(correctLabel)) c.classList.add('correct'); });
+    fb.className = 'feedback show ng';
+    fb.innerHTML = `❌ 不正解。もう一度診断結果を見直そう。<br><span style="color:var(--muted)">ヒント: ${diagnoseHint()}</span>`;
+    state.streak = 0;
+    $('streak').textContent = '0';
+    setTimeout(() => {
+      choices.forEach(c => { c.disabled = false; c.classList.remove('wrong'); });
+    }, 1600);
+  }
+}
+
+function diagnoseHint() {
+  // 実行済みコマンドが少なければ「もっと調べよう」
+  if (state.ranCmds.size < 3) return 'まだ調べていないコマンドがあるよ。下のレイヤーから順に全部試してみよう。';
+  return '「どのコマンドで初めて失敗したか」が原因の場所を教えてくれる。成功した最後の地点と、失敗した最初の地点の“間”が怪しい。';
+}
+
+// ==================== 範囲で切り分け（物理障害） ====================
+let scopeDone = false;
+function openScope() {
+  scopeDone = false;
+  const f = FAULTS[state.currentFault];
+  // 「周りを確認した結果」を事実として提示（実際のscopeに応じる）
+  const fact = f.scope === 'self'
+    ? '周りに確認すると──<b style="color:var(--accent)">繋がらないのは自分のPCだけ</b>。隣の席の人は普通にネットが使えている。'
+    : '周りに確認すると──<b style="color:var(--accent2)">このHUBに繋がっている人が全員</b>繋がらない。隣の席も、その隣も全滅だ。';
+  $('scopeSub').innerHTML = `物理層の障害と分かった。次は“範囲”で正体を見極める。<br>${fact}<br>では、原因はどっち？`;
+  $('securioText').textContent = '物理障害は「誰が繋がらないか」の範囲で切り分けるのがコツ。1台だけならその席のケーブル、まとめて全滅なら共通のHUBが怪しい、というわけ。';
+
+  const choices = $('scopeChoices');
+  const opts = [
+    { key: 'cable', ico: '🔌', text: 'LANケーブルの抜け（自分のPCだけの問題）' },
+    { key: 'hub',   ico: '🔀', text: 'HUBの故障（ぶら下がる全員の問題）' },
+  ].sort(() => Math.random() - 0.5);
+  choices.innerHTML = opts.map(o =>
+    `<button class="choice" onclick="checkScope('${o.key}', this)">
+      <span class="ico">${o.ico}</span><span>${o.text}</span>
+    </button>`
+  ).join('');
+  $('scopeFb').className = 'feedback';
+  $('scopePanel').classList.add('show');
+  $('scopePanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function checkScope(pick, el) {
+  if (scopeDone) return;
+  const correct = state.currentFault; // 'cable' or 'hub'
+  const choices = document.querySelectorAll('#scopeChoices .choice');
+  const fb = $('scopeFb');
+  if (pick === correct) {
+    scopeDone = true;
+    choices.forEach(c => c.disabled = true);
+    el.classList.add('correct');
+    const f = FAULTS[correct];
+    fb.className = 'feedback show ok';
+    fb.innerHTML = `✅ <b>正解！</b> ${f.explain}`;
+    revealFault(f);
+    setTimeout(() => openRepair(), 800);
+  } else {
+    el.classList.add('wrong');
+    fb.className = 'feedback show ng';
+    fb.innerHTML = `❌ 範囲をもう一度よく見て。「${FAULTS[correct].scope === 'self' ? '自分だけ' : '全員'}」が繋がらないなら、原因は別の方だ。`;
+    state.streak = 0; $('streak').textContent = '0';
+    setTimeout(() => { el.classList.remove('wrong'); }, 1500);
+  }
+}
+
+function revealFault(f) {
+  const order = ['pc','hub','router','onu','dns','web'];
+  // faultLinkがある場合：手前のリンク/ノードをOK、faultLinkをfaultに
+  if (f.faultLink !== null && f.faultLink !== undefined) {
+    const fl = parseInt(f.faultLink);
+    for (let l = 0; l < fl; l++) { const lk = $('link-' + l); if (lk) lk.classList.add('ok'); }
+    const flink = $('link-' + fl); if (flink) flink.classList.add('fault');
+    for (let i = 0; i <= fl; i++) { const h = $('hop-' + order[i]); if (h) h.classList.add('ok'); }
+  }
+  // faultHopがあればそのノードをfault（OKを上書き）
+  if (f.faultHop) {
+    const el = $('hop-' + f.faultHop);
+    if (el) { el.classList.remove('ok'); el.classList.add('fault'); }
+  }
+}
+
+// ==================== 復旧 ====================
+let repaired = false;
+function openRepair() {
+  repaired = false;
+  $('repairPanel').classList.add('show');
+  const f = FAULTS[state.currentFault];
+  const set = REPAIR_SETS[state.currentFault].slice().sort(() => Math.random() - 0.5);
+  const choices = $('repairChoices');
+  choices.innerHTML = set.map(r =>
+    `<button class="choice" onclick="checkRepair('${r}', this)">
+      <span class="ico">${REPAIR_OPTIONS[r].ico}</span><span>${REPAIR_OPTIONS[r].text}</span>
+    </button>`
+  ).join('');
+  $('repairFb').className = 'feedback';
+  $('securioText').textContent = '原因が分かったね！次は正しい対処を選ぼう。あわてて初期化したりしないように── 直せる障害と、自分では直せない障害があるよ。';
+  $('repairPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function checkRepair(pick, el) {
+  if (repaired) return;
+  const f = FAULTS[state.currentFault];
+  const correct = f.repair;
+  const choices = document.querySelectorAll('#repairChoices .choice');
+  const fb = $('repairFb');
+
+  if (pick === correct) {
+    repaired = true;
+    choices.forEach(c => c.disabled = true);
+    el.classList.add('correct');
+    fb.className = 'feedback show ok';
+    const selfFix = (pick === 'isp' || pick === 'wait_server')
+      ? 'この障害は自社では直せないタイプ。正しい判断だ。'
+      : '対処成功！通信が回復していく…';
+    fb.innerHTML = `✅ <b>正しい対処！</b> ${selfFix}`;
+    // 復旧アニメ
+    setTimeout(() => recoverAnim(), 500);
+  } else {
+    el.classList.add('wrong');
+    const bad = (pick === 'format' || pick === 'reinstall');
+    fb.className = 'feedback show ng';
+    fb.innerHTML = bad
+      ? `❌ ちょっと待った！それは大事なデータが消えるし、原因と関係ない。もっと的を絞った対処があるはず。`
+      : `❌ それでは直らない。原因（${f.name}）に対して効く対処を選ぼう。`;
+    state.streak = 0;
+    $('streak').textContent = '0';
+    setTimeout(() => { el.classList.remove('wrong'); }, 1500);
+  }
+}
+
+function recoverAnim() {
+  // 故障箇所を順に緑へ
+  const order = ['pc','hub','router','onu','dns','web'];
+  document.querySelectorAll('.link.fault').forEach(l => { l.classList.remove('fault'); l.classList.add('ok'); });
+  let i = 0;
+  const timer = setInterval(() => {
+    const el = $('hop-' + order[i]);
+    if (el) { el.classList.remove('fault'); el.classList.add('probing'); setTimeout(()=>{ el.classList.remove('probing'); el.classList.add('ok'); }, 300); }
+    const lk = $('link-' + i);
+    if (lk) lk.classList.add('ok');
+    i++;
+    if (i >= order.length) { clearInterval(timer); setTimeout(showResult, 500); }
+  }, 200);
+}
+
+function showResult() {
+  state.solved++;
+  state.streak++;
+  $('solved').textContent = state.solved;
+  $('streak').textContent = state.streak;
+  $('caseStatus').textContent = '解決';
+  $('caseStatus').style.color = 'var(--success)';
+
+  $('repairPanel').classList.remove('show');
+  $('resultPanel').classList.add('show');
+
+  const f = FAULTS[state.currentFault];
+  let emoji = '🎉', title = '事件解決！';
+  let rank = '';
+  if (state.moves <= 4) { rank = '一発で核心を突いた！名探偵級の切り分け。'; emoji = '🏆'; }
+  else if (state.moves <= 6) { rank = '着実に切り分けて解決。良い手際だ。'; }
+  else { rank = '解決はしたが、もう少し手数を減らせるかも。下層から順に試すのがコツ。'; emoji = '✅'; }
+
+  $('resultEmoji').textContent = emoji;
+  $('resultTitle').textContent = title;
+  $('resultSub').innerHTML = `原因: <b style="color:var(--accent2)">${f.name}</b><br>手数: ${state.moves} ・ 連続正解: ${state.streak}<br><span style="color:var(--muted)">${rank}</span>`;
+  $('resultPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// 起動
+newCase();
+</script>
+</body>
+</html>
