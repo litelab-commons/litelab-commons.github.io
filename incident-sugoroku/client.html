@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>サイバーすごろく - 参加者端末</title>
+<style>
+:root {
+  --bg-0: #050810;
+  --bg-1: #0a1020;
+  --bg-2: #121a30;
+  --line: rgba(0, 220, 255, 0.3);
+  --text: #d8e4ff;
+  --text-dim: #7a8aaa;
+  --accent: #00ddff;
+  --accent-warm: #ffdd00;
+  --good: #00ff9c;
+  --bad: #ff3860;
+  --event: #ffaa00;
+  --font-sans: "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Yu Gothic UI", monospace;
+  --font-display: "Arial Black", "Yu Gothic UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100vh;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font-sans);
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(rgba(0,220,255,0.06) 1px, transparent 1px) 0 0 / 30px 30px,
+    linear-gradient(90deg, rgba(0,220,255,0.06) 1px, transparent 1px) 0 0 / 30px 30px,
+    radial-gradient(ellipse at 50% 30%, rgba(0,220,255,0.1) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.app.in-game {
+  max-width: 980px;
+}
+
+/* ヘッダー */
+header {
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 14px;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 22px;
+  letter-spacing: 0.15em;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-warm) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-transform: uppercase;
+}
+.subtitle {
+  font-size: 11px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  margin-top: 4px;
+  font-family: var(--font-mono);
+}
+
+/* 参加フォーム */
+.join-card {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 28px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.join-card h2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+}
+input[type="text"] {
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  color: var(--text);
+  padding: 14px 16px;
+  font-size: 16px;
+  font-family: var(--font-sans);
+  width: 100%;
+}
+input[type="text"]:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(0,220,255,0.2);
+}
+button.primary {
+  background: var(--accent);
+  color: var(--bg-0);
+  border: none;
+  padding: 14px 20px;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button.primary:hover:not(:disabled) {
+  box-shadow: 0 0 20px rgba(0, 220, 255, 0.6);
+  transform: translateY(-1px);
+}
+button.primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ステータスバー */
+.my-status {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 14px 18px;
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 14px;
+}
+.my-color {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  box-shadow: 0 0 12px currentColor;
+}
+.my-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.my-name {
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--text);
+}
+.player-badge {
+  margin-left: 4px;
+  color: var(--good);
+  text-shadow: 0 0 8px var(--good);
+}
+.my-status-text {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.my-pos {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 900;
+  color: var(--accent);
+  text-align: right;
+  line-height: 1;
+}
+.my-budget {
+  font-family: var(--font-display);
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--good);
+  text-align: right;
+  line-height: 1;
+}
+.my-pos-label,
+.my-budget-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+
+/* 進行ルート */
+#game-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.play-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 16px;
+  align-items: start;
+}
+.play-main {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.route-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 14px 0 16px;
+  position: relative;
+  overflow: hidden;
+}
+.route-panel::before {
+  content: "// ROUTE";
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  margin: 0 16px 12px;
+}
+.route-strip {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding: 6px 18px 12px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+.route-strip::-webkit-scrollbar { height: 6px; }
+.route-strip::-webkit-scrollbar-track { background: transparent; }
+.route-strip::-webkit-scrollbar-thumb { background: var(--line); }
+.route-square {
+  flex: 0 0 108px;
+  min-height: 92px;
+  background: var(--bg-2);
+  border: 1px solid rgba(0, 220, 255, 0.18);
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+}
+.route-square.good { border-color: rgba(0, 255, 156, 0.35); }
+.route-square.bad { border-color: rgba(255, 56, 96, 0.45); }
+.route-square.event { border-color: rgba(255, 170, 0, 0.45); }
+.route-square.goal { border-color: rgba(255, 221, 0, 0.55); }
+.route-square.current {
+  transform: translateY(-4px);
+  border-color: var(--accent);
+  box-shadow: 0 0 22px rgba(0, 220, 255, 0.32);
+}
+.route-num {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+.route-title {
+  font-weight: 900;
+  font-size: 13px;
+  line-height: 1.25;
+  color: var(--text);
+}
+.route-square.good .route-title { color: var(--good); }
+.route-square.bad .route-title { color: var(--bad); }
+.route-square.event .route-title { color: var(--event); }
+.route-square.goal .route-title { color: var(--accent-warm); }
+.route-tokens {
+  display: flex;
+  gap: 4px;
+  min-height: 18px;
+  align-items: center;
+}
+.route-token {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--bg-0);
+  box-shadow: 0 0 10px currentColor;
+}
+.route-token.me {
+  width: 20px;
+  height: 20px;
+  border-color: white;
+}
+.route-count {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-dim);
+  background: rgba(216, 228, 255, 0.08);
+  border: 1px solid rgba(216, 228, 255, 0.18);
+  padding: 1px 5px;
+}
+
+/* サイコロエリア */
+.dice-area {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 30px 20px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.dice-area::before {
+  content: "// ROLL";
+  position: absolute;
+  top: 8px; left: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+.dice-cube {
+  width: 130px; height: 130px;
+  margin: 0 auto 22px;
+  background: var(--bg-2);
+  border: 2px solid var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--accent);
+  position: relative;
+  transition: all 0.3s;
+}
+.dice-cube.rolling {
+  animation: shake 0.08s infinite;
+  border-color: var(--accent-warm);
+  color: var(--accent-warm);
+}
+@keyframes shake {
+  0%, 100% { transform: translate(0, 0) rotate(0deg); }
+  25% { transform: translate(-3px, 2px) rotate(-3deg); }
+  75% { transform: translate(3px, -2px) rotate(3deg); }
+}
+.dice-cube.result {
+  animation: pop 0.5s ease-out;
+}
+@keyframes pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); box-shadow: 0 0 60px var(--accent); }
+  100% { transform: scale(1); }
+}
+.roll-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--accent), #0099cc);
+  color: var(--bg-0);
+  border: none;
+  padding: 18px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 20px rgba(0, 220, 255, 0.3);
+}
+.roll-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 30px rgba(0, 220, 255, 0.5);
+}
+.roll-btn:active:not(:disabled) { transform: translateY(0); }
+.roll-btn:disabled {
+  background: var(--bg-2);
+  color: var(--text-dim);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.wait-msg {
+  margin-top: 14px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  min-height: 18px;
+}
+.wait-msg.active {
+  color: var(--accent-warm);
+}
+
+/* 全員のサマリー */
+.others-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 14px 16px;
+}
+.others-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.others-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.other-row {
+  display: grid;
+  grid-template-columns: 10px 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 4px 0;
+}
+.other-row.me { font-weight: 700; }
+.other-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+}
+.other-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.other-roll {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  min-width: 32px;
+  text-align: right;
+}
+.other-roll.ready { color: var(--good); }
+.other-pos {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 28px;
+  text-align: right;
+}
+.other-budget {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--good);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* 自分の履歴 */
+.history-panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 14px 14px;
+  max-height: calc(100vh - 150px);
+  overflow: hidden;
+  position: sticky;
+  top: 16px;
+}
+.history-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: calc(100vh - 210px);
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.history-empty {
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.history-item {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 8px;
+  padding: 8px;
+  border: 1px solid rgba(216, 228, 255, 0.12);
+  background: rgba(216, 228, 255, 0.05);
+}
+.history-item.good { border-color: rgba(0, 255, 156, 0.35); }
+.history-item.bad { border-color: rgba(255, 56, 96, 0.45); }
+.history-item.event { border-color: rgba(255, 170, 0, 0.45); }
+.history-item.goal { border-color: rgba(255, 221, 0, 0.55); }
+.history-pos {
+  font-family: var(--font-display);
+  font-size: 18px;
+  color: var(--accent);
+  text-align: right;
+}
+.history-name {
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+.history-detail {
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  line-height: 1.45;
+}
+
+@media (max-width: 820px) {
+  .app.in-game {
+    max-width: 520px;
+  }
+  .play-layout {
+    grid-template-columns: 1fr;
+  }
+  .history-panel {
+    position: static;
+    max-height: 240px;
+  }
+  .history-list {
+    max-height: 180px;
+  }
+}
+
+/* メッセージトースト */
+.toast {
+  position: fixed;
+  top: 20px; left: 50%;
+  transform: translateX(-50%) translateY(-200%);
+  background: var(--bg-1);
+  border: 2px solid var(--accent);
+  padding: 14px 24px;
+  font-weight: 700;
+  z-index: 100;
+  transition: transform 0.3s ease-out;
+  max-width: 90%;
+  text-align: center;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.good { border-color: var(--good); color: var(--good); }
+.toast.bad { border-color: var(--bad); color: var(--bad); }
+.toast.event { border-color: var(--event); color: var(--event); }
+.toast.goal { border-color: var(--accent-warm); color: var(--accent-warm); }
+
+/* 接続インジケータ */
+.conn {
+  position: fixed;
+  top: 12px; right: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-dim);
+}
+.conn-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--bad);
+}
+.conn-dot.online { background: var(--good); box-shadow: 0 0 6px currentColor; }
+
+.hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="conn"><div class="conn-dot" id="conn-dot"></div><span id="conn-text">未接続</span></div>
+
+<div class="app">
+  <header>
+    <div class="title">Cyber Sugoroku</div>
+    <div class="subtitle">// 参加者端末 / Participant Terminal</div>
+  </header>
+
+  <!-- 参加フォーム -->
+  <div class="join-card" id="join-card">
+    <h2>// 名前を入力して参加</h2>
+    <input type="text" id="name-input" placeholder="あなたの名前（最大20文字）" maxlength="20" autocomplete="off">
+    <button class="primary" id="join-btn">▶ 参加する</button>
+  </div>
+
+  <!-- ゲーム画面 -->
+  <div id="game-area" class="hidden">
+    <div class="my-status">
+      <div class="my-color" id="my-color"></div>
+      <div class="my-info">
+        <div class="my-name" id="my-name"></div>
+        <div class="my-status-text" id="my-status-text">待機中</div>
+      </div>
+      <div>
+        <div class="my-pos-label">POSITION</div>
+        <div class="my-pos" id="my-pos">0</div>
+      </div>
+      <div>
+        <div class="my-budget-label">BUDGET</div>
+        <div class="my-budget" id="my-budget">100pt</div>
+      </div>
+    </div>
+
+    <div class="play-layout">
+      <div class="play-main">
+        <div class="route-panel">
+          <div class="route-strip" id="route-strip"></div>
+        </div>
+
+        <div class="dice-area">
+          <div class="dice-cube" id="dice-cube">?</div>
+          <button class="roll-btn" id="roll-btn" disabled>🎲 サイコロを振る</button>
+          <div class="wait-msg" id="wait-msg"></div>
+        </div>
+
+        <div class="others-panel">
+          <div class="others-title">// 全員のステータス</div>
+          <div class="others-list" id="others-list"></div>
+        </div>
+      </div>
+
+      <aside class="history-panel">
+        <div class="history-title">// 自分の軌跡</div>
+        <div class="history-list" id="history-list">
+          <div class="history-empty">サイコロを振ると、止まったマスとイベントがここに残ります。</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+let ws = null;
+let myId = null;
+let myPlayer = null;
+let squares = [];
+let boardSize = 30;
+let hasRolledThisRound = false;
+let roundTransitionLocked = false;
+let currentState = null;
+let lastRoutePosition = null;
+let audioCtx = null;
+let historyItems = [];
+let historySeq = 0;
+
+function unlockAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+}
+
+// 接続ID（ローカルストレージで再接続をサポート）
+function getClientId() {
+  let id = sessionStorage.getItem('sugoroku_client_id');
+  if (!id) {
+    id = 'p_' + Math.random().toString(36).slice(2, 10);
+    sessionStorage.setItem('sugoroku_client_id', id);
+  }
+  return id;
+}
+
+function setConnStatus(online) {
+  const dot = document.getElementById('conn-dot');
+  const text = document.getElementById('conn-text');
+  if (online) {
+    dot.classList.add('online');
+    text.textContent = 'CONNECTED';
+  } else {
+    dot.classList.remove('online');
+    text.textContent = '再接続中...';
+  }
+}
+
+function connect(name) {
+  myId = getClientId();
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${window.location.host}/ws/player/${myId}`);
+  ws.onopen = () => {
+    setConnStatus(true);
+    ws.send(JSON.stringify({action: 'join', name: name}));
+  };
+  ws.onclose = () => {
+    setConnStatus(false);
+    setTimeout(() => {
+      if (myPlayer) connect(myPlayer.name);
+    }, 2000);
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    handleMessage(msg);
+  };
+}
+
+function handleMessage(msg) {
+  if (msg.type === 'joined') {
+    myPlayer = msg.data.player;
+    squares = msg.data.squares;
+    boardSize = msg.data.board_size;
+    enterGame();
+  } else if (msg.type === 'state') {
+    currentState = msg.data;
+    renderState(msg.data);
+  } else if (msg.type === 'event') {
+    handleEvent(msg.data);
+  } else if (msg.type === 'rolled') {
+    showDiceResult(msg.data.value);
+  } else if (msg.type === 'error') {
+    showToast(msg.data.message, 'bad');
+  }
+}
+
+function enterGame() {
+  document.querySelector('.app').classList.add('in-game');
+  document.getElementById('join-card').classList.add('hidden');
+  document.getElementById('game-area').classList.remove('hidden');
+  renderMyName(myPlayer);
+  document.getElementById('my-budget').textContent = formatBudget(myPlayer.budget);
+  document.getElementById('my-color').style.background = myPlayer.color;
+  document.getElementById('my-color').style.color = myPlayer.color;
+  buildRoute();
+  renderHistory();
+  updateRollButton();
+}
+
+function renderState(state) {
+  // 自分の情報を更新
+  const me = state.players.find(p => p.id === myId);
+  if (me) {
+    myPlayer = me;
+    document.getElementById('my-pos').textContent = me.position;
+    document.getElementById('my-budget').textContent = formatBudget(me.budget);
+    document.getElementById('my-status-text').textContent = me.status || '待機中';
+    renderMyName(me);
+  }
+  renderRoute(state, me);
+
+  // 他人含む全員リスト
+  const list = document.getElementById('others-list');
+  list.innerHTML = '';
+  state.players.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'other-row' + (p.id === myId ? ' me' : '');
+    const rolled = state.pending_count > 0 && p.last_roll !== null && p.status && p.status.includes('待機中');
+    // pending状態の判定: status文字列を見て判定（簡易）
+    const isPending = p.status && p.status.includes('（待機中）');
+    row.innerHTML = `
+      <div class="other-dot" style="background:${p.color}"></div>
+      <div class="other-name">${escapeHtml(p.name)}${renderBadges(p)}${p.id === myId ? ' (あなた)' : ''}</div>
+      <div class="other-roll ${isPending ? 'ready' : ''}">${isPending ? '✓' : (p.finished ? '🏁' : '')}</div>
+      <div class="other-pos">${p.position}</div>
+      <div class="other-budget">${p.budget ?? 0}pt</div>
+    `;
+    list.appendChild(row);
+  });
+
+  // ボタン状態の更新
+  updateRollButton();
+
+  // 初期待機中だけはロール状態を戻す。ラウンド間は終了表示が終わるまでロックする。
+  if (state.round_number === 0 && state.pending_count === 0 && me && !me.finished) {
+    hasRolledThisRound = false;
+  }
+}
+
+function buildRoute() {
+  const strip = document.getElementById('route-strip');
+  strip.innerHTML = '';
+  squares.forEach((sq, idx) => {
+    const square = document.createElement('div');
+    square.className = `route-square ${sq.type}`;
+    square.id = `route-square-${idx}`;
+    square.innerHTML = `
+      <div class="route-num">${String(idx).padStart(2, '0')}</div>
+      <div class="route-title">${escapeHtml(sq.title)}</div>
+      <div class="route-tokens" id="route-tokens-${idx}"></div>
+    `;
+    strip.appendChild(square);
+  });
+}
+
+function renderRoute(state, me) {
+  if (!me || squares.length === 0) return;
+  for (let i = 0; i < boardSize; i++) {
+    const square = document.getElementById(`route-square-${i}`);
+    const tokens = document.getElementById(`route-tokens-${i}`);
+    if (square) square.classList.toggle('current', i === me.position);
+    if (tokens) tokens.innerHTML = '';
+  }
+  for (let pos = 0; pos < boardSize; pos++) {
+    const tokens = document.getElementById(`route-tokens-${pos}`);
+    if (!tokens) continue;
+    const here = state.players.filter(p => p.position === pos);
+    const meHere = here.find(p => p.id === myId);
+    if (meHere) {
+      const token = document.createElement('div');
+      token.className = 'route-token me';
+      token.style.background = meHere.color;
+      token.style.color = meHere.color;
+      token.title = meHere.name;
+      tokens.appendChild(token);
+    }
+    const others = here.filter(p => p.id !== myId);
+    if (others.length > 0) {
+      const count = document.createElement('div');
+      count.className = 'route-count';
+      count.textContent = `+${others.length}`;
+      count.title = `${others.length}人がこのマスにいます`;
+      tokens.appendChild(count);
+    }
+  }
+  if (lastRoutePosition !== me.position) {
+    lastRoutePosition = me.position;
+    const current = document.getElementById(`route-square-${me.position}`);
+    if (current) {
+      current.scrollIntoView({behavior: 'smooth', inline: 'center', block: 'nearest'});
+    }
+  }
+}
+
+function addHistory(item) {
+  historyItems.unshift({
+    id: ++historySeq,
+    pos: item.pos,
+    title: item.title,
+    detail: item.detail || '',
+    type: item.type || '',
+  });
+  historyItems = historyItems.slice(0, 24);
+  renderHistory();
+}
+
+function renderHistory() {
+  const list = document.getElementById('history-list');
+  if (!list) return;
+  if (historyItems.length === 0) {
+    list.innerHTML = '<div class="history-empty">サイコロを振ると、止まったマスとイベントがここに残ります。</div>';
+    return;
+  }
+  list.innerHTML = historyItems.map(item => `
+    <div class="history-item ${item.type}">
+      <div class="history-pos">${item.pos}</div>
+      <div>
+        <div class="history-name">${escapeHtml(item.title)}</div>
+        <div class="history-detail">${escapeHtml(item.detail)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function squareAt(pos) {
+  return squares[pos] || {title: `${pos}マス`, type: ''};
+}
+
+function updateRollButton() {
+  const btn = document.getElementById('roll-btn');
+  const wait = document.getElementById('wait-msg');
+  if (!myPlayer || !currentState) {
+    btn.disabled = true;
+    wait.textContent = '';
+    return;
+  }
+  if (myPlayer.finished) {
+    btn.disabled = true;
+    btn.textContent = '🏆 ゴール済み';
+    wait.textContent = `${myPlayer.rank}位でフィニッシュ！`;
+    wait.className = 'wait-msg';
+    return;
+  }
+  if (!currentState.game_started) {
+    btn.disabled = true;
+    btn.textContent = '⏳ 開始待ち';
+    wait.textContent = 'ホストがゲームを開始するのを待っています...';
+    wait.className = 'wait-msg active';
+    return;
+  }
+  if (roundTransitionLocked) {
+    btn.disabled = true;
+    btn.textContent = '⏳ 次ラウンド準備中';
+    wait.textContent = 'ラウンド終了を確認中...';
+    wait.className = 'wait-msg active';
+    return;
+  }
+  if (hasRolledThisRound) {
+    btn.disabled = true;
+    btn.textContent = '⏳ 他の参加者を待っています';
+    wait.textContent = `${currentState.pending_count} / ${currentState.total_active} 人がロール済み`;
+    wait.className = 'wait-msg active';
+    return;
+  }
+  btn.disabled = false;
+  btn.textContent = '🎲 サイコロを振る';
+  wait.textContent = '';
+  wait.className = 'wait-msg';
+}
+
+function rollDice() {
+  if (!ws || ws.readyState !== WebSocket.OPEN) return;
+  if (roundTransitionLocked) return;
+  if (hasRolledThisRound) return;
+  unlockAudio();
+  playSound('roll');
+  hasRolledThisRound = true;
+  // ダイス演出開始
+  const cube = document.getElementById('dice-cube');
+  cube.classList.add('rolling');
+  cube.classList.remove('result');
+  let counter = 0;
+  const rollAnim = setInterval(() => {
+    cube.textContent = Math.floor(Math.random() * 6) + 1;
+    counter++;
+    if (counter > 15) {
+      clearInterval(rollAnim);
+      cube.classList.remove('rolling');
+    }
+  }, 60);
+  cube._rollAnim = rollAnim;
+  ws.send(JSON.stringify({action: 'roll'}));
+  updateRollButton();
+}
+
+function showDiceResult(value) {
+  const cube = document.getElementById('dice-cube');
+  if (cube._rollAnim) clearInterval(cube._rollAnim);
+  cube.classList.remove('rolling');
+  cube.classList.add('result');
+  cube.textContent = value;
+}
+
+function handleEvent(ev) {
+  switch (ev.kind) {
+    case 'game_start':
+      clearToastQueue();
+      historyItems = [];
+      renderHistory();
+      roundTransitionLocked = false;
+      hasRolledThisRound = false;
+      playSound('event');
+      showToast('▶ ' + ev.message, '');
+      updateRollButton();
+      break;
+    case 'reset':
+      clearToastQueue();
+      historyItems = [];
+      renderHistory();
+      roundTransitionLocked = false;
+      hasRolledThisRound = false;
+      document.getElementById('dice-cube').textContent = '?';
+      showToast('⟲ ' + ev.message, '');
+      break;
+    case 'round_end':
+      roundTransitionLocked = true;
+      showToast(ev.message, 'good', 4500, () => {
+        roundTransitionLocked = false;
+        hasRolledThisRound = false;
+        updateRollButton();
+      });
+      updateRollButton();
+      break;
+    case 'game_end':
+      hasRolledThisRound = true;
+      showToast(ev.message, 'goal', 8000);
+      updateRollButton();
+      break;
+    case 'move':
+      if (myPlayer && ev.player_id === myId) {
+        const sq = squareAt(ev.to);
+        const route = ev.effect_move
+          ? `${ev.effect_title || 'マス効果'} ${ev.effect > 0 ? '+' : ''}${ev.effect} / ${ev.from} → ${ev.to}`
+          : ev.reroll
+            ? `追加移動 ${ev.from} → ${ev.to}`
+            : `${ev.from} → ${ev.to}`;
+        addHistory({
+          pos: ev.to,
+          title: sq.title,
+          detail: ev.effect_move ? route : `🎲 ${ev.roll} / ${route}`,
+          type: sq.type,
+        });
+      }
+      break;
+    case 'square':
+      if (myPlayer && ev.player_id === myId) {
+        const cls = ev.square_type === 'good' ? 'good'
+          : ev.square_type === 'bad' ? 'bad'
+          : ev.square_type === 'event' ? 'event' : '';
+        playSound(cls || 'event');
+        addHistory({
+          pos: myPlayer.position,
+          title: ev.square_title,
+          detail: `${ev.square_desc}${formatBudgetLine(ev.budget_delta)}`,
+          type: cls,
+        });
+        showToast(`${ev.square_title}\n${ev.square_desc}${formatBudgetLine(ev.budget_delta)}`, cls, 9000);
+      }
+      break;
+    case 'ransomware': {
+      const me = ev.affected.find(p => p.player_id === myId);
+      if (me) {
+        playSound('ransomware');
+        const msg = me.trigger
+          ? `ランサムウェア感染\nあなたが発端となり、全社インシデントが発生しました${me.defense_label ? ` / ${me.defense_label}でpt軽減` : ''}`
+          : me.mitigated
+            ? `全社インシデント発生\n${me.defense_label}で被害軽減: ${me.from} → ${me.to}`
+            : `全社インシデント発生\nランサム被害: ${me.from} → ${me.to}`;
+        addHistory({
+          pos: me.to,
+          title: me.trigger ? 'ランサムウェア感染' : '全社インシデント',
+          detail: `${me.from} → ${me.to}${formatBudgetLine(me.budget_delta)}`,
+          type: 'bad',
+        });
+        showToast(`${msg}${formatBudgetLine(me.budget_delta)}`, 'bad', 10000);
+      }
+      break;
+    }
+    case 'ransomware_dormant':
+      if (myPlayer && ev.player_id === myId) {
+        playSound('bad');
+        addHistory({
+          pos: ev.to,
+          title: 'ランサムウェア潜伏',
+          detail: `${ev.from} → ${ev.to}${formatBudgetLine(ev.budget_delta)}`,
+          type: 'event',
+        });
+        showToast(
+          `ランサムウェア潜伏\n大規模感染には至らず: ${ev.from} → ${ev.to}${formatBudgetLine(ev.budget_delta)}`,
+          'event',
+          8500
+        );
+      }
+      break;
+    case 'goal':
+      if (ev.player_id === myId) {
+        playSound('goal');
+        const total = (ev.rank_bonus || 0) + (ev.gift_total || 0);
+        addHistory({
+          pos: boardSize - 1,
+          title: `${ev.rank}位でゴール`,
+          detail: `順位 +${ev.rank_bonus || 0}pt / ご祝儀 +${ev.gift_total || 0}pt`,
+          type: 'goal',
+        });
+        showToast(
+          `🏆 ${ev.rank}位でゴール！\n順位ボーナス +${ev.rank_bonus || 0}pt / ご祝儀 +${ev.gift_total || 0}pt\n合計 +${total}pt`,
+          'goal'
+        );
+      }
+      break;
+  }
+}
+
+let toastTimer = null;
+let toastQueue = [];
+let toastShowing = false;
+function showToast(msg, cls, duration = 7000, onDone = null) {
+  toastQueue.push({msg, cls, duration, onDone});
+  if (!toastShowing) showNextToast();
+}
+
+function showNextToast() {
+  const next = toastQueue.shift();
+  if (!next) {
+    toastShowing = false;
+    return;
+  }
+  toastShowing = true;
+  const toast = document.getElementById('toast');
+  toast.className = 'toast ' + (next.cls || '');
+  toast.textContent = next.msg;
+  toast.classList.add('show');
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => {
+      if (typeof next.onDone === 'function') next.onDone();
+      showNextToast();
+    }, 350);
+  }, next.duration);
+}
+
+function clearToastQueue() {
+  toastQueue = [];
+  toastShowing = false;
+  if (toastTimer) clearTimeout(toastTimer);
+  document.getElementById('toast').classList.remove('show');
+}
+
+function playTone(freq, start, duration, type = 'sine', volume = 0.08) {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = type;
+  osc.frequency.setValueAtTime(freq, start);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  osc.connect(gain).connect(audioCtx.destination);
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
+}
+
+function playNoise(start, duration, volume = 0.04) {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const buffer = audioCtx.createBuffer(1, audioCtx.sampleRate * duration, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  for (let i = 0; i < data.length; i++) {
+    data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
+  }
+  const source = audioCtx.createBufferSource();
+  const gain = audioCtx.createGain();
+  source.buffer = buffer;
+  gain.gain.setValueAtTime(volume, start);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
+  source.connect(gain).connect(audioCtx.destination);
+  source.start(start);
+}
+
+function playSound(kind) {
+  if (!audioCtx || audioCtx.state !== 'running') return;
+  const t = audioCtx.currentTime + 0.01;
+  if (kind === 'good') {
+    [523, 659, 784].forEach((f, i) => playTone(f, t + i * 0.09, 0.16, 'triangle', 0.07));
+  } else if (kind === 'bad') {
+    playTone(220, t, 0.22, 'sawtooth', 0.06);
+    playTone(185, t + 0.12, 0.28, 'sawtooth', 0.055);
+  } else if (kind === 'ransomware') {
+    playTone(92, t, 0.9, 'sawtooth', 0.09);
+    playTone(69, t + 0.08, 1.0, 'square', 0.055);
+    playNoise(t + 0.12, 0.65, 0.035);
+  } else if (kind === 'goal') {
+    [523, 659, 784, 1046].forEach((f, i) => playTone(f, t + i * 0.11, 0.22, 'triangle', 0.08));
+  } else if (kind === 'roll') {
+    [330, 392, 330].forEach((f, i) => playTone(f, t + i * 0.045, 0.08, 'square', 0.045));
+  } else {
+    playTone(392, t, 0.12, 'triangle', 0.05);
+    playTone(523, t + 0.1, 0.14, 'triangle', 0.05);
+  }
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function renderMyName(player) {
+  document.getElementById('my-name').innerHTML =
+    `${escapeHtml(player.name)}${renderBadges(player)}`;
+}
+
+function renderBadges(player) {
+  const badges = [
+    player.backup ? ['💾', 'バックアップ済み'] : null,
+    player.mfa ? ['🛡️', 'MFA設定済み'] : null,
+    player.edr ? ['👁️', 'EDR導入済み'] : null,
+    player.csirt ? ['🚨', 'CSIRT訓練済み'] : null,
+    player.bcp ? ['🏢', 'BCP訓練済み'] : null,
+  ].filter(Boolean);
+  return badges.map(([icon, title]) => `<span class="player-badge" title="${title}">${icon}</span>`).join('');
+}
+
+function formatBudgetDelta(delta) {
+  return `${delta > 0 ? '+' : ''}${delta}`;
+}
+
+function formatBudget(value) {
+  return `${value ?? 0}pt`;
+}
+
+function formatBudgetLine(delta) {
+  if (!delta) return '';
+  return `\nセキュリティ予算 ${formatBudgetDelta(delta)}`;
+}
+
+// イベント
+document.getElementById('join-btn').addEventListener('click', () => {
+  unlockAudio();
+  const name = document.getElementById('name-input').value.trim();
+  if (!name) {
+    showToast('名前を入力してください', 'bad');
+    return;
+  }
+  document.getElementById('join-btn').disabled = true;
+  connect(name);
+});
+document.getElementById('name-input').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('join-btn').click();
+});
+document.getElementById('roll-btn').addEventListener('click', rollDice);
+</script>
+</body>
+</html>

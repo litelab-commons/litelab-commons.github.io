@@ -1,0 +1,1621 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>サイバーすごろく / Cyber Sugoroku - 作戦室</title>
+<style>
+:root {
+  --bg-0: #050810;
+  --bg-1: #0a1020;
+  --bg-2: #121a30;
+  --grid: rgba(0, 220, 255, 0.08);
+  --line: rgba(0, 220, 255, 0.3);
+  --text: #d8e4ff;
+  --text-dim: #7a8aaa;
+  --accent: #00ddff;
+  --accent-warm: #ffdd00;
+  --good: #00ff9c;
+  --bad: #ff3860;
+  --event: #ffaa00;
+  --font-sans: "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  --font-mono: "Cascadia Mono", Consolas, "Yu Gothic UI", monospace;
+  --font-display: "Arial Black", "Yu Gothic UI", system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%;
+  background: var(--bg-0);
+  color: var(--text);
+  font-family: var(--font-sans);
+  overflow: hidden;
+}
+body::before {
+  content: "";
+  position: fixed; inset: 0;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 40px,
+    radial-gradient(ellipse at 50% 0%, rgba(0,220,255,0.08) 0%, transparent 60%),
+    radial-gradient(ellipse at 50% 100%, rgba(255,221,0,0.04) 0%, transparent 60%);
+  z-index: 0;
+  pointer-events: none;
+}
+.app {
+  position: relative;
+  z-index: 1;
+  height: 100vh;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: 20px 30px;
+  gap: 16px;
+}
+
+/* ========== ヘッダー ========== */
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+.title {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 28px;
+  letter-spacing: 0.15em;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--accent-warm) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-transform: uppercase;
+}
+.title small {
+  display: block;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.status-bar {
+  display: flex;
+  gap: 24px;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.status-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.status-label {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.status-value {
+  color: var(--accent);
+  font-size: 18px;
+  font-weight: 700;
+}
+.connection-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: var(--bad);
+  box-shadow: 0 0 10px currentColor;
+  transition: background 0.3s;
+}
+.connection-dot.online { background: var(--good); }
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.round-limit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  padding: 6px 8px;
+  background: rgba(216, 228, 255, 0.04);
+}
+.round-limit label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.12em;
+}
+.round-limit input {
+  width: 52px;
+  background: var(--bg-2);
+  border: 1px solid rgba(0, 220, 255, 0.45);
+  color: var(--accent);
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 800;
+  padding: 4px 6px;
+}
+.round-limit input:disabled {
+  opacity: 0.55;
+}
+button.cmd {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+button.cmd:hover {
+  background: var(--accent);
+  color: var(--bg-0);
+  box-shadow: 0 0 20px rgba(0, 220, 255, 0.5);
+}
+button.cmd.danger {
+  color: var(--bad);
+  border-color: var(--bad);
+}
+button.cmd.danger:hover {
+  background: var(--bad);
+  color: var(--bg-0);
+  box-shadow: 0 0 20px rgba(255, 56, 96, 0.5);
+}
+
+/* ========== メインエリア ========== */
+main {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 20px;
+  min-height: 0;
+}
+
+/* ボード */
+.board-container {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.board-container::before {
+  content: "BOARD //";
+  position: absolute;
+  top: 8px; left: 12px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+}
+.board {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
+  margin-top: 18px;
+  height: calc(100% - 24px);
+}
+.square {
+  position: relative;
+  background: var(--bg-2);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-size: 10px;
+  min-height: 0;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.square.start {
+  background: linear-gradient(135deg, rgba(0,221,255,0.2), rgba(0,221,255,0.05));
+  border-color: var(--accent);
+}
+.square.goal {
+  background: linear-gradient(135deg, rgba(255,221,0,0.25), rgba(255,221,0,0.05));
+  border-color: var(--accent-warm);
+}
+.square.good {
+  background: linear-gradient(135deg, rgba(0,255,156,0.15), rgba(0,255,156,0.02));
+  border-color: rgba(0,255,156,0.4);
+}
+.square.bad {
+  background: linear-gradient(135deg, rgba(255,56,96,0.15), rgba(255,56,96,0.02));
+  border-color: rgba(255,56,96,0.4);
+}
+.square.event {
+  background: linear-gradient(135deg, rgba(255,170,0,0.15), rgba(255,170,0,0.02));
+  border-color: rgba(255,170,0,0.4);
+}
+.square-num {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--text-dim);
+  letter-spacing: 0.05em;
+}
+.square-title {
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-top: 2px;
+  color: var(--text);
+}
+.square.good .square-title { color: var(--good); }
+.square.bad .square-title { color: var(--bad); }
+.square.event .square-title { color: var(--event); }
+.square.start .square-title,
+.square.goal .square-title { color: var(--accent-warm); }
+.tokens {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  margin-top: auto;
+}
+.token {
+  min-width: 22px; height: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.28);
+  font-size: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  color: var(--bg-0);
+  font-family: var(--font-mono);
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(0, 220, 255, 0.38);
+}
+.square.flash {
+  animation: flash 0.6s ease-out;
+}
+@keyframes flash {
+  0% { box-shadow: 0 0 0 0 var(--accent); }
+  50% { box-shadow: 0 0 30px 10px var(--accent); transform: scale(1.05); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+/* サイドパネル */
+.sidebar {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  gap: 16px;
+  min-height: 0;
+}
+.panel {
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  padding: 16px;
+  position: relative;
+}
+.panel-title {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.roster-strip {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 6px;
+  max-height: 210px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+.roster-chip {
+  display: grid;
+  grid-template-columns: 8px minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 6px;
+  width: 100%;
+  min-height: 36px;
+  padding: 6px 8px;
+  background: rgba(216, 228, 255, 0.06);
+  border: 1px solid rgba(216, 228, 255, 0.12);
+  font-size: 12px;
+}
+.roster-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+.roster-name {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.roster-status {
+  margin-top: 2px;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 10px;
+}
+.roster-score {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  color: var(--good);
+}
+.roster-position {
+  color: var(--accent);
+  font-size: 12px;
+}
+.roster-delta {
+  min-width: 28px;
+  font-size: 10px;
+  text-align: right;
+  color: var(--text-dim);
+}
+.roster-delta.up { color: var(--good); }
+.roster-delta.down { color: var(--bad); }
+.roster-empty {
+  color: var(--text-dim);
+  font-size: 12px;
+  padding: 4px 0;
+}
+
+/* プレイヤーリスト */
+.player-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  max-height: calc(100vh - 320px);
+}
+.player-list.compact {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  max-height: calc(100vh - 280px);
+}
+.player-card {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent);
+  font-size: 13px;
+  transition: all 0.2s;
+}
+.player-list.compact .player-card {
+  grid-template-columns: 10px 1fr auto;
+  gap: 5px;
+  padding: 5px 6px;
+  min-width: 0;
+}
+.player-list.compact .player-color {
+  width: 10px;
+  height: 10px;
+}
+.player-list.compact .player-name {
+  font-size: 11px;
+}
+.player-list.compact .player-status {
+  display: none;
+}
+.player-list.compact .player-budget {
+  font-size: 10px;
+}
+.player-list.compact .player-pos,
+.player-list.compact .rank-badge {
+  font-size: 12px;
+}
+.player-list.compact .player-metrics {
+  min-width: 36px;
+}
+.player-list.compact .player-badge {
+  margin-left: 2px;
+}
+.player-card.finished {
+  opacity: 0.7;
+  background: linear-gradient(90deg, rgba(255,221,0,0.1), var(--bg-2));
+  border-left-color: var(--accent-warm);
+}
+.player-color {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+.player-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.player-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.player-badge {
+  margin-left: 4px;
+  color: var(--good);
+  text-shadow: 0 0 8px var(--good);
+}
+.player-status {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+.player-metrics {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  min-width: 54px;
+}
+.player-pos {
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent);
+}
+.player-budget {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--good);
+}
+.rank-badge {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--accent-warm);
+}
+
+/* ログ */
+.log-panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.log {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  padding-right: 4px;
+}
+.log-entry {
+  padding: 4px 6px;
+  border-left: 2px solid var(--text-dim);
+  color: var(--text-dim);
+  animation: slideIn 0.3s ease-out;
+  word-break: break-word;
+}
+.log-entry.good { border-left-color: var(--good); color: var(--good); }
+.log-entry.bad { border-left-color: var(--bad); color: var(--bad); }
+.log-entry.event { border-left-color: var(--event); color: var(--event); }
+.log-entry.system { border-left-color: var(--accent); color: var(--accent); }
+@keyframes slideIn {
+  from { transform: translateX(10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+/* ========== フッター（QRコード + 接続情報） ========== */
+footer {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 16px;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+.url-display {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.url-label {
+  color: var(--text-dim);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+}
+.url-value {
+  color: var(--accent);
+  font-size: 20px;
+  font-weight: 700;
+}
+.qr-container {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+#qrcode {
+  background: white;
+  padding: 6px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+#qrcode:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 16px rgba(0, 220, 255, 0.35);
+}
+.facilitator-panel {
+  display: none;
+  flex: 1;
+  grid-template-columns: 1.1fr 1.4fr 1fr;
+  gap: 14px;
+}
+footer.in-game .url-display,
+footer.in-game .qr-container { display: none; }
+footer.in-game .facilitator-panel { display: grid; }
+.facilitator-card {
+  border-left: 2px solid var(--accent);
+  padding: 6px 10px;
+  background: rgba(0, 220, 255, 0.04);
+}
+.facilitator-label {
+  color: var(--text-dim);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  margin-bottom: 5px;
+}
+.facilitator-text {
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+/* オーバーレイ */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 300;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+  backdrop-filter: blur(8px);
+}
+.overlay.show { display: flex; animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.confetti-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.confetti-piece {
+  position: absolute;
+  top: -20px;
+  width: 8px;
+  height: 14px;
+  background: var(--accent-warm);
+  opacity: 0.9;
+  animation: confettiFall linear forwards;
+}
+@keyframes confettiFall {
+  0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(110vh) rotate(680deg); opacity: 0.2; }
+}
+.overlay-card {
+  background: var(--bg-1);
+  border: 2px solid var(--accent);
+  padding: 40px 60px;
+  text-align: center;
+  max-width: 600px;
+  box-shadow: 0 0 60px rgba(0, 220, 255, 0.3);
+}
+.overlay-card.bad { border-color: var(--bad); box-shadow: 0 0 60px rgba(255, 56, 96, 0.3); }
+.overlay-card.good { border-color: var(--good); box-shadow: 0 0 60px rgba(0, 255, 156, 0.3); }
+.overlay-card.event { border-color: var(--event); box-shadow: 0 0 60px rgba(255, 170, 0, 0.3); }
+.overlay-card.goal { border-color: var(--accent-warm); box-shadow: 0 0 80px rgba(255, 221, 0, 0.5); }
+.overlay-card.podium {
+  width: min(760px, calc(100vw - 48px));
+  max-width: 760px;
+  padding: 34px 46px 38px;
+  border-color: var(--accent-warm);
+  background:
+    linear-gradient(180deg, rgba(255, 221, 0, 0.12), rgba(0, 220, 255, 0.05)),
+    var(--bg-1);
+  box-shadow: 0 0 90px rgba(255, 221, 0, 0.55);
+  animation: podiumPop 0.5s ease-out;
+}
+@keyframes podiumPop {
+  from { transform: translateY(18px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.podium-label {
+  font-family: var(--font-mono);
+  color: var(--accent-warm);
+  letter-spacing: 0.24em;
+  font-size: 12px;
+}
+.podium-winner-line {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  color: var(--accent-warm);
+  font-size: clamp(30px, 5vw, 56px);
+  font-weight: 900;
+  line-height: 1.05;
+}
+.podium-name {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: clamp(34px, 6vw, 68px);
+  font-weight: 900;
+  color: var(--text);
+  overflow-wrap: anywhere;
+  text-shadow: 0 0 22px rgba(255, 221, 0, 0.35);
+}
+.podium-rank {
+  margin-top: 8px;
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--accent-warm);
+}
+.podium-stage {
+  margin: 26px auto 18px;
+  display: grid;
+  grid-template-columns: 1fr 1.15fr 1fr;
+  align-items: end;
+  gap: 8px;
+  max-width: 520px;
+  min-height: 150px;
+}
+.podium-step {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  border: 1px solid rgba(255, 221, 0, 0.45);
+  background: rgba(255, 221, 0, 0.08);
+  font-family: var(--font-display);
+  color: var(--accent-warm);
+  font-size: 28px;
+  font-weight: 900;
+  padding-top: 14px;
+  opacity: 0.45;
+  transition: opacity 0.2s, transform 0.2s, box-shadow 0.2s;
+}
+.podium-step.second { height: 96px; }
+.podium-step.first {
+  height: 140px;
+  background: rgba(255, 221, 0, 0.16);
+  box-shadow: inset 0 0 24px rgba(255, 221, 0, 0.18);
+}
+.podium-step.third { height: 72px; }
+.podium-step.active {
+  opacity: 1;
+  transform: translateY(-8px);
+  border-color: var(--accent-warm);
+  box-shadow: 0 0 28px rgba(255, 221, 0, 0.5), inset 0 0 24px rgba(255, 221, 0, 0.18);
+}
+.podium-step.active::after {
+  content: "GOAL";
+  display: block;
+  margin-top: 44px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  color: var(--text);
+}
+.podium-score {
+  font-family: var(--font-mono);
+  color: var(--good);
+  font-size: 18px;
+  font-weight: 800;
+}
+.podium-desc {
+  margin-top: 10px;
+  color: var(--text-dim);
+  font-size: 14px;
+  line-height: 1.5;
+}
+.overlay-name {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: var(--text-dim);
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+}
+.overlay-title {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 900;
+  margin-bottom: 16px;
+  letter-spacing: 0.05em;
+}
+.overlay-desc {
+  font-size: 18px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* 最終ランキング */
+.ranking-board {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: none;
+  background:
+    linear-gradient(rgba(0,220,255,0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    linear-gradient(90deg, rgba(0,220,255,0.05) 1px, transparent 1px) 0 0 / 40px 40px,
+    radial-gradient(ellipse at 50% 10%, rgba(255,221,0,0.12) 0%, transparent 52%),
+    var(--bg-0);
+  padding: 38px 46px;
+  backdrop-filter: blur(8px);
+}
+.ranking-board.show {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: fadeIn 0.35s ease-out;
+}
+.ranking-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  align-items: flex-end;
+  border-bottom: 1px solid rgba(255, 221, 0, 0.35);
+  padding-bottom: 14px;
+}
+.ranking-title {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: var(--accent-warm);
+}
+.ranking-subtitle {
+  font-family: var(--font-mono);
+  color: var(--text-dim);
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.ranking-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+}
+.ranking-reset {
+  background: transparent;
+  color: var(--bad);
+  border: 1px solid var(--bad);
+  padding: 12px 18px;
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.ranking-reset:hover {
+  background: rgba(255, 56, 96, 0.12);
+  box-shadow: 0 0 22px rgba(255, 56, 96, 0.28);
+}
+.ranking-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-height: 0;
+  flex: 1;
+}
+.ranking-column {
+  border: 1px solid var(--line);
+  background: var(--bg-1);
+  padding: 16px;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.ranking-column-title {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  letter-spacing: 0.16em;
+  font-size: 12px;
+  margin-bottom: 12px;
+}
+.ranking-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.ranking-row {
+  display: grid;
+  grid-template-columns: 48px 14px minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--bg-2);
+  border-left: 3px solid var(--accent);
+}
+.ranking-row:first-child {
+  border-left-color: var(--accent-warm);
+  box-shadow: 0 0 22px rgba(255, 221, 0, 0.12);
+}
+.ranking-place {
+  font-family: var(--font-display);
+  font-weight: 900;
+  color: var(--accent-warm);
+}
+.ranking-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+.ranking-name {
+  font-weight: 900;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ranking-meta {
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-dim);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.ranking-score {
+  font-family: var(--font-display);
+  font-weight: 900;
+  color: var(--good);
+  text-align: right;
+}
+
+/* ダイス表示 */
+.dice-display {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.dice {
+  width: 48px; height: 48px;
+  background: var(--bg-2);
+  border: 2px solid var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+}
+.dice-name {
+  font-size: 8px;
+  color: var(--text-dim);
+}
+.dice-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent);
+}
+
+/* スクロールバー */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <div class="title">
+      Cyber Sugoroku // 作戦室
+      <small>サイバーレジリエンス・シミュレーション</small>
+    </div>
+    <div class="status-bar">
+      <div class="status-item">
+        <span class="status-label">参加者</span>
+        <span class="status-value" id="stat-players">0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">ラウンド</span>
+        <span class="status-value" id="stat-round">-</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">サイコロ受信</span>
+        <span class="status-value" id="stat-pending">0 / 0</span>
+      </div>
+      <div class="status-item">
+        <span class="status-label">接続</span>
+        <div class="connection-dot" id="conn-dot"></div>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="round-limit">
+        <label for="max-rounds">LIMIT</label>
+        <input id="max-rounds" type="number" min="5" max="50" step="1" value="20">
+      </div>
+      <button class="cmd" id="btn-start">▶ ゲーム開始</button>
+      <button class="cmd danger" id="btn-reset">⟲ リセット</button>
+      <button class="cmd danger" id="btn-clear-players">新規卓</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="board-container">
+      <div class="board" id="board"></div>
+    </div>
+
+    <aside class="sidebar">
+      <div class="panel">
+        <div class="panel-title">// 参加者</div>
+        <div class="roster-strip" id="roster-strip">
+          <div class="roster-empty">参加者の接続を待っています...</div>
+        </div>
+      </div>
+      <div class="panel log-panel">
+        <div class="panel-title">// 進行ログ</div>
+        <div class="log" id="log"></div>
+      </div>
+    </aside>
+  </main>
+
+  <footer id="host-footer">
+    <div class="url-display">
+      <span class="url-label">PARTICIPANT URL // 参加者はブラウザでアクセス</span>
+      <span class="url-value" id="join-url">http://...</span>
+    </div>
+    <div class="qr-container">
+      <div id="qrcode"></div>
+    </div>
+    <div class="facilitator-panel">
+      <div class="facilitator-card">
+        <div class="facilitator-label">読み上げ</div>
+        <div class="facilitator-text" id="facilitator-read">ゲーム開始後、ここに進行メモが表示されます。</div>
+      </div>
+      <div class="facilitator-card">
+        <div class="facilitator-label">解説</div>
+        <div class="facilitator-text" id="facilitator-note">イベントの教育ポイントを短く表示します。</div>
+      </div>
+      <div class="facilitator-card">
+        <div class="facilitator-label">問いかけ</div>
+        <div class="facilitator-text" id="facilitator-question">参加者への質問が表示されます。</div>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="overlay-card" id="overlay-card">
+    <div class="overlay-name" id="overlay-name"></div>
+    <div class="overlay-title" id="overlay-title"></div>
+    <div class="overlay-desc" id="overlay-desc"></div>
+  </div>
+</div>
+
+<div class="ranking-board" id="ranking-board">
+  <div class="ranking-header">
+    <div>
+      <div class="ranking-title">FINAL RESULT</div>
+      <div class="ranking-subtitle">// 着順とセキュリティ予算の総合結果</div>
+    </div>
+    <div class="ranking-actions">
+      <div class="ranking-subtitle" id="ranking-count"></div>
+      <button class="ranking-reset" id="btn-ranking-reset">⟲ リセットして戻る</button>
+      <button class="ranking-reset" id="btn-ranking-clear-players">新規卓</button>
+    </div>
+  </div>
+  <div class="ranking-grid">
+    <section class="ranking-column">
+      <div class="ranking-column-title">// GOAL ORDER</div>
+      <div class="ranking-list" id="rank-goal"></div>
+    </section>
+    <section class="ranking-column">
+      <div class="ranking-column-title">// SECURITY PT</div>
+      <div class="ranking-list" id="rank-budget"></div>
+    </section>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+// ============================================================
+// 状態
+// ============================================================
+let squares = [];
+let boardSize = 30;
+let currentState = null;
+let ws = null;
+let previousBudgets = new Map();
+let testRunId = Date.now().toString(36);
+let testClients = new Map();
+
+// ============================================================
+// URL/QRコード表示
+// ============================================================
+const joinUrl = `${window.location.protocol}//${window.location.host}/play`;
+document.getElementById('join-url').textContent = joinUrl;
+const qrElement = document.getElementById('qrcode');
+qrElement.title = 'クリックしてテストユーザを追加';
+qrElement.setAttribute('role', 'button');
+qrElement.setAttribute('tabindex', '0');
+qrElement.setAttribute('aria-label', 'テストユーザを追加');
+if (window.QRCode) {
+  new QRCode(qrElement, {
+    text: joinUrl,
+    width: 80,
+    height: 80,
+    colorDark: "#000000",
+    colorLight: "#ffffff",
+  });
+} else {
+  qrElement.textContent = "QRなし";
+  qrElement.style.color = "#111";
+  qrElement.style.fontSize = "12px";
+  qrElement.style.textAlign = "center";
+  qrElement.style.width = "92px";
+}
+
+// ============================================================
+// テストユーザ
+// ============================================================
+function closeTestClients() {
+  testClients.forEach(client => {
+    try { client.ws.close(); } catch (_) {}
+  });
+  testClients.clear();
+}
+
+function createTestUser(index, total) {
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  const id = `test-${testRunId}-${String(index).padStart(3, '0')}`;
+  const socket = new WebSocket(`${proto}//${window.location.host}/ws/player/${id}`);
+  const client = {
+    id,
+    ws: socket,
+    ready: false,
+    lastRolledRound: null,
+  };
+  testClients.set(id, client);
+
+  socket.onopen = () => {
+    socket.send(JSON.stringify({
+      action: 'join',
+      name: `Test${String(index).padStart(2, '0')}`,
+    }));
+  };
+  socket.onmessage = (event) => {
+    const msg = JSON.parse(event.data);
+    if (msg.type === 'joined') {
+      client.ready = true;
+      addLog(`テストユーザ接続 ${index} / ${total}`, 'system');
+    }
+  };
+  socket.onclose = () => {
+    client.ready = false;
+  };
+}
+
+function addTestUsers(count) {
+  closeTestClients();
+  testRunId = Date.now().toString(36);
+  for (let i = 1; i <= count; i++) {
+    setTimeout(() => createTestUser(i, count), i * 20);
+  }
+  addLog(`テストユーザ ${count}人を追加中`, 'system');
+}
+
+function runTestAutoRoll(state) {
+  if (!state.game_started || state.game_ended || testClients.size === 0) return;
+  testClients.forEach(client => {
+    const player = state.players.find(p => p.id === client.id);
+    if (!player || player.finished || client.ws.readyState !== WebSocket.OPEN) return;
+    const round = state.round_number || 0;
+    if (client.lastRolledRound === round) return;
+    client.lastRolledRound = round;
+    setTimeout(() => {
+      if (client.ws.readyState === WebSocket.OPEN) {
+        client.ws.send(JSON.stringify({action: 'roll'}));
+      }
+    }, 20 + Math.random() * 180);
+  });
+}
+
+// ============================================================
+// 盤面構築
+// ============================================================
+function buildBoard() {
+  const board = document.getElementById('board');
+  board.innerHTML = '';
+  squares.forEach((sq, idx) => {
+    const div = document.createElement('div');
+    div.className = `square ${sq.type}`;
+    div.id = `sq-${idx}`;
+    div.innerHTML = `
+      <div>
+        <div class="square-num">${String(idx).padStart(2, '0')}</div>
+        <div class="square-title">${sq.title}</div>
+      </div>
+      <div class="tokens" id="tokens-${idx}"></div>
+    `;
+    board.appendChild(div);
+  });
+}
+
+// ============================================================
+// 状態反映
+// ============================================================
+function renderState(state) {
+  currentState = state;
+  renderFinalRanking(state);
+  runTestAutoRoll(state);
+  document.getElementById('host-footer').classList.toggle('in-game', state.game_started);
+  document.getElementById('stat-players').textContent = state.players.length;
+  document.getElementById('stat-round').textContent =
+    state.round_number ? `${state.round_number} / ${state.max_rounds}` : `- / ${state.max_rounds}`;
+  document.getElementById('stat-pending').textContent =
+    `${state.pending_count} / ${state.total_active}`;
+  const maxRoundsInput = document.getElementById('max-rounds');
+  maxRoundsInput.value = state.max_rounds || 20;
+  maxRoundsInput.disabled = state.game_started;
+
+  renderRoster(state);
+
+  // 駒（トークン）配置: ホスト画面は個別名ではなく人数集計を表示
+  for (let i = 0; i < boardSize; i++) {
+    const tokenEl = document.getElementById(`tokens-${i}`);
+    if (tokenEl) tokenEl.innerHTML = '';
+  }
+  for (let pos = 0; pos < boardSize; pos++) {
+    const tokenEl = document.getElementById(`tokens-${pos}`);
+    if (!tokenEl) continue;
+    const count = state.players.filter(p => p.position === pos && !p.finished).length;
+    if (count > 0) {
+      const t = document.createElement('div');
+      t.className = 'token';
+      t.textContent = count;
+      t.title = `${count}人`;
+      tokenEl.appendChild(t);
+    }
+  }
+}
+
+function renderRoster(state) {
+  const roster = document.getElementById('roster-strip');
+  if (state.players.length === 0) {
+    roster.innerHTML = '<div class="roster-empty">参加者の接続を待っています...</div>';
+    previousBudgets.clear();
+    return;
+  }
+
+  roster.innerHTML = '';
+  state.players.forEach(p => {
+      const before = previousBudgets.get(p.id);
+      const delta = before === undefined ? 0 : (p.budget || 0) - before;
+      const chip = document.createElement('div');
+      chip.className = 'roster-chip';
+      chip.innerHTML = `
+        <div class="roster-dot" style="background:${p.color}; color:${p.color}"></div>
+        <div>
+          <div class="roster-name">${escapeHtml(p.name)}${renderBadges(p)}</div>
+          <div class="roster-status">${escapeHtml(p.status || '待機中')}</div>
+        </div>
+        <div class="roster-score">
+          <span class="roster-position">${p.finished ? `${p.rank}位` : `${p.position}マス`}</span>
+          <span>${formatBudget(p.budget)}</span>
+          <span class="roster-delta ${delta > 0 ? 'up' : delta < 0 ? 'down' : ''}">
+            ${delta > 0 ? `+${delta}` : delta < 0 ? delta : ''}
+          </span>
+        </div>
+      `;
+      roster.appendChild(chip);
+  });
+
+  previousBudgets = new Map(state.players.map(p => [p.id, p.budget || 0]));
+}
+
+// ============================================================
+// イベント処理
+// ============================================================
+function handleEvent(ev) {
+  switch (ev.kind) {
+    case 'join':
+      addLog(ev.message, 'system');
+      break;
+    case 'game_start':
+      addLog('▶ ' + ev.message, 'system');
+      break;
+    case 'reset':
+      addLog('⟲ ' + ev.message, 'system');
+      hideOverlay();
+      break;
+    case 'round_resolving':
+      addLog(`⟳ ${ev.message}`, 'system');
+      break;
+    case 'round_end':
+      addLog(`✓ ${ev.message}`, 'system');
+      break;
+    case 'game_end':
+      addLog(`■ ${ev.message}`, 'system');
+      setFacilitator('game_end', '');
+      break;
+    case 'move': {
+      // 個別移動は参加者リストの状態に反映し、ホスト画面では大きく演出しない。
+      break;
+    }
+    case 'square': {
+      const cls = ev.square_type === 'good' ? 'good'
+        : ev.square_type === 'bad' ? 'bad'
+        : ev.square_type === 'event' ? 'event' : '';
+      addLog(`★ ${ev.name}: ${ev.square_title} - ${ev.square_desc}${formatBudgetDelta(ev.budget_delta)}`, cls);
+      setFacilitator(ev.square_title, ev.name);
+      break;
+    }
+    case 'ransomware': {
+      const chance = ev.chance ? `（発生率 ${Math.round(ev.chance * 100)}%）` : '';
+      addLog(`!!! 全社インシデント: ${ev.name} がランサムウェア感染${chance}`, 'bad');
+      showOverlay('全体イベント', 'ランサムウェア感染', ev.square_desc, 'bad');
+      setFacilitator('ランサムウェア感染', ev.name);
+      ev.affected.forEach(p => {
+        const defense = p.defense_label ? `（${p.defense_label}）` : '';
+        const impact = p.trigger
+          ? 'スタートへ戻る'
+          : `${p.from} → ${p.to}${p.mitigated ? defense : ''}`;
+        addLog(`被害: ${p.name} ${impact}${formatBudgetDelta(p.budget_delta)}`, 'bad');
+        flashSquare(p.to);
+      });
+      break;
+    }
+    case 'ransomware_dormant': {
+      addLog(`… ${ev.name}: ランサムウェア潜伏 ${ev.from} → ${ev.to}${formatBudgetDelta(ev.budget_delta)}`, 'event');
+      setFacilitator('ランサムウェア潜伏', ev.name);
+      flashSquare(ev.to);
+      break;
+    }
+    case 'goal': {
+      const total = (ev.rank_bonus || 0) + (ev.gift_total || 0);
+      addLog(`🏆 ${ev.name} が${ev.rank}位でゴール！ +${total}pt`, 'system');
+      showGoalOverlay(ev, total);
+      if (ev.gifts && ev.gifts.length) {
+        ev.gifts.forEach(g => addLog(`祝儀: ${g.name} → ${ev.name} ${g.gift}pt`, 'system'));
+      }
+      break;
+    }
+    case 'skip':
+      addLog(`💤 ${ev.message}`, 'event');
+      break;
+  }
+}
+
+let overlayTimer = null;
+function showOverlay(name, title, desc, type) {
+  const overlay = document.getElementById('overlay');
+  const card = document.getElementById('overlay-card');
+  overlay.querySelector('.confetti-layer')?.remove();
+  card.innerHTML = `
+    <div class="overlay-name" id="overlay-name"></div>
+    <div class="overlay-title" id="overlay-title"></div>
+    <div class="overlay-desc" id="overlay-desc"></div>
+  `;
+  document.getElementById('overlay-name').textContent = name;
+  document.getElementById('overlay-title').textContent = title;
+  document.getElementById('overlay-desc').textContent = desc;
+  card.className = 'overlay-card ' + (type || '');
+  overlay.classList.add('show');
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(hideOverlay, type === 'goal' ? 3500 : 2200);
+}
+function showGoalOverlay(ev, total) {
+  const overlay = document.getElementById('overlay');
+  const card = document.getElementById('overlay-card');
+  const colors = ['#ffdd00', '#00ddff', '#00ff9c', '#ff3860', '#ffffff'];
+  overlay.querySelector('.confetti-layer')?.remove();
+  const confetti = document.createElement('div');
+  const activeRank = Number(ev.rank) || 1;
+  confetti.className = 'confetti-layer';
+  confetti.innerHTML = Array.from({length: 48}, (_, i) => {
+    const left = Math.round((i * 17 + Math.random() * 12) % 100);
+    const delay = (Math.random() * 1.4).toFixed(2);
+    const duration = (2.6 + Math.random() * 1.4).toFixed(2);
+    const color = colors[i % colors.length];
+    const width = 6 + (i % 3) * 3;
+    return `<span class="confetti-piece" style="left:${left}%;background:${color};width:${width}px;animation-delay:${delay}s;animation-duration:${duration}s"></span>`;
+  }).join('');
+  overlay.appendChild(confetti);
+  card.className = 'overlay-card podium';
+  card.innerHTML = `
+    <div class="podium-label">GOAL CEREMONY</div>
+    <div class="podium-winner-line">${ev.rank}位</div>
+    <div class="podium-name">${escapeHtml(ev.name)}</div>
+    <div class="podium-rank">ゴール達成</div>
+    <div class="podium-stage" aria-hidden="true">
+      <div class="podium-step second ${activeRank === 2 ? 'active' : ''}">2</div>
+      <div class="podium-step first ${activeRank === 1 ? 'active' : ''}">1</div>
+      <div class="podium-step third ${activeRank === 3 ? 'active' : ''}">3</div>
+    </div>
+    <div class="podium-score">+${total}pt / 現在 ${formatBudget(ev.budget)}</div>
+    <div class="podium-desc">順位ボーナス +${ev.rank_bonus || 0}pt / ご祝儀 +${ev.gift_total || 0}pt</div>
+  `;
+  overlay.classList.add('show');
+  if (overlayTimer) clearTimeout(overlayTimer);
+  overlayTimer = setTimeout(hideOverlay, 5200);
+}
+function hideOverlay() {
+  document.getElementById('overlay').classList.remove('show');
+  document.getElementById('overlay').querySelector('.confetti-layer')?.remove();
+}
+
+function flashSquare(idx) {
+  const el = document.getElementById(`sq-${idx}`);
+  if (el) {
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+  }
+}
+
+function addLog(text, cls = '') {
+  const log = document.getElementById('log');
+  const entry = document.createElement('div');
+  entry.className = `log-entry ${cls}`;
+  const ts = new Date().toLocaleTimeString('ja-JP', {hour12: false});
+  entry.textContent = `[${ts}] ${text}`;
+  log.insertBefore(entry, log.firstChild);
+  // 最新50件だけ保持
+  while (log.children.length > 50) log.removeChild(log.lastChild);
+}
+
+function escapeHtml(s) {
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function renderBadges(player) {
+  const badges = [
+    player.backup ? ['💾', 'バックアップ済み'] : null,
+    player.mfa ? ['🛡️', 'MFA設定済み'] : null,
+    player.edr ? ['👁️', 'EDR導入済み'] : null,
+    player.csirt ? ['🚨', 'CSIRT訓練済み'] : null,
+    player.bcp ? ['🏢', 'BCP訓練済み'] : null,
+  ].filter(Boolean);
+  return badges.map(([icon, title]) => `<span class="player-badge" title="${title}">${icon}</span>`).join('');
+}
+
+const FACILITATOR_NOTES = {
+  'ランサムウェア感染': {
+    read: '全社インシデントが発生しました。備えがある参加者は被害が軽減されます。',
+    note: 'バックアップや対応体制は感染そのものを防ぐものではありませんが、復旧時間と損失を抑えます。',
+    question: '自分の現場では、バックアップの復元テストまでできていますか？',
+  },
+  'ランサムウェア潜伏': {
+    read: 'ランサムウェアの兆候がありましたが、大規模感染には至りませんでした。',
+    note: '小さな兆候を検知し、早めに封じ込めることで全社影響を避けられることがあります。',
+    question: '違和感に気づいた時、誰にどう報告するか決まっていますか？',
+  },
+  'フィッシングメール': {
+    read: 'フィッシングメールに遭遇しました。MFAがあると被害が軽減されます。',
+    note: 'MFAはパスワード漏えい後の不正ログインを防ぐ重要な防御層です。',
+    question: '怪しいメールを受け取った時、報告先は明確ですか？',
+  },
+  'バックアップ': {
+    read: 'バックアップを取得しました。ランサムウェア被害に備えができました。',
+    note: 'バックアップは取得だけでなく、復元できることの確認が重要です。',
+    question: '最後に復元テストをしたのはいつですか？',
+  },
+  'MFA設定': {
+    read: 'MFAを設定しました。フィッシング被害への耐性が上がります。',
+    note: '認証を多層化すると、単一の認証情報漏えいで突破されにくくなります。',
+    question: '重要システムにはMFAが必須になっていますか？',
+  },
+  'EDR導入': {
+    read: 'EDRを導入しました。侵害の検知と封じ込めがしやすくなります。',
+    note: 'EDRは侵入後の兆候を見つけ、被害拡大を抑えるための仕組みです。',
+    question: 'アラートを誰が見て、誰が対応するか決まっていますか？',
+  },
+  'CSIRT訓練': {
+    read: 'CSIRT訓練を実施しました。インシデント時の対応力が上がります。',
+    note: '訓練は連絡、判断、復旧の手順を実際に回すために有効です。',
+    question: '緊急時の連絡網は最新ですか？',
+  },
+  'BCP訓練': {
+    read: 'BCP訓練を実施しました。事業継続の備えが強化されます。',
+    note: 'BCPはシステム復旧だけでなく、業務を止めないための計画です。',
+    question: '止めてはいけない業務の優先順位は決まっていますか？',
+  },
+  'game_end': {
+    read: 'ラウンド上限に到達しました。ここで演習を終了し、最終結果を確認します。',
+    note: '着順だけでなく、残したセキュリティptも運用の堅実さとして評価します。',
+    question: '速さと堅実さ、どちらの判断が結果に効いたでしょうか？',
+  },
+};
+
+function setFacilitator(title, name) {
+  const note = FACILITATOR_NOTES[title] || {
+    read: `${name} が「${title}」に止まりました。`,
+    note: 'このイベントが業務やセキュリティ運用にどう影響するか確認しましょう。',
+    question: '自分たちの現場なら、どんな対策や判断が必要でしょうか？',
+  };
+  document.getElementById('facilitator-read').textContent = note.read;
+  document.getElementById('facilitator-note').textContent = note.note;
+  document.getElementById('facilitator-question').textContent = note.question;
+}
+
+function renderFinalRanking(state) {
+  const ranking = document.getElementById('ranking-board');
+  const app = document.querySelector('.app');
+  const show = state.players.length > 0 && (state.game_ended || state.players.every(p => p.finished));
+  ranking.classList.toggle('show', show);
+  app.style.display = show ? 'none' : '';
+  if (!show) return;
+
+  document.getElementById('ranking-count').textContent =
+    state.game_ended ? `ROUND LIMIT ${state.max_rounds}` : `${state.players.length} PLAYERS FINISHED`;
+  const byGoal = [...state.players].sort((a, b) => {
+    const aFinished = !!a.rank;
+    const bFinished = !!b.rank;
+    if (aFinished && bFinished) return a.rank - b.rank;
+    if (aFinished !== bFinished) return aFinished ? -1 : 1;
+    const positionDiff = (b.position || 0) - (a.position || 0);
+    if (positionDiff !== 0) return positionDiff;
+    const budgetDiff = (b.budget || 0) - (a.budget || 0);
+    if (budgetDiff !== 0) return budgetDiff;
+    return state.players.indexOf(a) - state.players.indexOf(b);
+  });
+  const byBudget = [...state.players].sort((a, b) => {
+    const budgetDiff = (b.budget || 0) - (a.budget || 0);
+    if (budgetDiff !== 0) return budgetDiff;
+    return (a.rank || 999) - (b.rank || 999);
+  });
+  document.getElementById('rank-goal').innerHTML =
+    byGoal.map((p, idx) => rankingRow(p, p.rank ? `${p.rank}位` : '-', `${formatBudget(p.budget)}`)).join('');
+  document.getElementById('rank-budget').innerHTML =
+    byBudget.map((p, idx) => rankingRow(p, idx + 1, `${formatBudget(p.budget)}`)).join('');
+}
+
+function rankingRow(player, place, score) {
+  const ransomware = renderRansomwareMarks(player.ransomware_triggers || 0);
+  const positionText = player.finished
+    ? `GOAL / ${player.position}マス`
+    : `${player.position} / ${boardSize - 1}マス`;
+  return `
+    <div class="ranking-row">
+      <div class="ranking-place">${place}</div>
+      <div class="ranking-dot" style="background:${player.color}; color:${player.color}"></div>
+      <div>
+        <div class="ranking-name">${escapeHtml(player.name)}${renderBadges(player)}${ransomware}</div>
+        <div class="ranking-meta">${positionText}</div>
+      </div>
+      <div class="ranking-score">${score}</div>
+    </div>
+  `;
+}
+
+function renderRansomwareMarks(count) {
+  if (!count) return '';
+  const marks = '💀'.repeat(Math.min(count, 10));
+  const suffix = count > 10 ? `+${count - 10}` : '';
+  return `<span class="player-badge" title="ランサム発動 ${count}回">${marks}${suffix}</span>`;
+}
+
+function formatBudget(value) {
+  return `${value ?? 0}pt`;
+}
+
+function formatBudgetDelta(delta) {
+  if (!delta) return '';
+  return ` / 予算${delta > 0 ? '+' : ''}${delta}`;
+}
+
+function withBudgetText(text, delta) {
+  if (!delta) return text;
+  return `${text} / セキュリティ予算 ${delta > 0 ? '+' : ''}${delta}`;
+}
+
+// ============================================================
+// WebSocket接続
+// ============================================================
+function connect() {
+  const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  ws = new WebSocket(`${proto}//${window.location.host}/ws/host`);
+  ws.onopen = () => {
+    document.getElementById('conn-dot').classList.add('online');
+    addLog('サーバ接続', 'system');
+  };
+  ws.onclose = () => {
+    document.getElementById('conn-dot').classList.remove('online');
+    addLog('接続切断 - 再接続中...', 'bad');
+    setTimeout(connect, 2000);
+  };
+  ws.onmessage = (e) => {
+    const msg = JSON.parse(e.data);
+    if (msg.type === 'init') {
+      squares = msg.data.squares;
+      boardSize = msg.data.board_size;
+      buildBoard();
+    } else if (msg.type === 'state') {
+      renderState(msg.data);
+    } else if (msg.type === 'event') {
+      handleEvent(msg.data);
+    }
+  };
+}
+
+// ============================================================
+// コントロール
+// ============================================================
+document.getElementById('btn-start').addEventListener('click', () => {
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    const maxRounds = parseInt(document.getElementById('max-rounds').value, 10) || 20;
+    ws.send(JSON.stringify({action: 'start', max_rounds: maxRounds}));
+  }
+});
+document.getElementById('btn-reset').addEventListener('click', () => {
+  if (confirm('ゲームをリセットしますか？（参加者は維持されます）')) {
+    ws.send(JSON.stringify({action: 'reset'}));
+  }
+});
+document.getElementById('btn-clear-players').addEventListener('click', () => {
+  if (confirm('参加者を全消去して新しい卓にしますか？')) {
+    closeTestClients();
+    ws.send(JSON.stringify({action: 'clear_players'}));
+  }
+});
+document.getElementById('btn-ranking-reset').addEventListener('click', () => {
+  if (confirm('ゲームをリセットして盤面に戻りますか？（参加者は維持されます）')) {
+    ws.send(JSON.stringify({action: 'reset'}));
+  }
+});
+document.getElementById('btn-ranking-clear-players').addEventListener('click', () => {
+  if (confirm('参加者を全消去して新しい卓にしますか？')) {
+    closeTestClients();
+    ws.send(JSON.stringify({action: 'clear_players'}));
+  }
+});
+document.getElementById('qrcode').addEventListener('click', () => {
+  if (currentState && currentState.game_started) {
+    alert('ゲーム中はテストユーザを追加できません。終了後か新規卓で追加してください。');
+    return;
+  }
+  const input = prompt('テストユーザ数を入力してください', '30');
+  if (input === null) return;
+  const count = Math.max(1, Math.min(100, parseInt(input, 10) || 0));
+  if (!count) return;
+  if (currentState && currentState.players.length > 0) {
+    const clear = confirm('現在の参加者を全消去してからテストユーザを追加しますか？');
+    if (clear && ws && ws.readyState === WebSocket.OPEN) {
+      closeTestClients();
+      ws.send(JSON.stringify({action: 'clear_players'}));
+      setTimeout(() => addTestUsers(count), 300);
+      return;
+    }
+  }
+  addTestUsers(count);
+});
+
+connect();
+</script>
+</body>
+</html>

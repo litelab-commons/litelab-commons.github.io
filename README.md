@@ -13,7 +13,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 | ネットワーク基礎ターミナルラボ | Network | 公開中 | https://litelab-commons.github.io/network-terminal-lab/ |
 | ネットワーク探偵団 v2 障害切り分け編 | Network | 公開中 | https://litelab-commons.github.io/network-troubleshooting-lab/ |
 | TCPじゃんけん ネットワーク対戦ラボ | Network | 公開中 | https://litelab-commons.github.io/tcp-janken-lab/ |
-| インシデントすごろく | Security | 準備中 | - |
+| サイバーすごろく | Security | 公開中 | https://litelab-commons.github.io/incident-sugoroku/ |
 | プログラミングラボ | Programming | 公開中 | https://litelab-commons.github.io/programming-lab/ |
 | Linuxコマンド練習ターミナル | Programming | 公開中 | https://litelab-commons.github.io/linux-command-terminal/ |
 | ランサムウェア初動対応訓練 Basic | Security | 公開中 | https://litelab-commons.github.io/ransomware-triage-basic/ |
