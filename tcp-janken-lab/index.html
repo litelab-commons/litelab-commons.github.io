@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TCPじゃんけん ネットワーク対戦ラボ - LiteLab Commons</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #f5f7fb;
+      --surface: #ffffff;
+      --surface2: #eef3f8;
+      --border: #d9e2ec;
+      --text: #17202a;
+      --text2: #52606d;
+      --text3: #8293a3;
+      --accent: #0f766e;
+      --accent2: #2563eb;
+      --warn: #9a5b00;
+      --danger: #b42318;
+      --code: #111827;
+    }
+    body {
+      font-family: "Yu Gothic UI", "Yu Gothic", Meiryo, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    a { color: inherit; }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+    .back {
+      display: inline-flex;
+      color: var(--text2);
+      font-size: 13px;
+      text-decoration: none;
+      margin-bottom: 36px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(320px, 480px);
+      gap: 40px;
+      align-items: center;
+      margin-bottom: 42px;
+    }
+    .eyebrow {
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    h1 {
+      font-size: clamp(32px, 5vw, 52px);
+      line-height: 1.18;
+      margin-bottom: 18px;
+    }
+    .lead {
+      color: var(--text2);
+      font-size: 15px;
+      max-width: 620px;
+      margin-bottom: 24px;
+    }
+    .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 9px 18px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text2);
+    }
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: white;
+    }
+    .preview {
+      background: #101827;
+      color: white;
+      border: 1px solid #1f2a44;
+      border-radius: 10px;
+      padding: 18px;
+      box-shadow: 0 18px 44px rgba(15, 23, 42, .18);
+      overflow: hidden;
+    }
+    .preview-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: #9fb3c8;
+      font-size: 12px;
+      margin-bottom: 18px;
+    }
+    .role-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .role {
+      background: #182235;
+      border: 1px solid #2e3d57;
+      border-radius: 8px;
+      padding: 12px;
+    }
+    .role b {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .packet-flow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      justify-content: center;
+      margin: 18px 0;
+      flex-wrap: wrap;
+    }
+    .packet {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 74px;
+      min-height: 34px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      color: #06121f;
+      background: #67e8f9;
+    }
+    .packet.ack { background: #c4b5fd; }
+    .packet.data { background: #fde68a; }
+    .packet.fin { background: #fda4af; }
+    .arrow { color: #64748b; }
+    .hands {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .hand {
+      background: #182235;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      text-align: center;
+      padding: 12px 8px;
+      font-size: 24px;
+    }
+    .hand span {
+      display: block;
+      color: #cbd5e1;
+      font-size: 11px;
+      margin-top: 4px;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .tag {
+      font-size: 12px;
+      color: var(--text2);
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 4px 10px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+    section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 24px;
+    }
+    h2 {
+      font-size: 18px;
+      margin-bottom: 14px;
+    }
+    ul, ol {
+      padding-left: 1.3em;
+      color: var(--text2);
+      font-size: 14px;
+    }
+    li + li { margin-top: 7px; }
+    .notice {
+      border-color: rgba(154,91,0,.35);
+      background: #fff8e8;
+    }
+    .notice h2 { color: var(--warn); }
+    .danger {
+      border-color: rgba(180,35,24,.32);
+      background: #fff1f0;
+    }
+    .danger h2 { color: var(--danger); }
+    code {
+      color: white;
+      background: var(--code);
+      padding: 2px 6px;
+      border-radius: 5px;
+      font-size: .95em;
+    }
+    pre {
+      background: var(--code);
+      color: white;
+      padding: 14px 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      margin-top: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .full { margin-bottom: 24px; }
+    @media (max-width: 820px) {
+      .hero, .grid { grid-template-columns: 1fr; }
+      .page { padding: 24px 18px 48px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <a class="back" href="https://litelab-commons.github.io/">← LiteLab Commons に戻る</a>
+
+    <div class="hero">
+      <div>
+        <div class="eyebrow">Network Protocol Lab</div>
+        <h1>TCPじゃんけん<br>ネットワーク対戦ラボ</h1>
+        <p class="lead">
+          2台のPCまたは2つのブラウザでじゃんけん対戦をしながら、
+          SYN / SYN-ACK / ACK / DATA / FIN / RST の流れを体験できる Python 製ネットワーク教材です。
+        </p>
+        <div class="actions">
+          <a class="btn primary" href="janken.py" download>janken.py をダウンロード</a>
+          <a class="btn" href="requirements.txt" download>requirements.txt</a>
+          <a class="btn" href="https://github.com/litelab-commons/litelab-commons.github.io/tree/main/tcp-janken-lab" target="_blank" rel="noopener">GitHubで見る</a>
+        </div>
+        <div class="meta">
+          <span class="tag">Python</span>
+          <span class="tag">WebSocket</span>
+          <span class="tag">同一LAN演習</span>
+          <span class="tag">外部通信なし</span>
+          <span class="tag">MIT</span>
+        </div>
+      </div>
+      <div class="preview" aria-label="教材画面のイメージ">
+        <div class="preview-head">
+          <span>TCP Janken Lab</span>
+          <span>localhost:8080</span>
+        </div>
+        <div class="role-row">
+          <div class="role"><b>Server</b><span>待ち受け側</span></div>
+          <div class="role"><b>Client</b><span>接続側</span></div>
+        </div>
+        <div class="packet-flow">
+          <span class="packet">SYN</span><span class="arrow">→</span>
+          <span class="packet ack">SYN-ACK</span><span class="arrow">→</span>
+          <span class="packet ack">ACK</span>
+        </div>
+        <div class="packet-flow">
+          <span class="packet data">DATA</span><span class="arrow">じゃんけん</span><span class="packet fin">FIN</span>
+        </div>
+        <div class="hands">
+          <div class="hand">✊<span>グー</span></div>
+          <div class="hand">✌<span>チョキ</span></div>
+          <div class="hand">✋<span>パー</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <section>
+        <h2>学べること</h2>
+        <ul>
+          <li>TCPの接続開始を、SYN / SYN-ACK / ACK の順番で体験します。</li>
+          <li>DATAパケットとしてじゃんけんの手を送り、相手に届く様子を見ます。</li>
+          <li>FINによる切断と、順序が崩れたときのRSTを教材上で確認します。</li>
+          <li>サーバー側とクライアント側の役割分担を、同じUIで比較できます。</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>実行内容</h2>
+        <ul>
+          <li>ローカルHTTPサーバーを起動し、ブラウザ画面を配信します。</li>
+          <li>WebSocketサーバーを起動し、2人の操作を中継します。</li>
+          <li>LAN内の相手が接続できるよう、HTTP/WSポートで待ち受けます。</li>
+          <li>IPアドレス判定はOSのローカル名前解決を使い、外部接続は行いません。</li>
+        </ul>
+      </section>
+    </div>
+
+    <section class="full">
+      <h2>使い方</h2>
+      <ol>
+        <li>Python 3.10以降を用意します。</li>
+        <li><code>janken.py</code> と <code>requirements.txt</code> を同じフォルダに置きます。</li>
+        <li>依存ライブラリをインストールします。</li>
+      </ol>
+      <pre><code>python -m pip install -r requirements.txt</code></pre>
+      <ol start="4">
+        <li>待ち受け側のPCでサーバーモードを起動します。</li>
+      </ol>
+      <pre><code>python janken.py --server</code></pre>
+      <ol start="5">
+        <li>もう一方のPCでクライアントモードを起動し、画面の案内に従って接続します。</li>
+      </ol>
+      <pre><code>python janken.py --client</code></pre>
+      <p style="color:var(--text2);font-size:14px;margin-top:12px">
+        1台のPCで試す場合は、別々のターミナルでサーバーモードとクライアントモードを起動して動作確認できます。
+      </p>
+    </section>
+
+    <div class="grid">
+      <section class="notice">
+        <h2>通信について</h2>
+        <ul>
+          <li>Google Fontsや外部CDNは読み込みません。</li>
+          <li>IP判定のために外部サーバーへ接続する処理はありません。</li>
+          <li>教材の動作には、同一PCまたは同一LAN内でのHTTP/WebSocket通信を使います。</li>
+          <li>必要に応じて <code>--http-port</code> と <code>--ws-port</code> でポート番号を変更できます。</li>
+        </ul>
+      </section>
+
+      <section class="danger">
+        <h2>利用上の注意</h2>
+        <ul>
+          <li>起動中は指定ポートで待ち受けるため、信頼できるLAN内の演習で使ってください。</li>
+          <li>公共Wi-Fiや不特定多数が接続できるネットワークでは起動しないでください。</li>
+          <li>Windowsファイアウォールの確認画面が出た場合は、演習環境に合わせて許可範囲を選んでください。</li>
+          <li>実際のTCP実装ではなく、TCPの考え方を学ぶための教材シミュレーションです。</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

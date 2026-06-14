@@ -12,6 +12,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 | Packet Wiring Lab | Network | 公開中 | https://litelab-commons.github.io/packet-wiring-lab/ |
 | ネットワーク基礎ターミナルラボ | Network | 公開中 | https://litelab-commons.github.io/network-terminal-lab/ |
 | ネットワーク探偵団 v2 障害切り分け編 | Network | 公開中 | https://litelab-commons.github.io/network-troubleshooting-lab/ |
+| TCPじゃんけん ネットワーク対戦ラボ | Network | 公開中 | https://litelab-commons.github.io/tcp-janken-lab/ |
 | インシデントすごろく | Security | 準備中 | - |
 | プログラミングラボ | Programming | 公開中 | https://litelab-commons.github.io/programming-lab/ |
 | Linuxコマンド練習ターミナル | Programming | 公開中 | https://litelab-commons.github.io/linux-command-terminal/ |
