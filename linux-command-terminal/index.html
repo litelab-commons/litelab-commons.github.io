@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Linuxコマンド練習ターミナル</title>
+    <title>Linuxコマンド練習ターミナル v1.8.2</title>
     <style>
         /* --- Base Styles --- */
         :root {
@@ -20,14 +20,19 @@
             --yellow: #fbbf24;
             --terminal-font: 'ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", monospace;
             --ui-font: 'Inter', system-ui, -apple-system, sans-serif;
-            
+
+            /* 可変サイズ用変数（JSで制御） */
             --base-size: 16px;
             --sidebar-title-size: 14px;
             --sidebar-body-size: 12px;
             --sidebar-small-size: 10px;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
         body {
             font-family: var(--ui-font);
@@ -39,47 +44,152 @@
             flex-direction: column;
         }
 
-        @media (min-width: 768px) { body { flex-direction: row; } }
+        @media (min-width: 768px) {
+            body { flex-direction: row; }
+        }
 
+        /* --- Sidebar --- */
         #sidebar {
             width: 100%;
             background-color: #020617;
             border-right: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            height: 40%;
+            height: 45%;
             transition: all 0.3s ease;
             z-index: 20;
         }
 
-        @media (min-width: 768px) { #sidebar { width: 320px; height: 100%; } }
+        @media (min-width: 768px) {
+            #sidebar { width: 360px; height: 100%; }
+        }
 
-        .sidebar-hidden { display: none !important; }
+        .sidebar-hidden {
+            display: none !important;
+        }
 
-        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid var(--border); }
-        .sidebar-header h1 { font-size: var(--sidebar-title-size); font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+        .sidebar-header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
 
-        .sidebar-content { flex: 1; overflow-y: auto; padding: 1rem; }
+        .sidebar-header h1 {
+            font-size: var(--sidebar-title-size);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
 
-        .lesson-card { background-color: #1e293b; border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-bottom: 1rem; }
-        .lesson-title { color: var(--blue); font-weight: 600; margin-bottom: 0.5rem; font-size: var(--sidebar-title-size); }
-        .lesson-desc { font-size: var(--sidebar-body-size); line-height: 1.5; color: #cbd5e1; }
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        .lesson-card {
+            background-color: #1e293b;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .lesson-title {
+            color: var(--blue);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: var(--sidebar-title-size);
+        }
+
+        .lesson-desc {
+            font-size: var(--sidebar-body-size);
+            line-height: 1.5;
+            color: #cbd5e1;
+            margin-bottom: 0.75rem;
+        }
 
         .mission-box {
-            margin-top: 1rem;
-            padding: 0.5rem;
+            padding: 0.75rem;
+            background-color: #020617;
+            border: 1px solid var(--border);
+            border-radius: 0.37rem;
+            margin-bottom: 0.75rem;
+        }
+        .mission-label {
+            color: var(--yellow);
+            font-size: var(--sidebar-small-size);
+            font-weight: bold;
+            display: block;
+            margin-bottom: 2px;
+        }
+        .mission-goal {
+            color: var(--text-main);
+            display: block;
+            font-size: var(--sidebar-body-size);
+            line-height: 1.4;
+        }
+
+        /* Help Buttons */
+        .help-container {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .btn-help {
+            flex: 1;
+            background-color: #334155;
+            border: none;
+            color: var(--text-main);
+            font-size: var(--sidebar-small-size);
+            padding: 0.4rem;
+            border-radius: 0.25rem;
+            cursor: pointer;
+            text-align: center;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-help:hover {
+            background-color: #475569;
+        }
+
+        .reveal-box {
+            font-size: var(--sidebar-body-size);
             background-color: #020617;
             border: 1px solid var(--border);
             border-radius: 0.25rem;
-            font-family: var(--terminal-font);
-            font-size: var(--sidebar-small-size);
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            display: none;
+            line-height: 1.4;
         }
-        .mission-label { color: var(--text-muted); }
-        .mission-goal { color: var(--green); display: block; margin-top: 2px; }
+
+        .reveal-box.active {
+            display: block;
+        }
+
+        .answer-cmd {
+            font-family: var(--terminal-font);
+            color: var(--green);
+            background-color: #0f172a;
+            padding: 2px 4px;
+            border-radius: 2px;
+            font-size: 0.9em;
+            display: inline-block;
+            margin-top: 4px;
+        }
 
         .progress-list { margin-top: 1.5rem; }
-        .progress-label { font-size: var(--sidebar-small-size); font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.5rem; display: block; }
-        
+        .progress-label {
+            font-size: var(--sidebar-small-size);
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
         .lesson-item {
             display: flex;
             align-items: center;
@@ -94,81 +204,201 @@
         .lesson-item.done { color: var(--green); }
         .check-circle { width: 1.2em; height: 1.2em; border: 1px solid currentColor; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8em; font-weight: bold; }
 
-        .sidebar-footer { padding: 1rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background-color: #020617; }
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #020617;
+        }
 
-        main { flex: 1; display: flex; flex-direction: column; background-color: #020617; position: relative; height: 60%; }
-        @media (min-width: 768px) { main { height: 100%; } }
+        /* --- Main Terminal --- */
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #020617;
+            position: relative;
+            height: 55%;
+        }
 
-        .terminal-header { height: 40px; background-color: #1e293b; display: flex; align-items: center; padding: 0 1rem; justify-content: space-between; border-bottom: 1px solid var(--border); }
+        @media (min-width: 768px) {
+            main { height: 100%; }
+        }
+
+        .terminal-header {
+            height: 40px;
+            background-color: #1e293b;
+            display: flex;
+            align-items: center;
+            padding: 0 1rem;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+        }
+
         .dots { display: flex; gap: 0.5rem; }
         .dot { width: 12px; height: 12px; border-radius: 50%; }
         .dot-red { background-color: var(--red); }
         .dot-yellow { background-color: var(--yellow); }
         .dot-green { background-color: var(--green); }
 
-        .header-controls { display: flex; align-items: center; gap: 0.5rem; }
-        .font-size-control { display: flex; align-items: center; background: #0f172a; border-radius: 4px; padding: 2px; border: 1px solid var(--border); }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .font-size-control {
+            display: flex;
+            align-items: center;
+            background: #0f172a;
+            border-radius: 4px;
+            padding: 2px;
+            border: 1px solid var(--border);
+        }
+
         .header-info { font-family: var(--terminal-font); font-size: 10px; color: var(--text-muted); margin: 0 0.5rem; }
 
-        .terminal-output { flex: 1; overflow-y: auto; padding: 1rem; font-family: var(--terminal-font); font-size: var(--base-size); line-height: 1.5; }
-        .terminal-input-area { background-color: #0f172a; padding: 1rem; border-top: 1px solid var(--border); }
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+            font-family: var(--terminal-font);
+            font-size: var(--base-size);
+            line-height: 1.5;
+        }
 
-        .prompt-line { display: flex; align-items: center; font-family: var(--terminal-font); font-size: var(--base-size); }
+        .terminal-input-area {
+            background-color: #0f172a;
+            padding: 1rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .prompt-line {
+            display: flex;
+            align-items: center;
+            font-family: var(--terminal-font);
+            font-size: var(--base-size);
+        }
+
         .user { color: var(--green); font-weight: bold; }
         .colon { color: var(--text-muted); margin: 0 0.25rem; }
         .path { color: var(--blue); font-weight: bold; margin-right: 0.5rem; }
         .dollar { color: var(--text-main); margin-right: 0.5rem; }
 
-        input { flex: 1; background: transparent; border: none; outline: none; color: white; font-family: var(--terminal-font); font-size: var(--base-size); }
-
-        #success-overlay {
-            position: absolute; bottom: 6rem; right: 1.5rem; opacity: 0; pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            transform: translateY(20px) scale(0.9); z-index: 50;
+        input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            outline: none;
+            color: white;
+            font-family: var(--terminal-font);
+            font-size: var(--base-size);
         }
-        #success-overlay.show-toast { opacity: 1; transform: translateY(0) scale(1); }
+
+        /* --- Success Toast --- */
+        #success-overlay {
+            position: absolute;
+            bottom: 6rem;
+            right: 1.5rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(20px) scale(0.9);
+            z-index: 50;
+        }
+
+        #success-overlay.show-toast {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
 
         .success-banner {
-            background-color: var(--green); color: white; padding: 0.75rem 1.5rem; border-radius: 0.75rem;
-            font-weight: bold; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3); display: flex; align-items: center; gap: 0.5rem; font-size: var(--sidebar-body-size);
+            background-color: var(--green);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: bold;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: var(--sidebar-body-size);
         }
 
-        .btn-icon { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; display: flex; align-items: center; justify-content: center; }
+        .btn-icon {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .btn-icon:hover { background-color: #334155; color: white; }
-        .btn-text { background: transparent; border: none; color: var(--text-muted); font-size: 10px; cursor: pointer; }
+
+        .btn-text {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 10px;
+            cursor: pointer;
+        }
         .btn-text:hover { color: var(--red); }
 
         .success-flash { animation: flash 0.4s ease-out; }
-        @keyframes flash { 0% { background-color: rgba(74, 222, 128, 0.15); } 100% { background-color: transparent; } }
+        @keyframes flash {
+            0% { background-color: rgba(74, 222, 128, 0.15); }
+            100% { background-color: transparent; }
+        }
 
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body>
 
+    <!-- Sidebar -->
     <aside id="sidebar">
         <div class="sidebar-header">
             <h1>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--blue);"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m7 8 3 3-3 3"/><path d="M12 14h4"/></svg>
-                Linuxコマンド練習ターミナル
+                Linux Tutor Pro
             </h1>
-        <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">オフライン対応版 v1.8.0</div>
+            <div style="font-size: 10px; color: var(--text-muted); margin-top: 4px;">オフライン対応版 v1.8.2</div>
         </div>
 
         <div class="sidebar-content custom-scrollbar">
             <div id="lesson-info" class="lesson-card">
                 <div id="lesson-title" class="lesson-title">Loading...</div>
                 <p id="lesson-desc" class="lesson-desc">読み込み中...</p>
+
                 <div class="mission-box">
                     <span id="mission-label-text" class="mission-label">MISSION:</span>
                     <span id="lesson-goal" class="mission-goal">...</span>
+                </div>
+
+                <!-- Interactive Help & Answer -->
+                <div class="help-container" id="help-container">
+                    <button class="btn-help" id="btn-show-hint">💡 ヒント</button>
+                    <button class="btn-help" id="btn-show-answer">🔑 答えを表示</button>
+                </div>
+                <div class="reveal-box" id="hint-box" style="color: var(--blue);"></div>
+                <div class="reveal-box" id="answer-box">
+                    入力例: <br>
+                    <span class="answer-cmd" id="answer-cmd-text"></span>
                 </div>
             </div>
 
             <div class="progress-list">
                 <span class="progress-label">進捗状況</span>
-                <div id="lesson-list"></div>
+                <div id="lesson-list">
+                    <!-- Lessons generated here -->
+                </div>
             </div>
         </div>
 
@@ -178,6 +408,7 @@
         </div>
     </aside>
 
+    <!-- Main Terminal Area -->
     <main>
         <div class="terminal-header">
             <div class="dots">
@@ -185,17 +416,17 @@
                 <div class="dot dot-yellow"></div>
                 <div class="dot dot-green"></div>
             </div>
-            
+
             <div class="header-controls">
                 <div class="header-info">user@offline-linux: <span id="header-path">~</span></div>
-                
+
                 <div class="font-size-control">
-                    <button id="font-dec" class="btn-icon">－</button>
-                    <span id="font-size-display">16</span>
-                    <button id="font-inc" class="btn-icon">＋</button>
+                    <button id="font-dec" class="btn-icon" title="UI全体の文字を小さく" style="padding: 2px 6px; font-weight: bold; font-size: 12px;">－</button>
+                    <span id="font-size-display" style="font-size: 10px; color: var(--text-muted); width: 30px; text-align: center; font-family: var(--terminal-font);">16</span>
+                    <button id="font-inc" class="btn-icon" title="UI全体の文字を大きく" style="padding: 2px 6px; font-weight: bold; font-size: 12px;">＋</button>
                 </div>
 
-                <button id="toggle-sidebar" class="btn-icon">
+                <button id="toggle-sidebar" class="btn-icon" title="サイドバー切替">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></svg>
                 </button>
             </div>
@@ -203,51 +434,143 @@
 
         <div id="terminal-output" class="terminal-output custom-scrollbar">
             <div style="color: var(--text-muted); font-size: 0.8em; margin-bottom: 1rem;">
-                Welcome to Linux Learning Terminal v1.8.0 (Offline)<br>
+                Welcome to Linux Learning Terminal v1.8.2 (Offline & Sandbox)<br>
                 Type 'help' to see all available commands.<br>
             </div>
         </div>
 
         <div class="terminal-input-area">
             <div class="prompt-line">
-                <span class="user">user@linux</span><span class="colon">:</span><span id="current-path-display" class="path">~</span><span class="dollar">$</span>
+                <span class="user">user@linux</span>
+                <span class="colon">:</span>
+                <span id="current-path-display" class="path">~</span>
+                <span class="dollar">$</span>
                 <input type="text" id="terminal-input" autofocus autocomplete="off" spellcheck="false">
             </div>
         </div>
 
         <div id="success-overlay">
-            <div class="success-banner">Lesson Clear!</div>
+            <div class="success-banner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Lesson Clear! 🎉
+            </div>
         </div>
     </main>
 
     <script>
+        // --- Virtual File System ---
         const vfs = {
-            name: "/", type: "dir",
+            name: "/",
+            type: "dir",
             children: {
-                "home": { type: "dir", children: { "user": { type: "dir", children: {
-                    "documents": { type: "dir", children: {} },
-                    "readme.txt": { type: "file", content: "Welcome to Linux!" }
-                }}}}
+                "home": {
+                    type: "dir",
+                    children: {
+                        "user": {
+                            type: "dir",
+                            children: {
+                                "documents": { type: "dir", children: {} },
+                                "readme.txt": { type: "file", content: "Welcome to Linux! Move around and explore." },
+                                ".env": { type: "file", content: "SECRET_KEY=production_secret_key" },
+                                ".secret_config": { type: "file", content: "debug=false\nanalytics=true" }
+                            }
+                        }
+                    }
+                },
+                "bin": { type: "dir", children: {} },
+                "tmp": { type: "dir", children: {} }
             }
         };
 
-        const AVAILABLE_COMMANDS = ["ls", "cd", "pwd", "touch", "mkdir", "cat", "rm", "rmdir", "cp", "mv", "echo", "whoami", "date", "clear", "help"];
+        const AVAILABLE_COMMANDS = ["ls", "cd", "pwd", "touch", "mkdir", "cat", "rm", "cp", "mv", "echo", "whoami", "date", "clear", "help"];
         let currentPath = ["home", "user"];
         let currentLessonIndex = 0;
+        let isSidebarVisible = true;
         let currentBaseSize = 16;
         let toastTimeout = null;
 
+        // --- Educational Lesson Structure ---
         const lessons = [
-            { title: "現在地の確認", desc: "現在地を確認するには `pwd` コマンドを使います。", goal: "pwd", check: (c) => c === "pwd" },
-            { title: "リスト表示", desc: "中身を見るには `ls` を使います。", goal: "ls", check: (c) => c === "ls" },
-            { title: "移動の基本", desc: "documents へ移動しましょう。`cd` コマンドを使います。", goal: "cd documents", check: (c) => c === "cd documents" && getPathString() === "~/documents" },
-            { title: "空ファイルの作成", desc: "新しいファイル作成は `touch` です。memo.txt を作りましょう。", goal: "touch memo.txt", check: (c) => c === "touch memo.txt" },
-            { title: "文字の出力", desc: "`echo \"hello\" > memo.txt` で書き込めます。", goal: 'echo "hello" > memo.txt', check: (c) => c.includes(">") },
-            { title: "中身の閲覧", desc: "表示には `cat` を使います。", goal: "cat memo.txt", check: (c) => c === "cat memo.txt" },
-            { title: "コピー", desc: "`cp memo.txt backup.txt` でコピーしましょう。", goal: "cp memo.txt backup.txt", check: (c) => c === "cp memo.txt backup.txt" },
-            { title: "名前変更", desc: "`mv backup.txt old.txt` に変えましょう。", goal: "mv backup.txt old.txt", check: (c) => c === "mv backup.txt old.txt" },
-            { title: "削除", desc: "`rm` を使います。", goal: "rm old.txt", check: (c) => c === "rm old.txt" },
-            { title: "システム情報", desc: "`whoami` や `date` を試しましょう。", goal: "whoami または date", check: (c) => c === "whoami" || c === "date" }
+            {
+                title: "現在地の確認",
+                desc: "今自分が仮想マシンのどのディレクトリにいるかを確認してみましょう。",
+                goal: "現在の作業ディレクトリ（現在のパス）を画面に出力しなさい。",
+                hint: "Print Working Directory（作業ディレクトリの出力）の略である3文字のコマンドを使用します。",
+                answer: "pwd",
+                check: (c) => c.trim() === "pwd"
+            },
+            {
+                title: "リスト表示",
+                desc: "現在のディレクトリにどんなファイルやフォルダが配置されているか調べてみましょう。",
+                goal: "現在のディレクトリの直下にあるファイルとディレクトリの一覧を表示しなさい。",
+                hint: "List（一覧）の略である2文字のコマンドを使用します。",
+                answer: "ls",
+                check: (c) => c.trim() === "ls"
+            },
+            {
+                title: "移動の基本",
+                desc: "特定のフォルダの中に作業スペースを移すコマンドを使います。",
+                goal: "現在地から documents ディレクトリの中に移動しなさい。",
+                hint: "Change Directory（ディレクトリ移動）の略である `cd` に続けて、移動したい対象のフォルダ名を指定します。",
+                answer: "cd documents",
+                check: (c) => c.trim() === "cd documents" && getPathString() === "~/documents"
+            },
+            {
+                title: "空ファイルの作成",
+                desc: "中身が何もない、新しいファイルを作成します。",
+                goal: "documents 内に memo.txt という名前の空ファイルを作成しなさい。",
+                hint: "新規ファイル作成やタイムスタンプ更新に用いられる `touch [ファイル名]` コマンドを使います。",
+                answer: "touch memo.txt",
+                check: (c) => c.trim() === "touch memo.txt"
+            },
+            {
+                title: "文字の出力と書き込み",
+                desc: "ターミナルからファイルへ文章を書き込むには「リダイレクト（>）」を使用します。",
+                goal: "memo.txt に hello という文字列を書き込んで保存しなさい。",
+                hint: "画面に指定文字列を表示する `echo \"文字列\"` に、ファイルへ出力先を切り替える `> [ファイル名]` を組み合わせます。",
+                answer: "echo \"hello\" > memo.txt",
+                check: (c) => c.includes("echo") && c.includes(">") && c.includes("memo.txt")
+            },
+            {
+                title: "中身の閲覧",
+                desc: "ファイルに正しく書き込めたか、ターミナル上で確認します。",
+                goal: "memo.txt の中身（テキストデータ）を画面に出力しなさい。",
+                hint: "ファイルを表示する `cat [ファイル名]` コマンドを使用します。",
+                answer: "cat memo.txt",
+                check: (c) => c.trim() === "cat memo.txt"
+            },
+            {
+                title: "コピー",
+                desc: "ファイルのコピーを作成して、元のデータを保護しましょう。",
+                goal: "memo.txt をバックアップ用として backup.txt という名前に複製しなさい。",
+                hint: "Copy（複製）の略である `cp [コピー元] [コピー先]` コマンドを使用します。",
+                answer: "cp memo.txt backup.txt",
+                check: (c) => c.trim() === "cp memo.txt backup.txt"
+            },
+            {
+                title: "名前変更",
+                desc: "ファイルを別の名前、または別の場所に移動するコマンドを使います。",
+                goal: "backup.txt のファイル名を old.txt に変更しなさい。",
+                hint: "Move（移動・名前変更）の略である `mv [対象ファイル] [変更後の名称]` コマンドを使用します。",
+                answer: "mv backup.txt old.txt",
+                check: (c) => c.trim() === "mv backup.txt old.txt"
+            },
+            {
+                title: "削除",
+                desc: "不要になったファイルは、コマンドで簡単に消去することができます。",
+                goal: "old.txt ファイルをシステムから完全に削除しなさい。",
+                hint: "Remove（削除）の略である `rm [ファイル名]` コマンドを使用します。",
+                answer: "rm old.txt",
+                check: (c) => c.trim() === "rm old.txt"
+            },
+            {
+                title: "システム情報",
+                desc: "現在システムを動かしているユーザーや、稼働時間を確認します。",
+                goal: "ログイン中のユーザー名、または、現在の日時をターミナルに表示しなさい。",
+                hint: "「自分が誰か」を尋ねる `whoami` コマンドか、日時を出力する `date` コマンドを使用します。",
+                answer: "whoami または date",
+                check: (c) => c.trim() === "whoami" || c.trim() === "date"
+            }
         ];
 
         const outputEl = document.getElementById('terminal-output');
@@ -261,17 +584,64 @@
         const lessonListEl = document.getElementById('lesson-list');
         const statsEl = document.getElementById('progress-stats');
         const successOverlay = document.getElementById('success-overlay');
+        const sidebar = document.getElementById('sidebar');
         const fontSizeDisplay = document.getElementById('font-size-display');
 
+        // Help Accordion Elements
+        const hintBox = document.getElementById('hint-box');
+        const answerBox = document.getElementById('answer-box');
+        const answerCmdText = document.getElementById('answer-cmd-text');
+        const btnShowHint = document.getElementById('btn-show-hint');
+        const btnShowAnswer = document.getElementById('btn-show-answer');
+
         function getPathString() {
-            if (currentPath[0] === "home" && currentPath[1] === "user") return "~" + (currentPath.length > 2 ? "/" + currentPath.slice(2).join("/") : "");
+            if (currentPath[0] === "home" && currentPath[1] === "user") {
+                return "~" + (currentPath.length > 2 ? "/" + currentPath.slice(2).join("/") : "");
+            }
             return "/" + (currentPath.join("/") || "");
+        }
+
+        // --- Path Resolver (Absolute Path Support) ---
+        function parsePath(targetStr) {
+            if (!targetStr) return currentPath;
+            let tempPath = [...currentPath];
+            if (targetStr === "~") return ["home", "user"];
+            if (targetStr.startsWith("/")) {
+                tempPath = [];
+                targetStr = targetStr.substring(1);
+            }
+            const parts = targetStr.split("/").filter(p => p && p !== ".");
+            for (const p of parts) {
+                if (p === "..") {
+                    if (tempPath.length > 0) tempPath.pop();
+                } else {
+                    tempPath.push(p);
+                }
+            }
+            return tempPath;
         }
 
         function resolvePath(pathArr) {
             let curr = vfs;
-            for (const p of pathArr) { if (!curr.children[p]) return null; curr = curr.children[p]; }
+            for (const p of pathArr) {
+                if (!curr.children[p]) return null;
+                curr = curr.children[p];
+            }
             return curr;
+        }
+
+        function getFileByPath(pathStr) {
+            const resolvedPath = parsePath(pathStr);
+            const obj = resolvePath(resolvedPath);
+            if (obj && obj.type === "file") return obj;
+            return null;
+        }
+
+        function resetHelpBoxes() {
+            hintBox.classList.remove('active');
+            answerBox.classList.remove('active');
+            btnShowHint.textContent = "💡 ヒント";
+            btnShowAnswer.textContent = "🔑 答えを表示";
         }
 
         function updateUI() {
@@ -279,32 +649,55 @@
             pathDisplay.textContent = pathStr;
             headerPath.textContent = pathStr;
             statsEl.textContent = `${currentLessonIndex}/${lessons.length}`;
+
+            resetHelpBoxes();
+
             const lesson = lessons[currentLessonIndex];
             if (lesson) {
+                document.getElementById('help-container').style.display = 'flex';
                 lessonTitle.textContent = `Lesson ${currentLessonIndex + 1}: ${lesson.title}`;
                 lessonDesc.textContent = lesson.desc;
                 lessonGoal.textContent = lesson.goal;
-                missionLabel.textContent = "MISSION:";
+                missionLabel.textContent = "達成条件 (MISSION):";
+
+                hintBox.textContent = lesson.hint;
+                answerCmdText.textContent = lesson.answer;
             } else {
-                lessonTitle.textContent = "自由練習モード";
-                lessonDesc.innerHTML = "全レッスン完了！自由に操作しておさらいしましょう。";
+                // Sandbox Mode
+                document.getElementById('help-container').style.display = 'none';
+                lessonTitle.textContent = "Sandbox (自由練習モード)";
+                lessonDesc.innerHTML = "おめでとうございます！基礎学習をすべてクリアしました。<br><br><b>自由探索のヒント：</b><br>今回、絶対パスによる長距離移動（`cd /`）や隠しファイルの閲覧（`ls -a`）が解放されました。下の課題にチャレンジしてみましょう！";
                 missionLabel.textContent = "チャレンジ課題:";
-                lessonGoal.innerHTML = "1. 新規フォルダ作成<br>2. 複雑な移動<br>3. 掃除";
+                lessonGoal.innerHTML = "1. `cd /` でルートディレクトリに大移動する<br>2. `ls` でルートの中身（home, bin, tmp）を確認する<br>3. `cd /home/user` でホームに戻る<br>4. `ls -a` で隠し設定ファイル（.env）を見つける";
             }
+
             lessonListEl.innerHTML = '';
             lessons.forEach((l, i) => {
                 const item = document.createElement('div');
                 item.className = `lesson-item ${i === currentLessonIndex ? 'active' : i < currentLessonIndex ? 'done' : ''}`;
-                item.innerHTML = `<div class="check-circle">${i < currentLessonIndex ? '✓' : i + 1}</div><span>${l.title}</span>`;
+                item.innerHTML = `
+                    <div class="check-circle">${i < currentLessonIndex ? '✓' : i + 1}</div>
+                    <span style="${i < currentLessonIndex ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${l.title}</span>
+                `;
                 lessonListEl.appendChild(item);
             });
         }
 
         function printToTerminal(text, type = 'output') {
             const div = document.createElement('div');
-            if (type === 'command') div.innerHTML = `<span style="color: var(--green); font-weight: bold;">user@linux</span><span style="color: var(--text-muted);">:</span><span style="color: var(--blue); font-weight: bold;">${getPathString()}</span><span style="color: white; margin-left: 0.5rem;">$ ${text}</span>`;
-            else if (type === 'error') { div.style.color = "var(--red)"; div.textContent = `Error: ${text}`; }
-            else { div.style.color = "var(--text-main)"; div.style.whiteSpace = "pre-wrap"; div.textContent = text; }
+            if (type === 'command') {
+                div.innerHTML = `<span style="color: var(--green); font-weight: bold;">user@linux</span><span style="color: var(--text-muted);">:</span><span style="color: var(--blue); font-weight: bold;">${getPathString()}</span><span style="color: white; margin-left: 0.5rem;">$ ${text}</span>`;
+            } else if (type === 'error') {
+                div.style.color = "var(--red)";
+                div.style.fontSize = "0.85em";
+                div.style.fontStyle = "italic";
+                div.textContent = `Error: ${text}`;
+            } else {
+                div.style.color = "var(--text-main)";
+                div.style.whiteSpace = "pre-wrap";
+                div.style.padding = "2px 0";
+                div.textContent = text;
+            }
             outputEl.appendChild(div);
             outputEl.scrollTop = outputEl.scrollHeight;
         }
@@ -316,62 +709,133 @@
             document.documentElement.style.setProperty('--sidebar-body-size', (currentBaseSize * 0.75) + 'px');
             document.documentElement.style.setProperty('--sidebar-small-size', (currentBaseSize * 0.625) + 'px');
             fontSizeDisplay.textContent = currentBaseSize;
+            localStorage.setItem('linux-tutor-base-size', currentBaseSize);
+        }
+
+        // --- Core Posix Terminal Simulation ---
+        function executeSingleCommand(cmdStr, pipeInput = null) {
+            const parts = cmdStr.trim().split(/\s+/);
+            const cmd = parts[0];
+            const currentDir = resolvePath(currentPath);
+            let output = "";
+
+            switch (cmd) {
+                case "help":
+                    output = "Available: " + AVAILABLE_COMMANDS.join(", ");
+                    break;
+                case "pwd":
+                    output = "/" + (currentPath.join("/") || "");
+                    break;
+                case "ls": {
+                    const showAll = parts.includes("-a");
+                    output = Object.keys(currentDir.children).filter(name => showAll || !name.startsWith(".")).join("  ");
+                    break;
+                }
+                case "cd": {
+                    const target = parts[1];
+                    const targetPath = parsePath(target);
+                    const dest = resolvePath(targetPath);
+                    if (dest && dest.type === "dir") {
+                        currentPath = targetPath;
+                    } else {
+                        throw new Error(`cd: ${target || ""}: No such directory`);
+                    }
+                    break;
+                }
+                case "touch":
+                    if (!parts[1]) throw new Error("touch: missing file operand");
+                    currentDir.children[parts[1]] = { type: "file", content: "" };
+                    break;
+                case "mkdir":
+                    if (!parts[1]) throw new Error("mkdir: missing operand");
+                    currentDir.children[parts[1]] = { type: "dir", children: {} };
+                    break;
+                case "cat": {
+                    if (!parts[1] && pipeInput === null) throw new Error("cat: missing operand");
+                    if (pipeInput !== null) {
+                        output = pipeInput;
+                    } else {
+                        const file = getFileByPath(parts[1]);
+                        if (file) output = file.content;
+                        else throw new Error(`cat: ${parts[1]}: No such file`);
+                    }
+                    break;
+                }
+                case "rm":
+                    if (!parts[1]) throw new Error("rm: missing operand");
+                    if (currentDir.children[parts[1]]) delete currentDir.children[parts[1]];
+                    else throw new Error(`rm: cannot remove '${parts[1]}': No such file`);
+                    break;
+                case "cp": {
+                    if (!parts[1] || !parts[2]) throw new Error("cp: missing operand");
+                    const src = getFileByPath(parts[1]);
+                    if (src) {
+                        const destPath = parsePath(parts[2]);
+                        const destDir = resolvePath(destPath.slice(0, -1));
+                        if (destDir) {
+                            destDir.children[destPath[destPath.length - 1]] = { ...src };
+                        }
+                    } else throw new Error(`cp: cannot stat '${parts[1]}': No such file`);
+                    break;
+                }
+                case "mv": {
+                    if (!parts[1] || !parts[2]) throw new Error("mv: missing operand");
+                    const targetFile = currentDir.children[parts[1]];
+                    if (targetFile) {
+                        currentDir.children[parts[2]] = targetFile;
+                        delete currentDir.children[parts[1]];
+                    } else throw new Error(`mv: cannot stat '${parts[1]}': No such file`);
+                    break;
+                }
+                case "echo": {
+                    const redirectIndex = parts.indexOf(">");
+                    if (redirectIndex !== -1) {
+                        const textContent = parts.slice(1, redirectIndex).join(" ").replace(/['"]/g, "");
+                        const fileTarget = parts[redirectIndex + 1];
+                        if (!fileTarget) throw new Error("syntax error near unexpected token `newline'");
+                        currentDir.children[fileTarget] = { type: "file", content: textContent };
+                    } else {
+                        output = parts.slice(1).join(" ").replace(/['"]/g, "");
+                    }
+                    break;
+                }
+                case "whoami": output = "user"; break;
+                case "date": output = new Date().toLocaleString(); break;
+                case "clear": outputEl.innerHTML = ""; return;
+                default:
+                    throw new Error(`Command not found: ${cmd}`);
+            }
+            return output;
         }
 
         function processCommand(rawInput) {
-            const input = rawInput.trim(); if (!input) return;
+            const input = rawInput.trim();
+            if (!input) return;
             printToTerminal(input, 'command');
-            let cmdLine = input; let redirectTarget = null;
-            if (input.includes(">")) { const parts = input.split(">"); cmdLine = parts[0].trim(); redirectTarget = parts[1].trim(); }
-            const args = cmdLine.split(/\s+/); const cmd = args[0]; let output = "";
+
+            let finalOutput = "";
             try {
-                const currentDir = resolvePath(currentPath);
-                switch (cmd) {
-                    case "help": output = AVAILABLE_COMMANDS.join(", "); break;
-                    case "clear": outputEl.innerHTML = ""; return;
-                    case "pwd": output = "/" + (currentPath.join("/") || ""); break;
-                    case "ls": output = Object.keys(currentDir.children).join("  "); break;
-                    case "cd":
-                        const target = args[1];
-                        if (!target || target === "~") currentPath = ["home", "user"];
-                        else if (target === "..") { if (currentPath.length > 0) currentPath.pop(); }
-                        else {
-                            if (currentDir.children[target] && currentDir.children[target].type === "dir") currentPath.push(target);
-                            else throw new Error(`cd: ${target}: No such directory`);
-                        }
-                        break;
-                    case "echo":
-                        const text = cmdLine.replace(/^echo\s+/, "").replace(/['"]/g, "");
-                        if (redirectTarget) currentDir.children[redirectTarget] = { type: "file", content: text }; else output = text;
-                        break;
-                    case "touch": currentDir.children[args[1]] = { type: "file", content: "" }; break;
-                    case "mkdir": currentDir.children[args[1]] = { type: "dir", children: {} }; break;
-                    case "cat": output = currentDir.children[args[1]]?.content || "File not found"; break;
-                    case "rm":
-                        if (!args[1] || !currentDir.children[args[1]]) throw new Error(`rm: ${args[1] || ""}: No such file`);
-                        delete currentDir.children[args[1]];
-                        break;
-                    case "rmdir":
-                        if (!args[1] || !currentDir.children[args[1]] || currentDir.children[args[1]].type !== "dir") throw new Error(`rmdir: ${args[1] || ""}: No such directory`);
-                        if (Object.keys(currentDir.children[args[1]].children).length) throw new Error(`rmdir: ${args[1]}: Directory not empty`);
-                        delete currentDir.children[args[1]];
-                        break;
-                    case "cp":
-                        if (!args[1] || !args[2] || !currentDir.children[args[1]]) throw new Error("cp: usage: cp SOURCE DEST");
-                        currentDir.children[args[2]] = JSON.parse(JSON.stringify(currentDir.children[args[1]]));
-                        break;
-                    case "mv":
-                        if (!args[1] || !args[2] || !currentDir.children[args[1]]) throw new Error("mv: usage: mv SOURCE DEST");
-                        currentDir.children[args[2]] = currentDir.children[args[1]];
-                        delete currentDir.children[args[1]];
-                        break;
-                    case "whoami": output = "user"; break;
-                    case "date": output = new Date().toLocaleString(); break;
-                    default: throw new Error(`Command not found: ${cmd}`);
+                if (input.includes("|")) {
+                    const pipeline = input.split("|");
+                    const cmd1 = pipeline[0].trim();
+                    const cmd2 = pipeline[1].trim();
+
+                    const intermediateOutput = executeSingleCommand(cmd1);
+                    finalOutput = executeSingleCommand(cmd2, intermediateOutput);
+                } else {
+                    finalOutput = executeSingleCommand(input);
                 }
-                if (output) printToTerminal(output);
-                if (lessons[currentLessonIndex]?.check(input)) completeLesson();
-            } catch (err) { printToTerminal(err.message, 'error'); }
+
+                if (finalOutput !== "") printToTerminal(finalOutput);
+
+                // Lesson Progression Check
+                const currentLesson = lessons[currentLessonIndex];
+                if (currentLesson && currentLesson.check(input, finalOutput)) {
+                    completeLesson();
+                }
+            } catch (err) {
+                printToTerminal(err.message, 'error');
+            }
             updateUI();
         }
 
@@ -383,14 +847,70 @@
             toastTimeout = setTimeout(() => {
                 successOverlay.classList.remove('show-toast');
                 outputEl.classList.remove('success-flash');
+                toastTimeout = null;
             }, 1800);
         }
 
-        inputEl.addEventListener('keydown', (e) => { if (e.key === 'Enter') { processCommand(inputEl.value); inputEl.value = ""; }});
+        // --- Interactive Help Logic ---
+        btnShowHint.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = hintBox.classList.toggle('active');
+            btnShowHint.textContent = isActive ? "🙈 ヒントを隠す" : "💡 ヒント";
+            answerBox.classList.remove('active');
+            btnShowAnswer.textContent = "🔑 答えを表示";
+        });
+
+        btnShowAnswer.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isActive = answerBox.classList.toggle('active');
+            btnShowAnswer.textContent = isActive ? "🙈 答えを隠す" : "🔑 答えを表示";
+            hintBox.classList.remove('active');
+            btnShowHint.textContent = "💡 ヒント";
+        });
+
+        // --- Event Handlers ---
+        inputEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                processCommand(inputEl.value);
+                inputEl.value = "";
+            }
+        });
+
         document.querySelector('main').addEventListener('click', () => inputEl.focus());
-        document.getElementById('font-inc').addEventListener('click', () => setFontSize(currentBaseSize + 2));
-        document.getElementById('font-dec').addEventListener('click', () => setFontSize(currentBaseSize - 2));
-        updateUI(); setFontSize(16);
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (confirm("進捗をリセットしますか？")) {
+                localStorage.removeItem('linux-tutor-progress-pro');
+                location.reload();
+            }
+        });
+
+        document.getElementById('toggle-sidebar').addEventListener('click', (e) => {
+            e.stopPropagation();
+            isSidebarVisible = !isSidebarVisible;
+            sidebar.classList.toggle('sidebar-hidden');
+            setTimeout(() => inputEl.focus(), 50);
+        });
+
+        document.getElementById('font-inc').addEventListener('click', (e) => {
+            e.stopPropagation();
+            setFontSize(currentBaseSize + 2);
+        });
+
+        document.getElementById('font-dec').addEventListener('click', (e) => {
+            e.stopPropagation();
+            setFontSize(currentBaseSize - 2);
+        });
+
+        // Initialize
+        const savedProgress = localStorage.getItem('linux-tutor-progress-pro');
+        if (savedProgress) currentLessonIndex = Math.min(parseInt(savedProgress), lessons.length);
+        const savedBaseSize = localStorage.getItem('linux-tutor-base-size');
+        if (savedBaseSize) setFontSize(parseInt(savedBaseSize));
+        else setFontSize(16);
+
+        updateUI();
+        inputEl.focus();
     </script>
     <!-- Cloudflare Web Analytics --><script defer src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
 </body>
