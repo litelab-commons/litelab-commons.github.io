@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCS評価制度 ★3・★4 自己診断ナビ（非公式）</title>
+<style>
+:root{
+  --paper:#F7F5F0; --surface:#FFFFFF; --ink:#22303C; --ink-soft:#5A6B7A;
+  --indigo:#1E3A5F; --indigo-deep:#162C49; --shu:#C73E3A; --shu-soft:#F6E4E3;
+  --ok:#2E7D5B; --ok-soft:#E2F1EA; --wip:#B07A1F; --wip-soft:#FBF0DB;
+  --na:#8A93A0; --na-soft:#EDEFF2; --line:#DDD8CE; --line-soft:#EAE6DD;
+  --gv:#4A5FA5; --tm:#8C5BA8; --id:#2E7D8C; --pr:#1E6E50; --de:#B07A1F; --rs:#B05435; --rc:#7A4A8C;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{font-size:15px}
+body{font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic UI","Yu Gothic",Meiryo,sans-serif;
+  background:var(--paper); color:var(--ink); line-height:1.65;
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 31px,rgba(30,58,95,.025) 31px,rgba(30,58,95,.025) 32px);}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit;font-size:.92rem}
+
+/* ===== header ===== */
+header{background:var(--indigo-deep);color:#fff;padding:0;border-bottom:4px solid var(--shu)}
+.hd-inner{max-width:1080px;margin:0 auto;padding:14px 20px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:14px}
+.hd-title{flex:1;min-width:240px}
+.hd-eyebrow{font-size:.68rem;letter-spacing:.18em;color:#9FB3CC;font-weight:600}
+.hd-title h1{font-size:1.18rem;font-weight:700;letter-spacing:.04em;line-height:1.3}
+.hd-title h1 .star{color:#F2C14E;letter-spacing:0}
+.unofficial-badge{display:inline-block;margin-left:8px;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:1px 8px;font-size:.68rem;font-weight:700;color:#F7E1A3;vertical-align:middle;letter-spacing:.08em}
+.mode-switch{display:flex;border:1px solid #3D5677;border-radius:8px;overflow:hidden}
+.mode-switch button{background:transparent;color:#9FB3CC;border:none;padding:8px 16px;font-size:.85rem;font-weight:700;letter-spacing:.05em}
+.mode-switch button.on{background:var(--shu);color:#fff}
+.hd-tools{display:flex;gap:8px}
+.hd-tools button{background:transparent;border:1px solid #3D5677;color:#C9D6E5;border-radius:7px;padding:7px 12px;font-size:.78rem}
+.hd-tools button:hover{border-color:#7E97B5;color:#fff}
+
+/* ===== nav ===== */
+nav{background:var(--indigo);position:sticky;top:0;z-index:30;box-shadow:0 2px 8px rgba(22,44,73,.25)}
+.nav-inner{max-width:1080px;margin:0 auto;display:flex;overflow-x:auto;scrollbar-width:none}
+.nav-inner::-webkit-scrollbar{display:none}
+.nav-inner a{flex:0 0 auto;color:#AFC3DA;text-decoration:none;padding:11px 14px;font-size:.82rem;font-weight:600;
+  border-bottom:3px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.nav-inner a .nv-no{font-size:.66rem;background:rgba(255,255,255,.12);border-radius:4px;padding:0 5px;line-height:1.5}
+.nav-inner a.on{color:#fff;border-bottom-color:var(--shu)}
+.nav-inner a:hover{color:#fff}
+.nav-inner a .nv-pct{font-size:.66rem;color:#7E97B5}
+.nav-inner a.on .nv-pct{color:#E8B4B2}
+
+main{max-width:1080px;margin:0 auto;padding:26px 20px 90px}
+
+/* ===== dashboard ===== */
+.dash-hero{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:24px 26px;display:flex;gap:30px;align-items:center;flex-wrap:wrap;position:relative;overflow:hidden}
+.dash-hero::before{content:"";position:absolute;right:-40px;top:-40px;width:200px;height:200px;border:14px solid var(--line-soft);border-radius:50%;opacity:.6}
+.donut-wrap{position:relative;width:150px;height:150px;flex:0 0 auto}
+.donut-wrap svg{transform:rotate(-90deg)}
+.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.donut-center .pct{font-size:1.9rem;font-weight:800;color:var(--indigo);line-height:1}
+.donut-center .lbl{font-size:.68rem;color:var(--ink-soft);margin-top:4px;letter-spacing:.1em}
+.dash-stats{flex:1;min-width:240px}
+.dash-stats h2{font-size:1.02rem;color:var(--indigo);margin-bottom:4px}
+.dash-stats .sub{font-size:.8rem;color:var(--ink-soft);margin-bottom:14px}
+.stat-row{display:flex;gap:10px;flex-wrap:wrap}
+.stat-chip{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:8px 14px;text-align:center;min-width:86px}
+.stat-chip b{display:block;font-size:1.25rem;line-height:1.2}
+.stat-chip span{font-size:.68rem;color:var(--ink-soft)}
+.stat-chip.c-ok b{color:var(--ok)} .stat-chip.c-wip b{color:var(--wip)} .stat-chip.c-no b{color:var(--shu)} .stat-chip.c-na b{color:var(--na)}
+
+.cat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px;margin-top:18px}
+.cat-card{background:var(--surface);border:1px solid var(--line);border-radius:11px;padding:16px 18px 14px;text-decoration:none;color:var(--ink);
+  position:relative;transition:box-shadow .15s,transform .15s;border-top:4px solid var(--cc,var(--indigo))}
+.cat-card:hover{box-shadow:0 4px 14px rgba(30,58,95,.13);transform:translateY(-2px)}
+.cat-card .cc-head{display:flex;align-items:baseline;gap:8px}
+.cat-card .cc-no{font-size:.7rem;font-weight:700;color:var(--cc,var(--indigo));letter-spacing:.06em}
+.cat-card .cc-nist{font-size:.64rem;color:var(--ink-soft);margin-left:auto;border:1px solid var(--line);border-radius:4px;padding:0 5px}
+.cat-card h3{font-size:.98rem;margin:2px 0 10px;color:var(--indigo-deep)}
+.bar{height:9px;background:var(--line-soft);border-radius:5px;overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .b-ok{background:var(--ok)} .bar .b-wip{background:var(--wip)}
+.cat-card .cc-meta{display:flex;justify-content:space-between;font-size:.7rem;color:var(--ink-soft);margin-top:7px}
+.hanko{position:absolute;top:10px;right:12px;width:54px;height:54px;border:2.5px solid var(--shu);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--shu);font-weight:800;font-size:.82rem;
+  transform:rotate(-12deg);letter-spacing:.05em;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1.5px rgba(199,62,58,.25)}
+
+.notice{background:var(--shu-soft);border:1px solid #E5C2C0;border-radius:10px;padding:12px 16px;font-size:.8rem;color:#7C3330;margin-top:18px;line-height:1.7}
+.notice b{color:var(--shu)}
+.notice a{color:#7C3330}
+
+/* ===== category page ===== */
+.pg-head{display:flex;align-items:flex-start;gap:14px;margin-bottom:6px;flex-wrap:wrap}
+.pg-head .ph-no{background:var(--cc,var(--indigo));color:#fff;font-weight:800;border-radius:9px;width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;flex:0 0 auto}
+.pg-head h2{font-size:1.3rem;color:var(--indigo-deep);line-height:1.3}
+.pg-head .ph-sub{font-size:.78rem;color:var(--ink-soft)}
+.pg-progress{margin:10px 0 22px}
+.pg-progress .bar{height:12px;border-radius:6px}
+.pg-progress .pp-lbl{font-size:.74rem;color:var(--ink-soft);margin-top:5px;display:flex;justify-content:space-between}
+
+.mid-h{font-size:.92rem;color:var(--indigo);font-weight:700;border-left:4px solid var(--cc,var(--indigo));padding:2px 0 2px 10px;margin:26px 0 10px}
+.mid-h small{color:var(--ink-soft);font-weight:600;font-size:.72rem;margin-left:8px}
+
+.req-card{background:var(--surface);border:1px solid var(--line);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.req-head{display:flex;align-items:center;gap:10px;padding:13px 16px;cursor:pointer;user-select:none}
+.req-head:hover{background:#FBFAF7}
+.req-no{font-size:.72rem;font-weight:800;color:var(--cc,var(--indigo));background:var(--paper);border:1px solid var(--line);border-radius:5px;padding:1px 7px;flex:0 0 auto}
+.req-name{font-weight:700;font-size:.95rem;flex:1;color:var(--indigo-deep)}
+.req-stars{font-size:.7rem;color:#B58A1F;font-weight:700;flex:0 0 auto;letter-spacing:.02em}
+.req-prog{flex:0 0 auto;font-size:.72rem;font-weight:700;border-radius:11px;padding:2px 10px;background:var(--na-soft);color:var(--ink-soft)}
+.req-prog.done{background:var(--ok-soft);color:var(--ok)}
+.req-prog.part{background:var(--wip-soft);color:var(--wip)}
+.req-caret{flex:0 0 auto;color:var(--ink-soft);transition:transform .18s;font-size:.8rem}
+.req-card.open .req-caret{transform:rotate(90deg)}
+.req-body{display:none;border-top:1px dashed var(--line);padding:14px 16px 16px;background:#FDFCFA}
+.req-card.open .req-body{display:block}
+.req-text{font-size:.85rem;color:var(--ink);background:var(--paper);border-left:3px solid var(--cc,var(--indigo));padding:9px 13px;border-radius:0 7px 7px 0;margin-bottom:14px}
+.req-text .rt-lbl{font-size:.66rem;font-weight:700;color:var(--ink-soft);display:block;letter-spacing:.1em;margin-bottom:2px}
+
+.plan-row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;font-size:.78rem;color:var(--ink-soft)}
+.plan-row label{display:flex;align-items:center;gap:5px}
+.plan-row input[type=date]{border:1px solid var(--line);border-radius:6px;padding:4px 7px;background:#fff;color:var(--ink)}
+.plan-row input[type=text]{border:1px solid var(--line);border-radius:6px;padding:4px 9px;background:#fff;width:130px}
+
+.crit{display:flex;gap:10px;padding:10px 4px;border-top:1px solid var(--line-soft);align-items:flex-start}
+.crit:first-of-type{border-top:none}
+.crit-st{flex:0 0 auto;margin-top:2px}
+.st-btn{border:1.5px solid var(--line);border-radius:7px;background:#fff;font-size:.7rem;font-weight:800;padding:4px 0;width:62px;letter-spacing:.04em;color:var(--ink-soft);transition:all .12s}
+.st-btn[data-s="1"]{background:var(--wip-soft);border-color:var(--wip);color:var(--wip)}
+.st-btn[data-s="2"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.st-btn[data-s="3"]{background:var(--na-soft);border-color:var(--na);color:var(--na);text-decoration:line-through}
+.crit-main{flex:1;min-width:0}
+.crit-no{font-size:.68rem;font-weight:700;color:var(--ink-soft);margin-right:6px}
+.crit-lv4{font-size:.62rem;font-weight:800;color:#fff;background:var(--tm);border-radius:4px;padding:0 5px;margin-right:6px;vertical-align:1px}
+.crit-text{font-size:.86rem;white-space:pre-wrap}
+.crit-text .crit-text-inner{display:inline}
+.memo-tg{background:none;border:none;color:var(--indigo);font-size:.7rem;padding:2px 0;text-decoration:underline dotted;margin-top:3px}
+.memo-tg.has{color:var(--shu);font-weight:700}
+.crit-memo{display:none;width:100%;margin-top:6px;border:1px solid var(--line);border-radius:7px;padding:7px 10px;font-size:.82rem;min-height:54px;background:#FFFEF9}
+.crit-memo.show{display:block}
+
+/* ===== gantt ===== */
+.gantt-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;font-size:.8rem;color:var(--ink-soft)}
+.gantt-wrap{background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow-x:auto;padding:10px 0}
+.gantt-grid{min-width:760px}
+.g-row{display:grid;grid-template-columns:250px 1fr;align-items:stretch;border-top:1px solid var(--line-soft)}
+.g-row:first-child{border-top:none}
+.g-row.g-cat{background:var(--paper)}
+.g-label{padding:7px 12px;font-size:.76rem;display:flex;align-items:center;gap:7px;border-right:1px solid var(--line)}
+.g-label .req-no{font-size:.62rem}
+.g-label a{color:var(--indigo-deep);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.g-label a:hover{text-decoration:underline}
+.g-cat .g-label{font-weight:800;color:var(--indigo);font-size:.78rem}
+.g-track{position:relative}
+.g-months{display:flex;height:100%}
+.g-month{flex:1;border-right:1px solid var(--line-soft);font-size:.62rem;color:var(--ink-soft);padding:2px 4px}
+.g-bar{position:absolute;top:6px;height:16px;border-radius:8px;min-width:8px;display:flex;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.g-bar i{height:100%}
+.g-today{position:absolute;top:0;bottom:0;width:2px;background:var(--shu);opacity:.75}
+.g-today::after{content:"今日";position:absolute;top:-1px;left:4px;font-size:.58rem;color:var(--shu);font-weight:700;white-space:nowrap}
+.g-empty{padding:30px;text-align:center;color:var(--ink-soft);font-size:.85rem}
+
+/* ===== misc ===== */
+.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 16px;font-size:.82rem;font-weight:600;color:var(--indigo)}
+.btn:hover{border-color:var(--indigo)}
+.btn.primary{background:var(--indigo);color:#fff;border-color:var(--indigo)}
+.btn.danger{color:var(--shu);border-color:#E0BCBA}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.72rem;color:var(--ink-soft);margin-top:14px}
+.legend i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:4px;vertical-align:-1px}
+footer a{color:var(--indigo)} .ft-links{display:inline-block;margin:2px 0}
+footer{max-width:1080px;margin:0 auto;padding:18px 20px 40px;font-size:.7rem;color:var(--ink-soft);border-top:1px solid var(--line);line-height:1.8}
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%);background:var(--indigo-deep);color:#fff;border-radius:9px;padding:10px 22px;font-size:.82rem;opacity:0;pointer-events:none;transition:opacity .25s;z-index:99}
+.toast.show{opacity:1}
+
+/* ===== Securio guide ===== */
+#securio{position:fixed;right:16px;bottom:16px;z-index:60;display:flex;align-items:flex-end;gap:10px;max-width:min(420px,calc(100vw - 32px))}
+.sq-bubble{background:#fff;border:1.5px solid var(--indigo);border-radius:14px 14px 3px 14px;padding:10px 14px;font-size:.8rem;line-height:1.6;color:var(--ink);
+  box-shadow:0 4px 16px rgba(22,44,73,.18);position:relative;animation:sqIn .3s ease;max-width:320px}
+.sq-bubble::after{content:"";position:absolute;right:-8px;bottom:8px;border:7px solid transparent;border-left-color:var(--indigo)}
+.sq-bubble b{color:var(--shu)}
+.sq-bubble .sq-name{display:block;font-size:.62rem;font-weight:800;color:var(--indigo);letter-spacing:.12em;margin-bottom:2px}
+.sq-bubble .sq-close{position:absolute;top:4px;right:7px;border:none;background:none;color:var(--ink-soft);font-size:.85rem;line-height:1;padding:2px}
+.sq-fox{flex:0 0 auto;border:none;background:none;padding:0;filter:drop-shadow(0 3px 6px rgba(22,44,73,.25));transition:transform .15s}
+.sq-fox:hover{transform:scale(1.06)}
+.sq-fox:active{transform:scale(.96)}
+.sq-fox svg{display:block}
+.sq-fox .sq-ear-l{transform-origin:30px 22px;animation:sqEar 5s ease-in-out infinite}
+@keyframes sqIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sqEar{0%,92%,100%{transform:rotate(0)}94%,98%{transform:rotate(-7deg)}}
+@media(prefers-reduced-motion:reduce){.sq-bubble{animation:none}.sq-fox .sq-ear-l{animation:none}}
+
+/* ===== template modal ===== */
+#tplOv{display:none;position:fixed;inset:0;background:rgba(22,44,73,.45);z-index:80;align-items:center;justify-content:center;padding:18px}
+.tpl-box{background:var(--surface);border-radius:13px;max-width:760px;width:100%;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.3);overflow:hidden}
+.tpl-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 18px;border-bottom:1px solid var(--line);color:var(--indigo-deep)}
+.tpl-note{background:var(--shu-soft);color:#7C3330;font-size:.72rem;line-height:1.6;padding:9px 18px;border-bottom:1px solid #E5C2C0}
+.tpl-body{flex:1;border:none;resize:none;padding:14px 18px;font-size:.82rem;line-height:1.7;font-family:"BIZ UDGothic","MS Gothic",Osaka-mono,monospace;background:#FDFCF8;min-height:300px;outline:none;white-space:pre;overflow:auto}
+.tpl-foot{display:flex;gap:8px;align-items:center;padding:11px 18px;border-top:1px solid var(--line);flex-wrap:wrap}
+.tpl-btn{border:1px solid var(--indigo);background:#fff;color:var(--indigo);border-radius:7px;padding:4px 12px;font-size:.72rem;font-weight:700;margin-bottom:14px}
+.tpl-btn:hover{background:var(--indigo);color:#fff}
+@media print{#tplOv{display:none!important}}
+@media print{#securio{display:none}}
+@media(max-width:640px){
+  html{font-size:14px}
+  .g-row{grid-template-columns:150px 1fr}
+  .dash-hero{padding:18px}
+}
+@media print{
+  nav,.hd-tools,.mode-switch,.st-btn{display:none}
+  body{background:#fff}
+  .req-body{display:block!important}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="hd-inner">
+    <div class="hd-title">
+      <div class="hd-eyebrow">経済産業省 SCS評価制度（サプライチェーン強化に向けたセキュリティ対策評価制度）</div>
+      <h1><span class="star" id="hdStars">★★★</span> 自己診断ナビ <span class="unofficial-badge">非公式</span></h1>
+    </div>
+    <div class="mode-switch" role="group" aria-label="対象レベル切替">
+      <button id="m3" onclick="setMode(3)">★3 で診断</button>
+      <button id="m4" onclick="setMode(4)">★4 で診断</button>
+    </div>
+    <div class="hd-tools">
+      <button onclick="exportJSON()">保存(JSON)</button>
+      <button onclick="document.getElementById('impFile').click()">読込</button>
+      <input type="file" id="impFile" accept=".json" style="display:none" onchange="importJSON(this)">
+      <button onclick="window.print()">印刷</button>
+    </div>
+  </div>
+</header>
+<nav><div class="nav-inner" id="navBar"></div></nav>
+<main id="main"></main>
+<footer>
+  出典: 経済産業省・内閣官房国家サイバー統括室「サプライチェーン強化に向けたセキュリティ対策評価制度に関する制度構築方針 別添 ★3・★4要求事項及び評価基準」(2026年3月27日公表) を基に作成。<br>
+  <span class="ft-links">公式資料:
+  <a href="https://www.meti.go.jp/press/2025/03/20260327001/20260327001.html" target="_blank" rel="noopener">経済産業省 ニュースリリース（制度構築方針・別添Excel）</a> ／
+  <a href="https://www.ipa.go.jp/security/scs/index.html" target="_blank" rel="noopener">IPA SCS評価制度ページ</a> ／
+  <a href="https://www.ipa.go.jp/security/scs/requirements-criteria.html" target="_blank" rel="noopener">要求事項・評価基準</a> ／
+  <a href="https://www.ipa.go.jp/security/guide/sme/about.html" target="_blank" rel="noopener">中小企業の情報セキュリティ対策ガイドライン</a></span><br>
+  本ツールは自己診断の補助を目的とした非公式ツールです。実際の★取得には、★3はセキュリティ専門家の確認を経た自己評価、★4は評価機関による第三者評価・技術検証が必要です。最新情報は経済産業省・IPAの公表資料を確認してください。<br>
+  データはこのブラウザ内（localStorage）にのみ保存されます。共有・バックアップには「保存(JSON)」を利用してください。
+</footer>
+<div id="securio">
+  <div class="sq-bubble" id="sqBubble">
+    <button class="sq-close" onclick="sqHide()" aria-label="閉じる">✕</button>
+    <span class="sq-name">セキュリオ</span>
+    <span id="sqText"></span>
+  </div>
+  <button class="sq-fox" onclick="sqTap()" aria-label="セキュリオのヒントを表示" title="タップでヒント">
+    <svg width="86" height="92" viewBox="0 0 100 108">
+      <!-- ears -->
+      <g class="sq-ear-l"><path d="M22 30 L14 4 L38 18 Z" fill="#E8853C"/><path d="M22 26 L18 11 L31 19 Z" fill="#5A3214"/></g>
+      <path d="M78 30 L86 4 L62 18 Z" fill="#E8853C"/><path d="M78 26 L82 11 L69 19 Z" fill="#5A3214"/>
+      <!-- head -->
+      <ellipse cx="50" cy="40" rx="32" ry="27" fill="#F09A4B"/>
+      <!-- goggles on forehead -->
+      <rect x="24" y="20" width="52" height="11" rx="5.5" fill="#2B3A4E"/>
+      <circle cx="38" cy="25.5" r="7" fill="#7FD8E8" stroke="#2B3A4E" stroke-width="3"/>
+      <circle cx="62" cy="25.5" r="7" fill="#7FD8E8" stroke="#2B3A4E" stroke-width="3"/>
+      <!-- headphones -->
+      <rect x="14" y="34" width="7" height="14" rx="3.5" fill="#1E3A5F"/>
+      <rect x="79" y="34" width="7" height="14" rx="3.5" fill="#1E3A5F"/>
+      <!-- muzzle -->
+      <ellipse cx="50" cy="49" rx="16" ry="11" fill="#FDF3E3"/>
+      <!-- eyes -->
+      <circle cx="38" cy="41" r="3.4" fill="#2B2017"/><circle cx="39.2" cy="39.8" r="1.1" fill="#fff"/>
+      <circle cx="62" cy="41" r="3.4" fill="#2B2017"/><circle cx="63.2" cy="39.8" r="1.1" fill="#fff"/>
+      <!-- nose & mouth -->
+      <path d="M47 48.5 Q50 51.5 53 48.5 L50 46 Z" fill="#3A2A1A"/>
+      <path d="M50 51 Q50 55 46 55.5 M50 51 Q50 55 54 55.5" stroke="#3A2A1A" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+      <!-- cheeks -->
+      <ellipse cx="29" cy="48" rx="4.5" ry="3" fill="#F6BE8A" opacity=".8"/>
+      <ellipse cx="71" cy="48" rx="4.5" ry="3" fill="#F6BE8A" opacity=".8"/>
+      <!-- hoodie body -->
+      <path d="M24 70 Q50 56 76 70 L82 100 Q50 108 18 100 Z" fill="#1E3A5F"/>
+      <path d="M24 70 Q50 58 76 70 L74 76 Q50 65 26 76 Z" fill="#16304E"/>
+      <!-- drawstrings -->
+      <path d="M44 72 L43 82 M56 72 L57 82" stroke="#C9D6E5" stroke-width="2" stroke-linecap="round"/>
+      <!-- padlock emblem -->
+      <rect x="43" y="84" width="14" height="11" rx="2.5" fill="#F2C14E"/>
+      <path d="M46 84 V80 a4 4 0 0 1 8 0 V84" stroke="#F2C14E" stroke-width="2.6" fill="none"/>
+      <circle cx="50" cy="89" r="1.7" fill="#1E3A5F"/>
+    </svg>
+  </button>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+const DATA = [{"no":"1","name":"ガバナンスの整備","nist":"統治(GV)","mids":[{"no":"1-1","name":"組織の状況","reqs":[{"no":"1-1-1","name":"社内ルール","text":"セキュリティに関する法令等に規定された事項を考慮し、社内ルールを策定及び周知すること。","s3":false,"crit":[{"no":"1-1-1-1","lv":4,"text":"・セキュリティに関連する以下の事項を把握した上で、社内ルールを定めること。\n- 自社に関連する法令(事業法、個人情報保護法等)\n- 所管省庁及び関係団体における基準\n- 取引先が提示する制限事項及び要求事項"},{"no":"1-1-1-2","lv":4,"text":"・No.1-1-1-1で定める事項の改定及び変更の状況について、年１回以上の頻度で確認を行い、社内ルールの内容を点検すること。"},{"no":"1-1-1-3","lv":4,"text":"・策定・見直した社内ルールを役員、従業員、派遣社員及び受入出向者へと周知すること。"}]}]},{"no":"1-2","name":"役割、責任、権限","reqs":[{"no":"1-2-1","name":"セキュリティ推進活動部門","text":"セキュリティ推進活動を担当する部署、役員及び従業員を決定し、責任及び権限を割り当てること。","s3":true,"crit":[{"no":"1-2-1-1","lv":3,"text":"・セキュリティを統括する役員(例えば、CISOを設置する会社の場合は、当該CISO)及びセキュリティ担当部署の役割・責任を定めること。"},{"no":"1-2-1-2","lv":3,"text":"・平時のセキュリティ推進活動に必要な役員(例えば、CISOを設置する会社の場合は、当該CISO)及びセキュリティ担当部署の連絡先リストを定めること。"},{"no":"1-2-1-3","lv":3,"text":"・年1回以上の頻度でNo.1-2-1-1及びNo.1-2-1-2にて定めた平時の体制について点検すること。"},{"no":"1-2-1-4","lv":4,"text":"・セキュリティリスクは、経営に重大な影響を及ぼすことを前提として、その対応について、経営層が参加する情報セキュリティ委員会等の経営判断ができる体制を設置すること。"}]},{"no":"1-2-2","name":"サイバー攻撃の監視・分析体制","text":"サイバー攻撃及び予兆を監視・分析をする体制を整備すること。","s3":false,"crit":[{"no":"1-2-2-1","lv":4,"text":"・サイバー攻撃及び脆弱性に関する公開情報又は非公開情報を活用する体制を整備すること。"},{"no":"1-2-2-2","lv":4,"text":"・入手した情報又はログの相関分析等により、サイバー攻撃の予兆及びインシデントの発生の検知を可能とし、インシデントの防止及びインシデントが発生した場合の対応が導き出せる体制を整備すること。"}]},{"no":"1-2-3","name":"守秘義務のルール","text":"守秘義務のルールを策定し、遵守させること。","s3":true,"crit":[{"no":"1-2-3-1","lv":3,"text":"・役員、従業員、派遣社員及び受入出向者を対象に、自社の守秘義務のルールを定めること。"},{"no":"1-2-3-2","lv":3,"text":"・入社時又は社外要員の受入れ時に守秘義務のルールを説明すること。"},{"no":"1-2-3-3","lv":4,"text":"・自社の機密情報を取り扱う役員及び従業員に、守秘義務の誓約書を提出させること。(社外要員を除く。)"},{"no":"1-2-3-4","lv":4,"text":"・派遣社員及び受入出向者について、派遣元及び出向元の会社と業務開始前に守秘義務を締結すること。"}]}]},{"no":"1-3","name":"ポリシー","reqs":[{"no":"1-3-1","name":"セキュリティ対応方針の策定","text":"自社のセキュリティ対応方針を策定し、周知すること。","s3":true,"crit":[{"no":"1-3-1-1","lv":3,"text":"・自社のセキュリティ対応方針を定めること。"},{"no":"1-3-1-2","lv":3,"text":"・定常的に役員、従業員、派遣社員及び受入出向者が最新のセキュリティ対応方針を参照できるようにすること。"},{"no":"1-3-1-3","lv":3,"text":"・セキュリティ対応方針の改正時に、当該改正内容を役員、従業員、派遣社員及び受入出向者に周知すること。"},{"no":"1-3-1-4","lv":4,"text":"・年１回以上の頻度でセキュリティ対応方針の内容を点検すること。"}]}]},{"no":"1-4","name":"監督","reqs":[{"no":"1-4-1","name":"セキュリティ対策推進計画","text":"セキュリティ対策推進計画を策定し、定期的に経営層へ対策実施状況に関する報告を行うとともに、報告結果を対策の推進に反映すること。","s3":false,"crit":[{"no":"1-4-1-1","lv":4,"text":"・セキュリティ担当部署は、年１回以上、セキュリティを統括する役員(例えば、CISOを設置する会社の場合は、当該CISO)に対して、以下にて求める対策の点検の結果を踏まえたセキュリティ対策の実態及び当該実態を踏まえて策定した今後の対策推進計画を報告し承認を得た上で、当該報告結果を社内部署と共有すること。\n[点検を求める対策(評価基準)]\nNo.1-1-1-2、1-2-1-3、1-3-1-4、2-1-1-2、3-1-1-4、3-1-1-7、3-1-2-4、3-1-4-2、3-1-4-4、3-1-4-6、3-1-5-3、3-2-1-5、4-1-7-2、4-1-9-3、4-2-1-5、4-2-2-3、5-1-2-2、6-1-1-4"},{"no":"1-4-1-2","lv":4,"text":"・No.1-4-1-1における対策推進計画の報告に際し、役員からの改善に向けた指示があった場合、セキュリティ担当部署は、当該指示内容の記録、計画への反映及び不備の是正を実施すること。"}]}]}]},{"no":"2","name":"取引先管理","nist":"","mids":[{"no":"2-1","name":"サイバーセキュリティサプライチェーンリスクマネジメント","reqs":[{"no":"2-1-1","name":"取引先とのビジネス又はシステム上の関係","text":"取引先と自社とのビジネス又はシステム上の関係を把握すること。","s3":true,"crit":[{"no":"2-1-1-1","lv":3,"text":"・自社以外の組織(顧客・子会社・関係会社・クラウドサービス提供者を含む取引先)が管理・提供し、自社の資産が接続しているシステムを把握するための仕組みを整備すること。"},{"no":"2-1-1-2","lv":3,"text":"・年1回以上の頻度でNo.2-1-1-1において把握した情報の内容を点検すること。"},{"no":"2-1-1-3","lv":4,"text":"・自社の機密情報を共有している子会社又は取引先について、以下の事項を把握するための仕組みを整備すること。\n- 会社ごとに取り交わす手段(受発注の手段、情報のやり取り等)\n- 取引に伴い授受・使用される情報資産及びその取扱い"}]},{"no":"2-1-2","name":"機密情報の取扱い","text":"自社の機密情報の取扱い方法を、共有先との間で明確にすること。","s3":true,"crit":[{"no":"2-1-2-1","lv":3,"text":"・自社の機密情報を共有する子会社又は取引先との間で、業務開始前に機密情報の取扱いについて、以下の事項を取り決めること。\n- 機密情報の定義\n- 機密情報の利用制限、保管方法、複製可否及び第三者への提供可否\n- 機密情報の返還又は廃棄"}]},{"no":"2-1-3","name":"取引先のセキュリティ対策状況","text":"事業継続リスク及び情報管理リスクの観点から自社に影響を及ぼす可能性のある取引先のセキュリティ対策状況を把握すること。","s3":false,"crit":[{"no":"2-1-3-1","lv":4,"text":"・以下に示す条件のいずれか若しくは複数に該当する子会社又は取引先を対象に、年1回以上の頻度で、以下の例を参考にセキュリティ対策状況を把握すること。 \n[対策状況把握の対象とする子会社又は取引先の条件]\n- 自社の重要な機密情報を提供・共有する\n- 自社の事業継続にとって重要な位置づけを持つ\n- 当該取引先の環境から発注者の内部システムへのアクセスが可能\n[対策状況の把握方法(例)]\n- 本制度が定める★の取得状況について取引先から回答を受領する、又は本制度の運用主体が管理するWebサイト等で確認する\n- 取引先に訪問し点検を実施する\n- セキュリティ対策チェックシートを作成して回答を受領する"}]},{"no":"2-1-4","name":"セキュリティインシデント発生時の役割・責任","text":"セキュリティインシデント発生時の他社との役割及び責任を明確にすること。","s3":true,"crit":[{"no":"2-1-4-1","lv":3,"text":"・自社の機密情報を共有する子会社又は取引先との間で、セキュリティインシデント発生時の自社と子会社又は取引先の役割及び責任を定めること。"}]},{"no":"2-1-5","name":"機密情報の回収・破棄","text":"取引先との契約終了時に自社の機密情報及び当該機密情報へのアクセス権を回収する又は破棄させること。","s3":false,"crit":[{"no":"2-1-5-1","lv":4,"text":"・自社の機密情報を共有する子会社又は取引先から、契約終了時に機密情報及びアクセス権が回収又は破棄されていることについて確認する手順(例：回収物一覧のチェックシートの作成)を整備すること。"}]}]}]},{"no":"3","name":"リスクの特定","nist":"識別(ID)","mids":[{"no":"3-1","name":"資産管理","reqs":[{"no":"3-1-1","name":"情報機器、OS及びソフトウェアに関する情報の把握","text":"情報機器、OS及びソフトウェアに関する情報を把握すること。","s3":true,"crit":[{"no":"3-1-1-1","lv":3,"text":"・パソコン及びシンクライアントの製造元、OS及び台数を把握するための仕組みを整備すること。"},{"no":"3-1-1-2","lv":3,"text":"・サーバ、仮想サーバ及びハイパーバイザの製造元、OS及び台数を把握するための仕組みを整備すること。"},{"no":"3-1-1-3","lv":3,"text":"・情報機器、OS及びソフトウェアについて、導入、設置、ネットワーク接続及びセキュリティパッチ適用のルールを含む管理ルールを定めること。"},{"no":"3-1-1-4","lv":3,"text":"・年1回以上の頻度でNo.3-1-1-3で定めた管理ルールの遵守状況について点検すること。"},{"no":"3-1-1-5","lv":4,"text":"・スマートデバイスの製造元、OS及び台数を把握するための仕組みを整備すること。"},{"no":"3-1-1-6","lv":4,"text":"・重要なシステムを構成する情報機器について、設定情報を把握するための仕組みを整備すること。"},{"no":"3-1-1-7","lv":4,"text":"・年1回以上の頻度でNo.3-1-1-1、No.3-1-1-2、No.3-1-1-5及びNo.3-1-1-6で把握した情報の内容について、点検すること。"}]},{"no":"3-1-2","name":"ネットワークに関する情報の把握","text":"ネットワークに関する情報を把握するための仕組みを整備すること。","s3":true,"crit":[{"no":"3-1-2-1","lv":3,"text":"・ネットワークを把握するための仕組みを整備すること。その際、把握すべき情報の中に各ネットワークの所在地及び用途に関する情報を含めること。"},{"no":"3-1-2-2","lv":3,"text":"・ネットワーク機器を把握するための仕組みを整備すること。その際、把握すべき情報の中に各機器の製造元、モデル及び保守事業者に関する情報を含めること。"},{"no":"3-1-2-3","lv":4,"text":"・ネットワークを対象として、ネットワーク図を作成すること。"},{"no":"3-1-2-4","lv":4,"text":"・年1回以上の頻度でNo.3-1-2-3で作成したネットワーク図の記載内容について点検すること。"}]},{"no":"3-1-3","name":"外部情報サービスの管理","text":"自社の機密情報を扱う外部情報サービスを管理すること。","s3":true,"crit":[{"no":"3-1-3-1","lv":3,"text":"外部情報サービスを利用する際のセキュリティ要件を定めたうえで、外部情報サービスの利用時に当該要件を満たしているかサービス内容を確認すること。"},{"no":"3-1-3-2","lv":3,"text":"・外部情報サービスの提供事業者と機密情報の取扱いについて合意を取り交わすこと。"}]},{"no":"3-1-4","name":"機密区分に応じた情報の管理","text":"機密区分に応じた情報の管理ルールを定め、それに基づく管理を行うこと。","s3":true,"crit":[{"no":"3-1-4-1","lv":3,"text":"・自社の保有する情報を対象に、以下の内容を含む管理ルールを定めること。\n- 機密の特定\n- 機密区分のレベル判定及び表示\n- 区分に応じた取扱方法\n- 取扱エリアの区分及び制限"},{"no":"3-1-4-2","lv":3,"text":"・年1回以上の頻度でNo.3-1-4-1で定めた管理ルールの内容について点検すること。"},{"no":"3-1-4-3","lv":3,"text":"・重要な機密情報並びに当該情報ごとの管理者名、部署名、保管場所、保管期限、開示先及び管理者の連絡先を把握するための仕組みを整備すること。"},{"no":"3-1-4-4","lv":4,"text":"・年1回以上の頻度でNo.3-1-4-3で把握した項目の内容について点検すること。"},{"no":"3-1-4-5","lv":4,"text":"・退職時及び任期満了時には機密情報及び情報機器を回収すること。\n- 回収物には、情報(印刷物及び記憶媒体)、パソコン、スマートデバイス及びアクセス権(ID及び鍵)を含めること。\n- 回収漏れが起こらない手順(例：回収物一覧のチェックシートの作成)を整備すること。"},{"no":"3-1-4-6","lv":4,"text":"・年1回以上の頻度でNo.3-1-4-5で求める機密情報及び情報機器の回収の状況について点検すること。"},{"no":"3-1-4-7","lv":4,"text":"・サーバ、会社支給のパソコン、スマートデバイス及び外部記憶媒体の廃棄時(リース終了時を含む。)はデータを復元できないよう抹消処理を行うこと。\n※ディスクのフォーマットは、データを復旧される可能性があるため不十分"},{"no":"3-1-4-8","lv":4,"text":"・サーバ、会社支給のパソコン、スマートデバイス及び外部記憶媒体の記憶領域を抹消処理した記録を保管すること。"}]},{"no":"3-1-5","name":"リモートワークにおけるルール","text":"リモートワークで使用する情報機器及び機密情報の条件についてのルールを定めること。","s3":false,"crit":[{"no":"3-1-5-1","lv":4,"text":"・リモートワークを実施する場合は、リモートワークで使用する情報機器及び機密情報の条件について、以下の事項に関するルールを定めること。\n- リモートワークで使用許可する情報機器及び当該許可の申請・承認の方法\n- 個人所有機器にダウンロード可能なファイルの機密区分及び種類"},{"no":"3-1-5-2","lv":4,"text":"・No.3-1-5-1で定めたルールをリモートワークを行う全ての役員、従業員、派遣社員及び受入出向者に対して周知すること。"},{"no":"3-1-5-3","lv":4,"text":"・年1回以上の頻度でNo.3-1-5-1で定めたルールの内容及び遵守状況について点検すること。"}]}]},{"no":"3-2","name":"リスクアセスメント","reqs":[{"no":"3-2-1","name":"脆弱性の管理体制","text":"脆弱性の管理体制、管理プロセスを定め、それに基づく管理を行うこと。","s3":false,"crit":[{"no":"3-2-1-1","lv":4,"text":"・脆弱性情報/脅威情報の収集から対応まで担当部署の役割・責任を定めること。"},{"no":"3-2-1-2","lv":4,"text":"・脆弱性情報/脅威情報を収集する情報源、ツール及び頻度を定めること。"},{"no":"3-2-1-3","lv":4,"text":"・収集した脆弱性情報/脅威情報の対応要否判断基準・対応手順を定めること。"},{"no":"3-2-1-4","lv":4,"text":"・管理対象の情報機器における脆弱性の残存状況を把握するための仕組みを整備すること。"},{"no":"3-2-1-5","lv":4,"text":"・収集した脆弱性情報/脅威情報に対する対応履歴を記録し、対応漏れがないかどうかについて月次で点検すること。"}]}]}]},{"no":"4","name":"攻撃等の防御","nist":"防御(PR)","mids":[{"no":"4-1","name":"アイデンティティ管理、認証、アクセス制御","reqs":[{"no":"4-1-1","name":"ユーザIDの管理手続","text":"ユーザIDの発行・変更・削除の手続を定めること。","s3":true,"crit":[{"no":"4-1-1-1","lv":3,"text":"・自社の役員、従業員、派遣社員及び受入出向者に対するユーザIDの付与・変更・削除は申請・承認制にすること。"},{"no":"4-1-1-2","lv":3,"text":"・ユーザIDの共有について、以下のいずれかを適用すること。\n- ユーザIDを共有しない。\n- やむを得ず共有IDが必要な場合(例えば、システムの仕様により、使用人数分のユーザIDを発行することができない場合)は、共有IDを利用したユーザを特定できるようにする。"},{"no":"4-1-1-3","lv":3,"text":"・ユーザIDが不要になった場合(例えば、ユーザが組織を退職した場合又はユーザIDが一定期間使用されなかった場合)、速やかにユーザIDを削除又は無効化すること。"},{"no":"4-1-1-4","lv":3,"text":"ユーザIDに付与したアクセス権が不要になった場合(例えば、ユーザの業務上の役割が変わった場合)は、当該権限を速やかに削除又は無効化すること。"}]},{"no":"4-1-2","name":"管理者IDの管理手続","text":"管理者IDの発行・変更・削除の手続を定めること。","s3":true,"crit":[{"no":"4-1-2-1","lv":3,"text":"・すべてのサーバ及びネットワーク機器について、システム管理者及び責任者を定めること。"},{"no":"4-1-2-2","lv":3,"text":"・管理者権限を付与する役員、従業員、派遣社員及び受入出向者を限定したうえで、管理者IDについて以下のいずれかを適用すること。\n- 管理者IDを共有しない。\n- やむを得ず管理者IDの共有が必要な場合(例えば、システムの仕様により、使用人数分のIDを発行することができない場合)は、共有の管理者IDを利用したユーザを特定できるようにすること。"},{"no":"4-1-2-3","lv":3,"text":"・各管理者IDに対して当該IDの用途に応じた必要最低限の権限のみを付与すること。"},{"no":"4-1-2-4","lv":3,"text":"・開発環境を利用する役員、従業員、派遣社員及び受入出向者が本番環境において、開発環境における管理者権限で操作できないようにすること。"},{"no":"4-1-2-5","lv":3,"text":"・組織内でどの役員、従業員、派遣社員及び受入出向者が管理者IDを持っているかを把握するための仕組みを整備すること。"},{"no":"4-1-2-6","lv":3,"text":"・管理者IDが不要になった場合(例えば、管理者が組織を退職した場合及び管理者IDが一定期間使用されなかった場合)、速やかに管理者IDを削除又は無効化すること。"},{"no":"4-1-2-7","lv":3,"text":"・管理者IDの付与・変更・削除は申請・承認制にすること。"},{"no":"4-1-2-8","lv":3,"text":"・管理者IDの付与・変更・削除並びにサーバ及びネットワーク機器の設定内容の変更を行う権限を業務上必要な役員、従業員、派遣社員及び受入出向者に限定すること。"}]},{"no":"4-1-3","name":"認証の強度・実装方法の決定","text":"システム及び情報の重要度に応じて認証の強度及び実装方法を決定すること。","s3":true,"crit":[{"no":"4-1-3-1","lv":3,"text":"・すべてのユーザID及び管理者IDについて、システム及び情報機器へのアクセスを許可する前に、ユーザIDごとに設定されている認証情報(パスワード等)でユーザを認証すること。"},{"no":"4-1-3-2","lv":3,"text":"・重要な機密情報を取り扱うクラウドサービスにおいて、ユーザ及び管理者がサービスにアクセスする場合は、常にNo.4-1-3-3で示す認証要素を利用した多要素認証を使用すること。"},{"no":"4-1-3-3","lv":3,"text":"・多要素認証の使用に当たっては、以下のいずれかの要素から2種類以上を選択し、利用すること。\n- 知識情報(例：ID・パスワード)\n- 所有情報(例：ワンタイムパスワード※又は証明書)\n- 生体情報(例：指紋、顔、虹彩又は静脈)\n- その他の情報(例：IPアドレス)\n\n※利用者のメールアドレス、電話番号等に対してワンタイムパスワードを送信して利用者に入力させる方法及びスマートフォンへの認証要求を利用した認証方式を含む。"},{"no":"4-1-3-4","lv":3,"text":"・多要素認証の知識情報として用いるパスワードは、8文字以上とすること。"},{"no":"4-1-3-5","lv":4,"text":"・重要な機密情報を取り扱うシステムにおいて、No.4-1-3-2で対象としているクラウドサービスへのアクセスに加えて、以下に示す場合は、常にNo.4-1-3-3で示す認証要素を使用した多要素認証を使用すること。\n- インターネットを経由して社内環境へ接続する場合\n- 管理者がインターネット経由でシステムにアクセスする場合\n- ユーザがインターネット経由で重要な機密情報を取り扱うシステムにアクセスする場合"}]},{"no":"4-1-4","name":"アカウントロック制御","text":"パソコン及びスマートデバイスにはロック制御を行うこと。","s3":true,"crit":[{"no":"4-1-4-1","lv":3,"text":"・パソコンへのログオン及びスマートデバイスのロック解除にあたって、以下のいずれかを適用すること。\n- 試行回数を調整し、試行が失敗するたびに試行間隔が長くなるようにする。\n- 試行が少なくとも10回以上失敗すると端末をロックする。\n- 上記で示す要件のいずれも設定することができない場合、No.4-1-5で求められるよりも強度の高いパスワードを用いる等の代替策を用いること。"},{"no":"4-1-4-2","lv":3,"text":"・パソコンへのログオン及びスマートデバイスのロック解除を行う場合、最低でも6文字以上のパスワード又はPINを利用すること。"}]},{"no":"4-1-5","name":"パスワード設定ルール","text":"パスワード設定に関するルールを定め、周知すること。","s3":true,"crit":[{"no":"4-1-5-1","lv":3,"text":"・パソコン、サーバ、スマートデバイス及びクラウドサービスの利用者又は管理者は、それらにおけるデフォルトパスワードを変更するよう社内ルールを定めること。"},{"no":"4-1-5-2","lv":3,"text":"・ユーザ認証にパスワードを利用する場合、推測されやすい単語の設定を禁止するよう社内ルールを定めること。"},{"no":"4-1-5-3","lv":3,"text":"・ユーザ認証にパスワードを利用する場合、以下のいずれかの保護対策を講じるよう社内ルールを定めること。\n- No.4-1-3-3で示す認証要素を利用した多要素認証を使用するか、又は試行が少なくとも10回失敗した場合にアカウントロックするように制限したうえで、パスワードの長さを8文字以上とする。\n- 上記のとおり多要素認証又は試行回数の制限を実施できない場合、パスワードの長さは、英大文字小文字、数字を含めた10文字以上とする。"},{"no":"4-1-5-4","lv":3,"text":"・ユーザ認証にパスワードを利用する場合、情報機器及びサービス間でのパスワードを使い回さないよう社内ルールを定めること。"},{"no":"4-1-5-5","lv":3,"text":"No.4-1-5-1からNo.4-1-5-4までで定めたパスワード設定に関するルールについて、役員、従業員、派遣社員及び受入出向者を対象に周知すること。"}]},{"no":"4-1-6","name":"パスワード管理ルール","text":"パスワードの管理に関するルールを定め、周知すること。","s3":true,"crit":[{"no":"4-1-6-1","lv":3,"text":"・紙媒体への記載及び施錠保管、パスワード管理アプリの利用等により、パスワードを安全に保管するよう社内ルールを定めること。"},{"no":"4-1-6-2","lv":3,"text":"・パスワードの漏洩が判明した場合、又はその疑いがある場合に速やかにパスワードを変更するための手順を定めること。"},{"no":"4-1-6-3","lv":3,"text":"・No.4-1-6-1及びNo.4-1-6-2で定めたパスワードの管理に関するルールについて、役員、従業員、派遣社員及び受入出向者を対象に周知すること。"}]},{"no":"4-1-7","name":"アクセス権の管理ルール","text":"アクセス権の管理ルールを定めること。","s3":true,"crit":[{"no":"4-1-7-1","lv":3,"text":"・業務で利用するシステム及びパソコンへのログオン時のユーザのアクセス権並びに機密上の配慮が必要な場所及び部屋への入室について、以下の内容の管理ルールを定めること。\n- アクセス権の発行・変更・削除は申請・承認制であること。\n- 与える入室許可・アクセス権の範囲は必要な範囲に限定すること。\n- 入室権限及びアクセス権の棚卸について定めていること。\n- 与えた入室許可・アクセス権の申請書又は台帳を管理していること。"},{"no":"4-1-7-2","lv":4,"text":"・年１回以上の頻度で役員、従業員、派遣社員及び受入出向者に付与したアクセス権の棚卸を実施すること。"},{"no":"4-1-7-3","lv":4,"text":"・重要な機密情報を扱うシステムは、アクセス権を付与するための条件を定めること。"},{"no":"4-1-7-4","lv":4,"text":"・重要な機密情報を扱うシステムにおけるアクセス権の設定に当たっては、システム管理者の要件及び設定手順を定めること。"},{"no":"4-1-7-5","lv":4,"text":"・重要な機密情報を扱うシステムは、ユーザ及び管理者ごとに必要最小限の権限を付与し、個人に権限が集中しない環境とすること。"},{"no":"4-1-7-6","lv":4,"text":"・重要な機密情報を扱うシステムは、付与したアクセス権の運用/利用状況を監視する仕組みを整備すること。"}]},{"no":"4-1-8","name":"サーバ設置エリアへの入退室管理","text":"サーバの設置エリアへの入退室を管理し、記録すること。","s3":false,"crit":[{"no":"4-1-8-1","lv":4,"text":"・サーバの設置エリアに入場可能な者を定めること。"},{"no":"4-1-8-2","lv":4,"text":"・サーバの設置に当たって、以下のいずれかの安全確保策を適用すること。\n- サーバの設置エリアを施錠すること。\n- 施錠が出来ないエリアにサーバが設置されている場合、サーバを専用ラックに入れて施錠すること。"},{"no":"4-1-8-3","lv":4,"text":"・No.4-1-8-2におけるサーバの設置エリア又は専用ラックの鍵等について、管理者を定めたうえで安全に管理すること。"},{"no":"4-1-8-4","lv":4,"text":"・入退場日時及び入場者氏名を含めて、サーバの設置エリアの入退場記録を取得し、少なくとも6 ヶ月間保管すること。"}]},{"no":"4-1-9","name":"可搬媒体の制限","text":"可搬媒体の持込み・持出しを制限すること。","s3":false,"crit":[{"no":"4-1-9-1","lv":4,"text":"・パソコン、スマートデバイス、カメラ及び外部記憶媒体(個人所有機器の業務利用(BYOD)を含む。)を対象とした社内への持込みルールを定めること。"},{"no":"4-1-9-2","lv":4,"text":"・パソコン、スマートデバイス、カメラ、外部記憶媒体(個人所有機器の業務利用(BYOD)を含む。)及び印刷物(図面等の機密書類)に関する社外への持出しルールを定めること。"},{"no":"4-1-9-3","lv":4,"text":"・年1回以上の頻度でNo.4-1-9-1及びNo.4-1-9-2で定めたパソコン、スマートデバイス、カメラ及び外部記憶媒体(個人所有機器(BYOD)を含む。)における持込みルール及び持出しルールの内容及び遵守状況について点検すること。"}]}]},{"no":"4-2","name":"意識向上とトレーニング","reqs":[{"no":"4-2-1","name":"セキュリティの意識向上のための教育・研修","text":"経営層を含むすべての要員に対して、セキュリティの意識向上のための教育・研修を実施すること。","s3":false,"crit":[{"no":"4-2-1-1","lv":4,"text":"・経営層が情報セキュリティに関する役割及び責任を理解するための機会を設けること。"},{"no":"4-2-1-2","lv":4,"text":"・セキュリティに関する職場特有のリスクの理解及びルールの遵守が必要な場合、職場単位で重要なルール及びリスクについて、年１回以上の頻度で周知すること。"},{"no":"4-2-1-3","lv":4,"text":"・以下のトピックについて、役員、従業員、派遣社員及び受入出向者を対象に、新規受入れ時、かつ、年１回以上、教育資料配布・掲示、e ラーニング、集合教育等による教育・研修を実施すること。\n- 電子メールによるマルウェア感染の予防\n- Web 閲覧によるマルウェア感染の予防\n- 機密区分の定義と取扱い"},{"no":"4-2-1-4","lv":4,"text":"・No.4-2-1-3で実施した教育・研修の実施状況を記録し、保管すること。"},{"no":"4-2-1-5","lv":4,"text":"・年１回以上の頻度でセキュリティの意識向上のための教育・研修の実施内容について点検すること。"}]},{"no":"4-2-2","name":"セキュリティインシデント発生時の教育・訓練","text":"セキュリティインシデント発生時の対応に関する教育・訓練を行うこと。","s3":true,"crit":[{"no":"4-2-2-1","lv":3,"text":"・役員、従業員、派遣社員及び受入出向者を対象に、新規受入れ時、かつ、年1回以上の頻度で、セキュリティインシデント発生時の対応について、教育資料の配布・掲示に加え、e ラーニング又は集合教育による教育・訓練を実施すること。"},{"no":"4-2-2-2","lv":3,"text":"・No.4-2-2-1で実施した教育・訓練の実施内容、実施方法、実施時期及び受講状況を記録し、保管すること。"},{"no":"4-2-2-3","lv":3,"text":"・年１回以上の頻度でセキュリティインシデント発生時の対応に関する教育・訓練の実施内容について点検すること。"}]}]},{"no":"4-3","name":"データセキュリティ","reqs":[{"no":"4-3-1","name":"データの暗号化","text":"情報機器及び情報システムの保管データを適切に暗号化するようルールを定め、周知すること。","s3":false,"crit":[{"no":"4-3-1-1","lv":4,"text":"・社外に持ち出すパソコン及び記憶媒体の機密情報を暗号化するルールを定め、役員、従業員、派遣社員及び受入出向者を対象に周知すること。"},{"no":"4-3-1-2","lv":4,"text":"・重要な機密情報を暗号化するルールを定め、役員、従業員、派遣社員及び受入出向者を対象に周知すること。"}]},{"no":"4-3-2","name":"データの保管ルール","text":"データを適切な場所に保管するようルールを定め、周知すること。","s3":false,"crit":[{"no":"4-3-2-1","lv":4,"text":"・マルウェアによる被害を受けた場合に業務に支障をきたすデータはパソコン以外の社内ネットワーク(クラウドサービスを含む。)上の相対的に安全な区域にあるサーバに保管するようルールを定め、役員、従業員、派遣社員及び受入出向者を対象に周知すること。"}]},{"no":"4-3-3","name":"取引先との情報共有ルール","text":"取引先との情報共有及び情報送信に関するルールを定め、周知すること。","s3":false,"crit":[{"no":"4-3-3-1","lv":4,"text":"・取引先との情報共有及び情報送信に関して、以下をルールとして定め、役員、従業員、派遣社員及び受入出向者へ周知すること。\n-社外とファイル共有する場合は、信頼できる相手とのみ共有すること。\n-社外へファイル転送をする場合は、送信履歴を残すこと。"}]},{"no":"4-3-4","name":"適切なバックアップ","text":"適切なバックアップを行うこと。","s3":true,"crit":[{"no":"4-3-4-1","lv":3,"text":"・取得対象、取得頻度及び保管期間を定めて自社で取り扱うデータのバックアップを取得すること。"},{"no":"4-3-4-2","lv":3,"text":"・重要な機密情報については、No.4-3-4-1におけるバックアップに加えて、遠隔地バックアップを実施すること。"},{"no":"4-3-4-3","lv":3,"text":"・バックアップ対象ごとにリストア手順書を整備すること。"}]}]},{"no":"4-4","name":"プラットフォームセキュリティ","reqs":[{"no":"4-4-1","name":"情報機器、OS及びソフトウェアの安全な構成","text":"情報機器、OS及びソフトウェアの安全な構成を確立し、維持すること。","s3":true,"crit":[{"no":"4-4-1-1","lv":3,"text":"・パソコン、サーバ及びスマートデバイスで利用を許可していないソフトウェアをすべて削除若しくは無効化するか、又は利用を許可するソフトウェア以外を自由にインストールできないようにすること。"},{"no":"4-4-1-2","lv":3,"text":"・外部記録媒体を使用する端末について自動実行(auto-run)又は自動再生(auto-play)を無効化すること。"},{"no":"4-4-1-3","lv":3,"text":"・サーバ及びネットワーク機器の設定変更を申請・承認制にすること。"},{"no":"4-4-1-4","lv":4,"text":"・パソコン及びサーバ上で不要サービス及びプロトコルを無効化すること。"},{"no":"4-4-1-5","lv":4,"text":"・パソコン及びサーバ上で使用されているデフォルトユーザ ID の利用を停止するか、又はログインに当たって多要素認証等の強固な認証を用いること。"},{"no":"4-4-1-6","lv":4,"text":"・利用するOS及びソフトウェアについて、標準構成・設定ルールを定めること。"}]},{"no":"4-4-2","name":"サポート期限の切れたOS及びソフトウェアへの対策","text":"サポート期限の切れたOS及びソフトウェアの利用停止及び更改を実施すること。","s3":false,"crit":[{"no":"4-4-2-1","lv":4,"text":"・利用するOS及びソフトウェアについて、以下のいずれかを適用すること。\n- 全てのOS及びソフトウェアについてサポートのあるものを利用すること。\n- やむを得ずサポート切れのOS及びソフトウェアを利用する場合(例えば、代替システムを調達する必要があり、直ちに更改できない場合)は、更改計画を策定した上で、更改するまでの間、No.4-4-4-2で求める脆弱性悪用のリスクを低減する対策を実施すること。"}]},{"no":"4-4-3","name":"ログの取得","text":"システムに関するログを取得し、異常を検知するため、定期的にレビューを行うこと。","s3":false,"crit":[{"no":"4-4-3-1","lv":4,"text":"・インシデント発生時に調査を円滑に行うために必要なログとして、以下を取得及び保管すること。(※)\n[取得するログ(保管期間)]\n-ファイアウォールのログ(6 カ月)　※取引先と接続する閉域網の入口に設置されるものも含む。\n 取得項目：日時、送信元 IP アドレス及び送信先 IP アドレス\n-プロキシサーバのログ(6 カ月)\n 取得項目：日時、リクエスト元 IP アドレス及びURL\n-認証サーバのログ(6 カ月)\n 取得項目：日時、接続元 IP アドレス、ユーザID及び成功/失敗\n\n※クラウドサービスの利用も対象に含む。\n※利用するクラウドサービス又はシステム構成の仕様上、上記の要件を満たせない場合は、インシデント発生時の調査ができるよう、他の機器又は機能を利用して上記の要件に相当するログを取得及び保管すること。"},{"no":"4-4-3-2","lv":4,"text":"・No.4-4-3-1で取得及び保管を求めるログを脅威から保護するため、ログを保存する媒体及びシステムにインターネット経由でアクセスする場合は、常にNo.4-1-3-3で示す要素を利用した多要素認証を使用すること。"},{"no":"4-4-3-3","lv":4,"text":"・No.4-4-3-1で取得及び保管を求めるログのうち、認証サーバのログについては、月1回以上の頻度でモニタリングを実施し、不審な認証試行を検知すること。"}]},{"no":"4-4-4","name":"セキュリティパッチ・アップデートの手続","text":"情報機器、OS及びソフトウェアへのセキュリティパッチ及びアップデートの適用に係る手続を定めること。","s3":true,"crit":[{"no":"4-4-4-1","lv":3,"text":"・システム、情報機器及びソフトウェアは以下の状態とすること。\n- ライセンスが付与され、サポートされている。\n- サポートが終了した場合に削除されるか、又はインターネットとの全てのトラフィックを遮断することで適用範囲から削除される。\n- 可能であれば、自動アップデートが有効化されている。"},{"no":"4-4-4-2","lv":3,"text":"・利用している機能又は設定に関して、以下のいずれかに該当するアップデートプログラムがリリースされてから14日以内に、アップデートすること。\n- 当該アップデートが、ベンダーにより「重大」(Critical)又は 「高リスク」(High Risk)と説明される脆弱性を修正するものである。\n- 当該アップデートが、CVSSの基本値が7.0以上の脆弱性を修正するものである。\n- 当該アップデートが修正する脆弱性のレベルの詳細がベンダーから提供されていない。 \n・やむを得ず上記のとおりアップデートができない場合(例えば、動作検証に一定期間を要し、期限内にアップデートが完了しない場合)は、アップデート適用までの間、以下のいずれかにより脆弱性悪用のリスクを低減する対策を実施すること。\n- 脆弱性悪用の対象となる機能を無効化すること。\n- ベンダーが推奨する回避策を実施すること。\n- 対象となる情報機器を適用範囲内のネットワークから分離すること。\n- 対象となる情報機器と適用範囲内のネットワークとの通信を監視し、当該脆弱性を悪用する不正な通信を遮断する機器又はソフトウェアを導入すること。\n\n[対象]\n-会社支給のパソコンの OS、ブラウザ及びOffice ソフト \n-サーバの OS及びミドルウェア \n-会社支給のスマートデバイスのOS及びアプリ \n-インターネットとの境界に設置されているネットワーク機器のOS及びファームウェア"},{"no":"4-4-4-3","lv":4,"text":"・インターネットとの境界に設置されているネットワーク機器のOS及びファームウェアについては、CVSS 基本値 7.0以上の脆弱性を有していないこと。"}]},{"no":"4-4-5","name":"マルウェア感染からの保護","text":"システムをマルウェア感染から保護すること。","s3":true,"crit":[{"no":"4-4-5-1","lv":3,"text":"・ネットワークに接続しているすべてのパソコン及びサーバに、マルウェア対策ソフトウェアを導入すること。"},{"no":"4-4-5-2","lv":3,"text":"・パソコン及びサーバごとにマルウェア対策ソフトのスキャン範囲及び頻度を定め、スキャンを実行すること。"},{"no":"4-4-5-3","lv":3,"text":"・マルウェア対策ソフトウェアのパターンファイルを、ベンダーの推奨に従ってアップデートすること。"},{"no":"4-4-5-4","lv":4,"text":"・パソコン/Web ゲートウェイを対象に、不正な Web サイトへのアクセスを制限すること。"},{"no":"4-4-5-5","lv":4,"text":"・メールによるマルウェア感染を防止するため、メールゲートウェイ、メールサーバ等でマルウェアチェックを実施すること。"}]}]},{"no":"4-5","name":"技術インフラのレジリエンス","reqs":[{"no":"4-5-1","name":"ネットワーク境界防護","text":"ネットワークを適切に分離し、境界部分を防護すること。","s3":true,"crit":[{"no":"4-5-1-1","lv":3,"text":"・全てのファイアウォール(又はファイアウォール機能を持つネットワーク機器)及びルータについて、デフォルトの管理パスワードを強固で一意のパスワードに変更する、又はリモートアクセスを完全に無効化すること。"},{"no":"4-5-1-2","lv":3,"text":"・ファイアウォール(又はファイアウォール機能を持つネットワーク機器)及びルータのパスワードを変更する手順を定めること。"},{"no":"4-5-1-3","lv":3,"text":"・ファイアウォール(又はファイアウォール機能を持つネットワーク機器)及びルータに係る認証は、No.4-1-5で定めるパスワード設定等に関する評価基準を満たすこと。"},{"no":"4-5-1-4","lv":3,"text":"・全てのファイアウォール(又はファイアウォール機能を持つネットワーク機器)について、認証されていないインバウンド通信を遮断すること。"},{"no":"4-5-1-5","lv":3,"text":"・全てのファイアウォール(又はファイアウォール機能を持つネットワーク機器)について、インバウンド通信に関するファイアウォール・ルールが定められていること。"},{"no":"4-5-1-6","lv":3,"text":"・全てのファイアウォール(又はファイアウォール機能を持つネットワーク機器)について、不要になったファイアウォール・ルールを速やかに削除又は無効化すること。"},{"no":"4-5-1-7","lv":3,"text":"・ファイアウォール・ルールの変更をインターネット経由で行う場合、No.4-1-3-3で示す認証要素を利用した多要素認証を適用するか、又は信頼できるIPアドレスにアクセスを制限すること。"},{"no":"4-5-1-8","lv":4,"text":"・利用中のOSが対応していない場合を除いて、すべてのパソコン及びサーバにおいて、ソフトウェアファイアウォールを有効化すること。"},{"no":"4-5-1-9","lv":4,"text":"・社外公開サーバ及び重要な機密情報を扱うサーバについて、それぞれ専用のネットワークセグメントに設置し、セグメント内外のアクセスを必要最小限に限定すること。"}]}]}]},{"no":"5","name":"攻撃等の検知","nist":"検知(DE)","mids":[{"no":"5-1","name":"継続的監視","reqs":[{"no":"5-1-1","name":"ネットワーク接続・データの監視","text":"ネットワーク上の適切な場所でネットワーク接続及びデータ転送を監視すること。","s3":true,"crit":[{"no":"5-1-1-1","lv":3,"text":"・社内外ネットワークの境界又は端末において、インターネットから社内への通信及び社内から不正なサーバへの通信の双方について、不正アクセスをリアルタイム検知・遮断する仕組みを導入すること。"},{"no":"5-1-1-2","lv":3,"text":"・ネットワーク機器のログ及びアラートを分析し、セキュリティ担当部署の担当者又は管理者により不審な事象が発見された場合に、それがセキュリティインシデントに該当するかが判断されること。"},{"no":"5-1-1-3","lv":3,"text":"・No.5-1-1-1で設置したネットワーク機器又はサービスについて、以下の要件を満たす異常時に通知する仕組みを導入すること。\n-アラートが速やかに発報されること。\n-インシデントの速報レポートが作成され、通知されること。"}]},{"no":"5-1-2","name":"情報機器及びソフトウェアの挙動監視","text":"情報機器及びソフトウェアの状態及び挙動を監視すること。","s3":false,"crit":[{"no":"5-1-2-1","lv":4,"text":"・会社支給のパソコンを対象に、社内で利用を許可するソフトウェアの一覧を作成すること。"},{"no":"5-1-2-2","lv":4,"text":"・年1回以上の頻度で会社支給のパソコンにおけるソフトウェアのインストール状況について点検すること。"},{"no":"5-1-2-3","lv":4,"text":"・外部から受け取ったファイルについて安全性を確認するため、マルウェア対策ソフトのリアルタイムスキャンを実行する、又は仮想環境上で安全性を確認する仕組みを整備する。"}]}]},{"no":"5-2","name":"有害事象の分析","reqs":[{"no":"5-2-1","name":"セキュリティインシデントのレベルごとの対象範囲","text":"セキュリティインシデントのレベル及びレベルごとの対象範囲を明確にすること。","s3":false,"crit":[{"no":"5-2-1-1","lv":4,"text":"・自社におけるセキュリティインシデントのレベル及びレベルごとの対象範囲を定め、役員、従業員、派遣社員及び受入出向者に周知すること。"},{"no":"5-2-1-2","lv":4,"text":"・No.4-4-3-3において不審な認証試行を検知した場合又はNo.5-1-1-1で導入されるネットワーク機器若しくはサービスからのアラートを受け取った場合は、No.5-2-1-1で定めたレベル及び対象範囲に基づき、どのレベルのインシデントに該当するかを分析し、判断すること。"}]}]}]},{"no":"6","name":"インシデントへの対応","nist":"対応(RS)","mids":[{"no":"6-1","name":"インシデント管理","reqs":[{"no":"6-1-1","name":"インシデント対応手順","text":"セキュリティインシデントへの対応手順、対応体制等を定めること。","s3":true,"crit":[{"no":"6-1-1-1","lv":3,"text":"・以下の手順を含んだセキュリティインシデントへの対応手順を定めること。\n①発見報告、 ②初動、③調査・対応、④復旧、⑤最終報告"},{"no":"6-1-1-2","lv":3,"text":"・セキュリティインシデント発生時における社内外組織(関係当局及び所管省庁を含む。)の連絡先及び報告・情報共有ルートを定めること。"},{"no":"6-1-1-3","lv":3,"text":"・セキュリティインシデント発生時におけるセキュリティを統括する役員(例えば、CISOを設置する会社の場合は、当該CISO)及びセキュリティ担当部署の役割・責任を定めること。"},{"no":"6-1-1-4","lv":3,"text":"・年1回以上の頻度でNo.6-1-1-2及びNo.6-1-1-3にて定めたセキュリティインシデント発生時の体制について点検すること。"},{"no":"6-1-1-5","lv":3,"text":"・セキュリティインシデントの報告フォーマットを整備すること。"},{"no":"6-1-1-6","lv":3,"text":"・年１回以上及び社内外で重大なセキュリティインシデントが発生した際に、インシデント事例及びその対応策を社内部署へ共有していること。"}]}]}]},{"no":"7","name":"インシデントからの復旧","nist":"復旧(RC)","mids":[{"no":"7-1","name":"インシデント復旧計画の実行","reqs":[{"no":"7-1-1","name":"事業継続要件に沿った復旧準備","text":"事業上重要なシステムについて、事業継続の要件に沿う復旧に必要な準備を行うこと。","s3":true,"crit":[{"no":"7-1-1-1","lv":3,"text":"・事業継続上重要なシステムについて、サイバー攻撃を念頭に、業務の目標復旧レベルを定めたうえで、当該レベルまで業務を回復するために必要な対策を、以下の例を参考として整備すること。\n[復旧のための対策(例)]\n- システムによる業務継続(例:予備機、クラウド環境等により待機系を整備する。)\n- 人手による業務継続(例:電話、FAX等による連絡又は業務の実施に備え、影響のある取引先の連絡先及び複数の連絡手段を整備する。)"},{"no":"7-1-1-2","lv":4,"text":"・事業継続上重要なシステムについて、サイバー攻撃を念頭に、以下の対策を構じること。\n- 目標復旧時点への復旧ができるようにNo.4-3-4-1及びNo.4-3-4-2で取得したバックアップを保管すること。\n- No.4-3-4-3で定めたリストア手順書どおりに、かつ、目標復旧時間内でバックアップの復元ができることを確認すること。"}]}]}]}];
+/* ====== ひな形（一例） ====== */
+const TPL_NOTE = '※ このひな形はあくまで一例です。自社の規模・業務実態に合わせて修正し、最終的にはセキュリティ専門家や顧問の確認を受けてください。IPA「中小企業の情報セキュリティ対策ガイドライン」付録のひな形・サンプル規程もあわせて参照することを推奨します。';
+const TPL = {
+ policy:{t:'情報セキュリティ基本方針',r:['1-3-1','1-1-1'],b:
+`情報セキュリティ基本方針（一例）
+
+制定日：［20XX年X月X日］　承認者：［代表取締役 氏名］
+
+［会社名］（以下「当社」）は、お客様・取引先からお預かりする情報および当社の情報資産を様々な脅威から保護することが重要な経営課題であると認識し、以下の方針を定め、全社で取り組みます。
+
+1. 適用範囲
+   本方針は、当社の役員、従業員、派遣社員および受入出向者、ならびに当社が管理するすべての情報資産に適用する。
+2. 法令等の遵守
+   情報セキュリティに関する法令（個人情報保護法等）、所管省庁・関係団体の基準、および取引先との契約上の要求事項を遵守する。
+3. 体制
+   情報セキュリティを統括する責任者および担当部署を定め、責任と権限を明確にする。
+4. 対策の実施
+   情報資産の把握、アクセス管理、マルウェア対策、バックアップ等の対策を実施し、継続的に改善する。
+5. 教育
+   全役職員に対し、情報セキュリティに関する教育を定期的に実施する。
+6. インシデント対応
+   セキュリティインシデントの発生に備えて対応手順を整備し、発生時には速やかに対応し、再発防止に努める。
+7. 見直し
+   本方針および関連規程は、法令等の改定状況を年1回以上の頻度で確認し、必要に応じて見直す。
+
+以上`},
+ taisei:{t:'セキュリティ推進体制・緊急連絡先リスト',r:['1-2-1'],b:
+`セキュリティ推進体制および連絡先リスト（一例）
+
+制定日：［20XX年X月X日］　最終点検日：［20XX年X月X日］（年1回以上点検）
+
+1. 体制
+ ・情報セキュリティ統括責任者：［役職・氏名］（経営層から選任）
+ ・情報セキュリティ担当部署：［部署名］　担当者：［氏名］
+ ・役割と責任：
+   - 統括責任者：方針の承認、重大インシデント時の意思決定、経営層への報告
+   - 担当部署：日常のセキュリティ推進活動、点検、教育の実施、相談窓口
+
+2. 経営判断の体制
+ ・情報セキュリティに関する事項は［情報セキュリティ委員会／経営会議／取締役会］にて年1回以上審議する。
+
+3. 平時の連絡先リスト
+ ┌──────────────┬──────┬──────────┬──────────┐
+ │ 役割           │ 氏名     │ 内線/携帯       │ メール          │
+ ├──────────────┼──────┼──────────┼──────────┤
+ │ 統括責任者     │          │                │                │
+ │ 担当部署窓口   │          │                │                │
+ │ システム保守委託先│       │                │                │
+ └──────────────┴──────┴──────────┴──────────┘
+
+以上`},
+ shuhi:{t:'守秘義務に関する誓約書',r:['1-2-3'],b:
+`守秘義務に関する誓約書（一例）
+
+［会社名］　代表取締役　［氏名］　殿
+
+私は、貴社の業務に従事するにあたり、以下の事項を遵守することを誓約します。
+
+1. 業務上知り得た貴社および取引先の機密情報（技術情報、顧客情報、個人情報その他社内ルールで機密と区分された情報）を、在職中はもとより退職後においても、第三者に開示・漏えいせず、業務目的以外に使用しません。
+2. 機密情報を含む書類・データ・記録媒体は、社内ルールに従って取り扱い、許可なく社外へ持ち出しません。
+3. 退職時には、機密情報を含む一切の書類・データ・貸与機器を返却または指示に従い消去します。
+4. 本誓約に違反し貴社に損害を与えた場合、就業規則に基づく処分および損害賠償の責任を負うことを理解しています。
+
+［20XX年X月X日］
+所属：［　　　　］　氏名：［　　　　　　］　㊞
+
+以上`},
+ keikaku:{t:'セキュリティ対策推進計画（年間）',r:['1-4-1'],b:
+`セキュリティ対策推進計画（20XX年度・一例）
+
+承認：［統括責任者 氏名］　作成：［担当部署］
+
+1. 年度目標
+ ・SCS評価制度 ★［3/4］の要求事項充足率 ［XX］％ → 100％
+ ・未対応項目（前年度評価で特定）：［項目を列挙］
+
+2. 年間スケジュール
+ ┌────┬──────────────────────────┬──────┐
+ │ 時期   │ 実施事項                                       │ 担当       │
+ ├────┼──────────────────────────┼──────┤
+ │ 4-6月  │ 資産台帳・ネットワーク構成図の棚卸し           │            │
+ │ 7-9月  │ アクセス権限の総点検、教育の実施               │            │
+ │ 10-12月│ インシデント対応訓練、バックアップ復旧テスト   │            │
+ │ 1-3月  │ 自己評価の実施、経営層への年次報告             │            │
+ └────┴──────────────────────────┴──────┘
+
+3. 経営層への報告
+ ・四半期ごとに進捗を、年度末に実施状況・不備・是正計画を［経営会議］へ報告する。
+ ・報告で特定された不備は、次年度計画に反映し是正する。
+
+以上`},
+ torihiki:{t:'取引先・機密情報共有先 一覧台帳',r:['2-1-1','2-1-3'],b:
+`取引先・機密情報共有先一覧（一例）
+
+最終更新日：［20XX年X月X日］（年1回以上見直し）
+
+┌────────┬────────────┬──────────┬─────────┬────────┬─────────┐
+│ 取引先名     │ 取引内容           │ 共有している     │ システム接続    │ NDA締結     │ 対策状況確認    │
+│              │（委託/調達/販売等）│ 機密情報の種類   │ の有無・内容    │ 有無・年月  │（★レベル等）   │
+├────────┼────────────┼──────────┼─────────┼────────┼─────────┤
+│ ［A社］      │ 生産管理システム保守│ 顧客マスタ      │ VPN接続あり     │ 有 20XX/XX  │ ★3取得済       │
+│ ［B社］      │ 部品調達           │ 図面データ       │ なし(メールのみ)│ 有 20XX/XX  │ 確認中          │
+└────────┴────────────┴──────────┴─────────┴────────┴─────────┘
+
+記載要領：
+・「機密情報の種類」は自社の機密区分ルールの区分名で記載する。
+・事業継続・情報管理の観点で自社への影響が大きい取引先（重要な取引先）には印を付け、対策状況を優先的に確認する。
+
+以上`},
+ nda:{t:'機密情報の取扱いに関する条項（覚書・一例）',r:['2-1-2','2-1-5'],b:
+`機密情報の取扱いに関する覚書 条項例（一例）
+
+第X条（機密情報の取扱い）
+1. 乙は、甲から開示された機密情報を、本契約の目的の範囲内でのみ使用し、甲の事前の書面による承諾なく第三者に開示してはならない。
+2. 乙は、機密情報へのアクセスを業務上必要な者に限定し、その者に本条と同等の義務を課す。
+3. 乙は、機密情報を取り扱う情報機器・サービスについて、甲が別途提示するセキュリティ要求事項を遵守する。
+
+第X条（契約終了時の措置）
+1. 本契約が終了したとき、乙は甲の指示に従い、機密情報（複製物を含む）を返却または復元不可能な方法で破棄し、破棄した場合は破棄証明書を甲に提出する。
+2. 乙は、契約終了後速やかに、甲が乙に付与した機密情報へのアクセス権（アカウント、VPN等）の削除を甲に申請し、または自ら無効化する。
+
+第X条（事故時の通知）
+乙は、機密情報の漏えいまたはそのおそれを認知した場合、直ちに甲へ通知し、甲と協議のうえ必要な措置を講じる。
+
+以上`},
+ yakuwari:{t:'インシデント発生時の取引先との役割分担表',r:['2-1-4'],b:
+`セキュリティインシデント発生時の役割・責任分担表（一例）
+
+対象取引先：［A社］（［システム保守委託］）　合意日：［20XX年X月X日］
+
+┌──────────────────┬─────┬─────┬──────────────┐
+│ 対応事項                         │ 当社     │ 取引先   │ 備考                       │
+├──────────────────┼─────┼─────┼──────────────┤
+│ インシデントの検知・第一報       │ ●       │ ●       │ 検知した側が30分以内に連絡 │
+│ 影響範囲の調査                   │ ○支援   │ ●主担当 │ 保守対象システムの場合     │
+│ ネットワーク遮断等の初動判断     │ ●       │ ○助言   │ 当社統括責任者が判断       │
+│ 顧客・監督官庁への報告           │ ●       │ ○情報提供│                            │
+│ 復旧作業                         │ ○       │ ●       │                            │
+│ 再発防止策の策定                 │ ●       │ ●       │ 共同で実施                 │
+└──────────────────┴─────┴─────┴──────────────┘
+
+緊急連絡先：当社［氏名・電話］ ／ 取引先［氏名・電話］（受付時間：［　　］）
+
+以上`},
+ shisan:{t:'IT資産管理台帳',r:['3-1-1','4-4-2'],b:
+`IT資産管理台帳（一例）
+
+最終更新日：［20XX年X月X日］（年1回以上棚卸し）
+
+┌─────┬────────┬──────┬─────────┬────────┬──────┬─────────┐
+│ 管理番号 │ 機器名/ホスト名│ 設置場所/利用者│ OS・バージョン │ 主要ソフトウェア│ サポート期限│ 備考             │
+├─────┼────────┼──────┼─────────┼────────┼──────┼─────────┤
+│ PC-001   │ ［型番］       │ 営業部・田中   │ Windows 11 23H2 │ Office, 会計ソフト│ 20XX/XX    │                  │
+│ SV-001   │ ファイルサーバ │ サーバ室       │ Windows Server  │ ―              │ 20XX/XX    │ 重要システム     │
+│ NW-001   │ UTM            │ サーバ室       │ FW ver.X.X      │ ―              │ 20XX/XX    │ 保守契約：A社    │
+└─────┴────────┴──────┴─────────┴────────┴──────┴─────────┘
+
+運用ルール：
+・機器の購入・廃棄時は本台帳を更新する。廃棄時はデータ消去を実施し記録する。
+・サポート期限が切れるOS・ソフトウェアは期限の［6か月］前までに更改計画を立てる。やむを得ず継続利用する場合はネットワーク分離等の代替策を講じ、統括責任者の承認を得る。
+
+以上`},
+ network:{t:'ネットワーク構成図 記載要領',r:['3-1-2'],b:
+`ネットワーク構成図 記載要領（一例）
+
+目的：自社ネットワークの全体像を把握し、変更時・インシデント時に参照できる状態を保つ。
+
+最低限記載する要素：
+ 1. インターネット接続点（回線、ルータ、UTM/ファイアウォール）
+ 2. ネットワークセグメント（社内LAN、サーバ用、Wi-Fi、ゲスト用 等）とIPアドレス帯
+ 3. 主要機器（サーバ、NAS、複合機、監視機器）と管理番号（資産台帳と対応付け）
+ 4. 外部との接続（VPN、取引先接続、クラウドサービスへの経路）
+ 5. 無線アクセスポイントの設置場所と認証方式
+
+運用ルール：
+ ・構成変更（機器追加・回線変更・セグメント変更）の都度更新し、更新日と更新者を記録する。
+ ・年1回以上、現物と図の突合を行う。
+ ・構成図自体が機密情報であるため、機密区分ルールに従いアクセスを制限して保管する。
+
+更新履歴：
+ ［20XX/XX/XX］［更新者］［変更内容］
+
+以上`},
+ cloud:{t:'外部サービス（クラウド）利用台帳',r:['3-1-3'],b:
+`外部情報サービス利用台帳（一例）
+
+最終更新日：［20XX年X月X日］
+
+┌──────────┬──────────┬──────────┬───────┬───────┬─────────┐
+│ サービス名       │ 用途             │ 扱う機密情報     │ 管理者       │ 契約・解約条件│ セキュリティ設定 │
+├──────────┼──────────┼──────────┼───────┼───────┼─────────┤
+│ ［クラウドストレージ］│ ファイル共有 │ 顧客データ(機密) │ ［情シス担当］│ 年契約       │ MFA有効/共有制限 │
+│ ［会計SaaS］     │ 経理             │ 財務情報(社外秘) │ ［経理担当］  │ 月契約       │ MFA有効          │
+└──────────┴──────────┴──────────┴───────┴───────┴─────────┘
+
+運用ルール：
+・新規サービスの利用開始は［担当部署］への申請と承認を必須とする（無断利用＝シャドーITの禁止）。
+・機密情報を扱うサービスは、提供事業者のセキュリティ対策（認証、暗号化、所在国等）を確認のうえ採用する。
+・年1回、利用実態を棚卸しし、不要サービスは解約する。
+
+以上`},
+ kubun:{t:'情報の機密区分・管理ルール',r:['3-1-4','4-3-2'],b:
+`情報の機密区分および管理ルール（一例）
+
+1. 機密区分
+ ┌────┬───────────────────┬───────────────────┐
+ │ 区分   │ 定義（例）                           │ 取扱いルール（例）                   │
+ ├────┼───────────────────┼───────────────────┤
+ │ 機密   │ 漏えい時に事業へ重大な影響           │ 指定保管場所のみ・アクセス権限者限定・│
+ │        │（顧客個人情報、未公開の技術情報等）  │ 社外持出しは統括責任者の承認制       │
+ │ 社外秘 │ 社外への開示を禁止する情報           │ 全役職員アクセス可・社外送付は上長承認│
+ │ 公開   │ 公開済み・公開予定の情報             │ 制限なし                             │
+ └────┴───────────────────┴───────────────────┘
+
+2. 管理ルール
+ ・情報の作成者は、作成時に区分を判断し、ファイル名・文書に区分を表示する。
+ ・「機密」区分の情報は、定められた保管場所（［サーバの特定フォルダ／施錠キャビネット］）でのみ保管し、個人PCのデスクトップ等への保存を禁止する。
+ ・区分ごとの保管場所・廃棄方法は別表に定め、年1回見直す。
+
+以上`},
+ remote:{t:'リモートワーク規程',r:['3-1-5'],b:
+`リモートワーク規程（一例）
+
+1. 利用できる情報機器
+ ・原則として会社貸与のPC・スマートデバイスに限る。
+ ・私物端末の利用（BYOD）は、［担当部署］の承認と所定のセキュリティ設定（画面ロック、暗号化、MDM導入等）を条件に許可する。
+
+2. 取り扱える情報
+ ・「機密」区分の情報は、VPN経由で社内システム上で参照することとし、端末へのダウンロード・保存を禁止する。
+ ・紙資料の持出しは上長の承認を得て、必要最小限とする。
+
+3. 接続環境
+ ・社内システムへの接続はVPN等の暗号化された経路を使用する。
+ ・公衆Wi-Fiから接続する場合は必ずVPNを使用する。家庭内ルータは管理者パスワードを変更し、ファームウェアを更新しておく。
+
+4. その他
+ ・離席時は画面ロックを行い、家族を含む第三者に画面・資料を見せない。
+ ・端末の紛失・盗難時は直ちに［連絡先］へ報告する。
+
+以上`},
+ vuln:{t:'脆弱性管理手順',r:['3-2-1'],b:
+`脆弱性管理手順（一例）
+
+1. 体制
+ ・脆弱性管理の責任者：［氏名/役職］　実施担当：［部署/委託先］
+
+2. 情報収集
+ ・以下の情報源を［週1回以上］確認する：
+   - JPCERT/CC 注意喚起、IPA 重要なセキュリティ情報
+   - 利用中のOS・ソフトウェア・ネットワーク機器ベンダーのセキュリティ情報
+ ・対象は資産台帳に記載のOS・ソフトウェア・機器とする。
+
+3. リスク評価と対応期限（例）
+ ┌──────────────────────┬────────────┐
+ │ 深刻度                                 │ 対応期限（目安）       │
+ ├──────────────────────┼────────────┤
+ │ 緊急（悪用確認あり/CVSS 9.0以上）      │ ［3営業日以内］        │
+ │ 重要（CVSS 7.0以上）                   │ ［2週間以内］          │
+ │ その他                                 │ 定期メンテナンスで適用 │
+ └──────────────────────┴────────────┘
+
+4. 対応と記録
+ ・パッチ適用が直ちに行えない場合は、代替策（機能無効化、アクセス制限等）を実施し、責任者の承認を得る。
+ ・対応内容（対象、実施日、実施者）を記録し保管する。
+
+以上`},
+ id:{t:'ID・アクセス権管理規程',r:['4-1-1','4-1-2','4-1-7'],b:
+`ID・アクセス権管理規程（一例）
+
+1. ユーザIDの管理
+ ・発行：入社・異動時に所属長が［申請書/ワークフロー］で申請し、［情シス担当］が発行する。
+ ・変更：異動時は異動日までに権限を見直す。
+ ・削除：退職日当日中にアカウントを無効化し、［30日以内］に削除する。
+ ・共有IDは原則禁止。やむを得ず使用する場合は利用者を記録する。
+
+2. 管理者IDの管理
+ ・管理者権限は業務上必要な最小限の者（［氏名を列挙］）にのみ付与し、付与状況を台帳で管理する。
+ ・管理者IDは通常業務用IDと分離し、日常業務では使用しない。
+ ・発行・変更・削除は統括責任者の承認を必要とする。
+
+3. アクセス権の管理
+ ・ファイルサーバ・業務システムのアクセス権は「業務上必要な範囲」を原則（最小権限）として部署・役割単位で設定する。
+ ・年［1］回以上、全アカウント・権限の棚卸しを実施し、不要なアカウント・過剰な権限を削除する。棚卸し結果は記録する。
+
+以上`},
+ passwd:{t:'パスワード・認証ルール',r:['4-1-3','4-1-4','4-1-5','4-1-6'],b:
+`パスワード・認証ルール（一例）
+
+1. パスワードの設定
+ ・長さ：［12］文字以上（システムが許す場合は長いほど良い）
+ ・推測されやすいもの（社名、氏名、生年月日、辞書単語のみ等）の使用禁止
+ ・システム・サービス間での使い回し禁止
+ ・初期パスワードは初回ログイン時に必ず変更する
+
+2. パスワードの管理
+ ・付箋・メモでの掲示禁止。記録する場合は会社が認めたパスワード管理ツールを使用する。
+ ・他者への共有・貸与の禁止。漏えいが疑われる場合は直ちに変更し［担当部署］へ報告する。
+
+3. 認証の強度（重要度に応じて）
+ ・インターネットから直接アクセスできるシステム（クラウドサービス、VPN、リモートデスクトップ等）は多要素認証（MFA）を必須とする。
+ ・「機密」区分の情報を扱うシステムは、MFAまたはそれと同等の強度の認証を採用する。
+
+4. 端末のロック
+ ・PC・スマートデバイスにはパスワード/生体認証等によるロックを設定し、自動ロック（［10分］以内）を有効にする。
+ ・ログイン試行の失敗が続いた場合のロックアウト（例：［10回でロック］）を可能な範囲で設定する。
+
+以上`},
+ kyoiku:{t:'セキュリティ教育・訓練 年間計画',r:['4-2-1','4-2-2'],b:
+`セキュリティ教育・訓練 年間計画（一例）
+
+対象：経営層を含む全役職員（派遣社員・受入出向者を含む）
+
+┌────┬──────────────────────┬─────────┬────────┐
+│ 時期   │ 内容                                   │ 対象           │ 実施方法       │
+├────┼──────────────────────┼─────────┼────────┤
+│ ［4月］│ 新入社員向け基礎教育（社内ルール周知） │ 新入社員       │ 集合研修       │
+│ ［7月］│ 全社教育（パスワード・標的型メール等） │ 全役職員       │ eラーニング等  │
+│ ［10月］│ インシデント対応訓練（机上演習）      │ 対応体制の要員 │ シナリオ演習   │
+│ ［随時］│ 標的型攻撃メール訓練                  │ 全役職員       │ 訓練メール     │
+└────┴──────────────────────┴─────────┴────────┘
+
+記録：
+ ・実施日、内容、参加者（受講率）を記録し、未受講者にはフォローアップを行う。
+ ・訓練で判明した課題（連絡の遅れ、手順の不備等）は対応手順の改善に反映する。
+
+以上`},
+ backup:{t:'バックアップ・復旧管理表',r:['4-3-4','7-1-1'],b:
+`バックアップおよび復旧の管理表（一例）
+
+1. バックアップ対象と方式
+ ┌──────────┬─────┬─────┬──────────┬──────────┐
+ │ 対象             │ 頻度     │ 保存世代 │ 保存先           │ 備考             │
+ ├──────────┼─────┼─────┼──────────┼──────────┤
+ │ ファイルサーバ   │ 日次     │ ［30］世代│ NAS＋クラウド    │ 1系統はオフライン│
+ │ 会計データ       │ 日次     │ […］   │ ［　　］         │                  │
+ └──────────┴─────┴─────┴──────────┴──────────┘
+ ・ランサムウェア対策として、少なくとも1系統はネットワークから切り離した保管（オフライン/イミュータブル）とする。
+
+2. 事業継続の要件（事業上重要なシステムごとに設定）
+ ・対象システム：［受発注システム］
+ ・目標復旧時点（RPO）：［24時間以内のデータまで］
+ ・目標復旧時間（RTO）：［3営業日以内］
+
+3. 復旧テスト
+ ・年［1］回以上、バックアップからの復元テストを実施し、所要時間と結果を記録する。
+ ・テストで要件を満たせない場合は方式を見直す。
+
+以上`},
+ patch:{t:'アップデート・マルウェア対策 運用ルール',r:['4-4-1','4-4-4','4-4-5'],b:
+`アップデートおよびマルウェア対策 運用ルール（一例）
+
+1. 安全な構成
+ ・新規導入する機器・PCは、不要なソフトウェア・サービスを削除し、初期パスワードを変更してから利用を開始する。
+ ・業務に不要なソフトウェアのインストールを禁止する（必要な場合は［担当部署］へ申請）。
+
+2. セキュリティパッチ・アップデート
+ ・PC：OS・ソフトウェアの自動更新を有効にする。適用状況を［月1回］確認する。
+ ・サーバ・ネットワーク機器：［月例/脆弱性管理手順に基づく期限］で計画的に適用する。業務影響がある場合は検証のうえ適用日を統括責任者が承認する。
+ ・適用できない機器は代替策（ネットワーク分離等）を講じる。
+
+3. マルウェア対策
+ ・全PC・サーバにマルウェア対策ソフト（またはEDR）を導入し、定義ファイル・エンジンを自動更新とする。
+ ・リアルタイムスキャンを有効にし、定期フルスキャンを［週1回］実施する。
+ ・検知時は端末をネットワークから切り離し、インシデント対応手順に従って［担当部署］へ報告する。
+
+以上`},
+ log:{t:'ログ管理・監視ルール',r:['4-4-3','5-1-1','5-1-2'],b:
+`ログ管理・監視ルール（一例）
+
+1. 取得するログ（例）
+ ┌────────────┬──────────────┬─────┐
+ │ 対象               │ ログの種類                   │ 保存期間 │
+ ├────────────┼──────────────┼─────┤
+ │ UTM/ファイアウォール│ 通信ログ、遮断ログ           │ ［1年］  │
+ │ サーバ             │ 認証ログ、操作ログ           │ ［1年］  │
+ │ PC（EDR等）        │ 挙動検知ログ                 │ ［　　］ │
+ │ クラウドサービス   │ ログイン履歴、監査ログ       │ ［　　］ │
+ └────────────┴──────────────┴─────┘
+
+2. 監視・レビュー
+ ・UTM等の重要アラート（不審な外部通信、大量の認証失敗 等）は通知設定を行い、検知時に即時確認する。
+ ・ログの定期レビューを［月1回］実施し、確認者・確認日・特記事項を記録する。
+ ・自社での監視が難しい範囲は、監視サービス（お助け隊サービス等）の利用を検討する。
+
+3. 保全
+ ・ログは改ざん・消去されないよう、取得元と別の場所に保管する。インシデント発生時は関連ログを直ちに保全する。
+
+以上`},
+ incident:{t:'インシデント対応手順書',r:['6-1-1','5-2-1'],b:
+`セキュリティインシデント対応手順書（一例）
+
+1. インシデントレベルの定義（例）
+ ┌────┬───────────────────────┬─────────┐
+ │ レベル │ 例                                       │ 対応               │
+ ├────┼───────────────────────┼─────────┤
+ │ 高     │ ランサムウェア感染、機密情報の漏えい     │ 統括責任者へ即報・ │
+ │        │                                          │ 対策本部設置       │
+ │ 中     │ マルウェア検知（被害未確認）、不審な通信 │ 担当部署で調査・   │
+ │        │                                          │ 統括責任者へ報告   │
+ │ 低     │ 不審メール受信（開封なし）               │ 担当部署へ報告     │
+ └────┴───────────────────────┴─────────┘
+
+2. 初動対応（発見者）
+ ① 慌てて電源を切らない。LANケーブルを抜く／Wi-Fiを切る（ネットワークから切り離す）。
+ ② 画面表示・症状を記録（スマホで撮影可）。
+ ③ 直ちに報告：［担当部署・氏名・電話］（夜間休日：［　　］）
+
+3. 対応体制と役割
+ ・指揮：統括責任者［氏名］／調査・復旧：［担当/保守委託先］／社外連絡：［氏名］
+ ・連絡先：保守委託先［　　］、警察（都道府県警サイバー相談窓口 #9110）、IPA相談窓口、所管官庁・取引先［　　］
+
+4. 記録と再発防止
+ ・対応の経過（日時・実施事項・判断）を時系列で記録する。
+ ・収束後、原因と再発防止策をまとめ、経営層へ報告し、手順・対策を見直す。
+
+以上`},
+ kyokai:{t:'ネットワーク境界防護 設定基準・点検表',r:['4-5-1'],b:
+`ネットワーク境界防護 設定基準および点検表（一例）
+
+1. 境界防護の基本構成
+ ・インターネットとの境界にUTM（またはファイアウォール）を設置し、すべての通信を経由させる。
+ ・通信は「原則すべて拒否し、業務に必要なものだけ許可」（ホワイトリスト方式）で設定する。
+
+2. ネットワーク分離（例）
+ ┌──────────┬─────────────────────────┐
+ │ セグメント       │ 方針                                             │
+ ├──────────┼─────────────────────────┤
+ │ 社内LAN          │ 業務端末のみ。サーバ用セグメントへ必要な通信のみ │
+ │ サーバ用         │ 社内LANからの必要な通信のみ許可                  │
+ │ ゲストWi-Fi      │ 社内LANから完全分離（インターネットのみ）        │
+ │ 複合機・IoT機器  │ 可能な範囲で業務端末と分離                       │
+ └──────────┴─────────────────────────┘
+
+3. 定期点検項目（年1回以上）
+ □ UTM/FWのファームウェアが最新である
+ □ 管理画面の初期パスワードを変更し、外部（インターネット側）から管理画面へアクセスできない
+ □ 許可ルールの棚卸し（不要になったルール・ポート開放の削除）
+ □ VPN装置の脆弱性情報の確認とアップデート適用
+ □ 外部公開しているサービス（ポート）の一覧化と必要性の確認
+
+点検記録：［実施日］［実施者］［結果・是正事項］
+
+以上`},
+};
+const REQ2TPL={};
+Object.keys(TPL).forEach(k=>TPL[k].r.forEach(rn=>{(REQ2TPL[rn]=REQ2TPL[rn]||[]).push(k);}));
+
+function openTpl(key){
+  const t=TPL[key]; if(!t)return;
+  let ov=document.getElementById('tplOv');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='tplOv'; document.body.appendChild(ov);
+    ov.addEventListener('click',e=>{ if(e.target===ov) ov.style.display='none'; });
+  }
+  ov.innerHTML=`<div class="tpl-box" role="dialog" aria-label="ひな形">
+    <div class="tpl-head"><b>📄 ${esc(t.t)}</b><button class="btn" onclick="document.getElementById('tplOv').style.display='none'">閉じる</button></div>
+    <div class="tpl-note">${esc(TPL_NOTE)}</div>
+    <textarea class="tpl-body" id="tplBody"></textarea>
+    <div class="tpl-foot">
+      <span style="font-size:.7rem;color:var(--ink-soft)">対応: ${t.r.join(', ')}　／　編集してからコピー・保存できます</span>
+      <span style="flex:1"></span>
+      <button class="btn" onclick="copyTpl()">コピー</button>
+      <button class="btn primary" onclick="dlTpl('${key}')">.txt保存</button>
+    </div></div>`;
+  ov.style.display='flex';
+  document.getElementById('tplBody').value=t.b;
+}
+function copyTpl(){
+  const v=document.getElementById('tplBody').value;
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(v).then(()=>toast('コピーしました')); }
+  else{ const ta=document.getElementById('tplBody'); ta.select(); document.execCommand('copy'); toast('コピーしました'); }
+}
+function dlTpl(key){
+  const v=document.getElementById('tplBody').value;
+  const blob=new Blob(['\ufeff'+v],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`【ひな形・一例】${TPL[key].t}.txt`; a.click(); URL.revokeObjectURL(a.href);
+}
+
+/* ====== state ====== */
+const CATC = {1:'--gv',2:'--tm',3:'--id',4:'--pr',5:'--de',6:'--rs',7:'--rc'};
+const ST_LABEL = ['未対応','対応中','対応済','対象外'];
+let mem = {};                       // in-memory fallback
+const KEY = 'scsNavi.v1';
+function loadState(){
+  try{ const s = localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
+  return mem[KEY] ? JSON.parse(mem[KEY]) : {mode:3, crit:{}, memo:{}, plan:{}};
+}
+function saveState(){
+  const s = JSON.stringify(S);
+  try{ localStorage.setItem(KEY, s); }catch(e){ mem[KEY]=s; }
+}
+let S = loadState();
+if(!S.crit) S.crit={}; if(!S.memo) S.memo={}; if(!S.plan) S.plan={}; if(!S.mode) S.mode=3;
+
+/* ====== helpers ====== */
+function visibleCrit(req){ return req.crit.filter(c => S.mode===4 || c.lv===3); }
+function reqVisible(req){ return S.mode===4 || req.s3; }
+function critStatus(no){ return S.crit[no]||0; }
+function counts(crits){
+  const r={ok:0,wip:0,no:0,na:0,total:crits.length};
+  crits.forEach(c=>{ const s=critStatus(c.no);
+    if(s===2)r.ok++; else if(s===1)r.wip++; else if(s===3)r.na++; else r.no++; });
+  r.eff = r.total - r.na;
+  r.pct = r.eff ? Math.round(r.ok/r.eff*100) : 100;
+  return r;
+}
+function allCrits(cat){ const a=[]; cat.mids.forEach(m=>m.reqs.forEach(q=>{ if(reqVisible(q)) a.push(...visibleCrit(q)); })); return a; }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function toast(msg){ const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),1800); }
+
+/* ====== mode ====== */
+function setMode(m){ S.mode=m; saveState(); render(); }
+function paintMode(){
+  document.getElementById('m3').classList.toggle('on', S.mode===3);
+  document.getElementById('m4').classList.toggle('on', S.mode===4);
+  document.getElementById('hdStars').textContent = S.mode===3?'★★★':'★★★★';
+}
+
+/* ====== nav ====== */
+function buildNav(){
+  const nb=document.getElementById('navBar');
+  let h = `<a href="#home" data-r="home">ホーム</a>`;
+  DATA.forEach(c=>{
+    const cs=counts(allCrits(c));
+    h+=`<a href="#cat-${c.no}" data-r="cat-${c.no}" style="--cc:var(${CATC[c.no]})"><span class="nv-no">${c.no}</span>${c.name}<span class="nv-pct">${cs.pct}%</span></a>`;
+  });
+  h+=`<a href="#gantt" data-r="gantt">📅 工程表</a>`;
+  nb.innerHTML=h;
+  const r=location.hash.replace('#','')||'home';
+  nb.querySelectorAll('a').forEach(a=>a.classList.toggle('on', a.dataset.r===r));
+}
+
+/* ====== dashboard ====== */
+function renderHome(){
+  const all=[]; DATA.forEach(c=>all.push(...allCrits(c)));
+  const cs=counts(all);
+  const reqN = DATA.reduce((n,c)=>n+c.mids.reduce((m,x)=>m+x.reqs.filter(reqVisible).length,0),0);
+  const R=2*Math.PI*62;
+  const okLen=cs.eff?cs.ok/cs.eff*R:R, wipLen=cs.eff?cs.wip/cs.eff*R:0;
+  let h=`<div class="dash-hero">
+    <div class="donut-wrap">
+      <svg width="150" height="150" viewBox="0 0 150 150">
+        <circle cx="75" cy="75" r="62" fill="none" stroke="var(--line-soft)" stroke-width="15"/>
+        <circle cx="75" cy="75" r="62" fill="none" stroke="var(--wip)" stroke-width="15" stroke-dasharray="${okLen+wipLen} ${R}" stroke-linecap="round"/>
+        <circle cx="75" cy="75" r="62" fill="none" stroke="var(--ok)" stroke-width="15" stroke-dasharray="${okLen} ${R}" stroke-linecap="round"/>
+      </svg>
+      <div class="donut-center"><span class="pct">${cs.pct}<small style="font-size:.9rem">%</small></span><span class="lbl">対応済</span></div>
+    </div>
+    <div class="dash-stats">
+      <h2>${S.mode===3?'★3（専門家確認付き自己評価）':'★4（第三者評価＋技術検証）'}の達成状況</h2>
+      <div class="sub">要求事項 ${reqN} 項目 ／ 評価基準 ${cs.total} 項目（対象外 ${cs.na} を除く ${cs.eff} 項目で算定）</div>
+      <div class="stat-row">
+        <div class="stat-chip c-ok"><b>${cs.ok}</b><span>対応済</span></div>
+        <div class="stat-chip c-wip"><b>${cs.wip}</b><span>対応中</span></div>
+        <div class="stat-chip c-no"><b>${cs.no}</b><span>未対応</span></div>
+        <div class="stat-chip c-na"><b>${cs.na}</b><span>対象外</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="notice"><b>非公式ツールです</b>：本ツールは自己診断の補助用であり、SCS評価制度の★取得や適合を保証するものではありません。最新の要求事項・評価基準は経済産業省・IPAの公式資料を確認してください。</div>
+  <div class="cat-grid">`;
+  DATA.forEach(c=>{
+    const cc=counts(allCrits(c));
+    const reqn=c.mids.reduce((m,x)=>m+x.reqs.filter(reqVisible).length,0);
+    h+=`<a class="cat-card" href="#cat-${c.no}" style="--cc:var(${CATC[c.no]})">
+      ${cc.pct===100&&cc.eff>0?'<div class="hanko">達成</div>':''}
+      <div class="cc-head"><span class="cc-no">大分類 ${c.no}</span>${c.nist?`<span class="cc-nist">${esc(c.nist)}</span>`:''}</div>
+      <h3>${esc(c.name)}</h3>
+      <div class="bar"><i class="b-ok" style="width:${cc.eff?cc.ok/cc.eff*100:0}%"></i><i class="b-wip" style="width:${cc.eff?cc.wip/cc.eff*100:0}%"></i></div>
+      <div class="cc-meta"><span>要求事項 ${reqn}・評価基準 ${cc.total}</span><b style="color:var(--cc)">${cc.pct}%</b></div>
+    </a>`;
+  });
+  h+=`</div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>対応済</span><span><i style="background:var(--wip)"></i>対応中</span><span><i style="background:var(--line-soft)"></i>未対応</span></div>
+  <div class="notice"><b>ご利用上の注意</b>：本ツールの判定は★取得を保証するものではありません。★3の取得には自己評価結果について<b>セキュリティ専門家による確認・署名</b>が、★4には<b>評価機関による第三者評価および技術検証</b>が必要です（2026年度末頃 申請受付開始予定）。
+  <div style="margin-top:6px"><button class="btn danger" onclick="resetAll()" style="font-size:.72rem;padding:5px 12px">全データを初期化</button></div></div>`;
+  return h;
+}
+
+/* ====== category page ====== */
+function renderCat(no){
+  const c=DATA.find(x=>x.no==no); if(!c) return '<p>ページが見つかりません。</p>';
+  const cc=counts(allCrits(c));
+  let h=`<div style="--cc:var(${CATC[c.no]})">
+  <div class="pg-head">
+    <div class="ph-no">${c.no}</div>
+    <div><h2>${esc(c.name)}</h2><div class="ph-sub">${c.nist?`NIST CSF: ${esc(c.nist)}　`:''}${S.mode===3?'★3':'★4'}対象 評価基準 ${cc.total} 項目</div></div>
+  </div>
+  <div class="pg-progress">
+    <div class="bar"><i class="b-ok" style="width:${cc.eff?cc.ok/cc.eff*100:0}%"></i><i class="b-wip" style="width:${cc.eff?cc.wip/cc.eff*100:0}%"></i></div>
+    <div class="pp-lbl"><span>対応済 ${cc.ok} ／ 対応中 ${cc.wip} ／ 未対応 ${cc.no} ／ 対象外 ${cc.na}</span><b>${cc.pct}%</b></div>
+  </div>`;
+  c.mids.forEach(m=>{
+    const reqs=m.reqs.filter(reqVisible); if(!reqs.length) return;
+    h+=`<div class="mid-h">${esc(m.no)}　${esc(m.name)}<small>${reqs.length} 要求事項</small></div>`;
+    reqs.forEach(q=>{
+      const vc=visibleCrit(q), qc=counts(vc);
+      const open=S._open===q.no?' open':'';
+      const cls = qc.pct===100&&qc.eff>0 ? 'done' : (qc.ok+qc.wip>0?'part':'');
+      const plan=S.plan[q.no]||{};
+      h+=`<div class="req-card${open}" id="rq-${q.no}">
+        <div class="req-head" onclick="tgReq('${q.no}')">
+          <span class="req-caret">▶</span>
+          <span class="req-no">${q.no}</span>
+          <span class="req-name">${esc(q.name)}</span>
+          <span class="req-stars">${q.s3?'★3':''}${q.s3&&'　'||''}★4</span>
+          <span class="req-prog ${cls}">${qc.ok}/${qc.eff}</span>
+        </div>
+        <div class="req-body">
+          <div class="req-text"><span class="rt-lbl">要求事項（原文）</span>${esc(q.text)}</div>
+          ${(REQ2TPL[q.no]||[]).map(k=>`<button class="tpl-btn" onclick="openTpl('${k}')">📄 ひな形を見る：${esc(TPL[k].t)}（一例）</button>`).join(' ')}
+          <div class="plan-row">
+            <label>担当 <input type="text" value="${esc(plan.who||'')}" onchange="setPlan('${q.no}','who',this.value)" placeholder="例: 情シス 田中"></label>
+            <label>開始 <input type="date" value="${plan.s||''}" onchange="setPlan('${q.no}','s',this.value)"></label>
+            <label>完了予定 <input type="date" value="${plan.e||''}" onchange="setPlan('${q.no}','e',this.value)"></label>
+            <span style="font-size:.68rem">→ 工程表に反映</span>
+          </div>`;
+      vc.forEach(cr=>{
+        const s=critStatus(cr.no), memo=S.memo[cr.no]||'';
+        h+=`<div class="crit">
+          <div class="crit-st"><button class="st-btn" data-s="${s}" onclick="cycle('${cr.no}',this)" title="クリックで切替">${ST_LABEL[s]}</button></div>
+          <div class="crit-main">
+            <div class="crit-text"><span class="crit-no">${cr.no}</span>${cr.lv===4?'<span class="crit-lv4">★4追加</span>':''}<span class="crit-text-inner">${esc(cr.text)}</span></div>
+            <button class="memo-tg${memo?' has':''}" onclick="tgMemo('${cr.no}',this)">${memo?'📝 メモあり':'＋ メモ'}</button>
+            <textarea class="crit-memo" id="memo-${cr.no}" placeholder="対応状況・証跡の場所・残課題など" onchange="setMemo('${cr.no}',this.value)">${esc(memo)}</textarea>
+          </div>
+        </div>`;
+      });
+      h+=`</div></div>`;
+    });
+  });
+  h+=`</div>`;
+  return h;
+}
+function tgReq(no){ const el=document.getElementById('rq-'+no); el.classList.toggle('open'); S._open = el.classList.contains('open')?no:null; }
+function cycle(no,btn){
+  S.crit[no]=((S.crit[no]||0)+1)%4; saveState();
+  btn.dataset.s=S.crit[no]; btn.textContent=ST_LABEL[S.crit[no]];
+  refreshBadges();
+  sqCheckComplete();
+}
+function tgMemo(no,btn){ document.getElementById('memo-'+no).classList.toggle('show'); }
+function setMemo(no,v){ if(v.trim())S.memo[no]=v; else delete S.memo[no]; saveState(); }
+function setPlan(no,k,v){ const p=S.plan[no]||(S.plan[no]={}); if(v)p[k]=v; else delete p[k]; if(!Object.keys(p).length)delete S.plan[no]; saveState(); }
+function refreshBadges(){
+  // update req chips + page bar + nav without full rerender
+  const r=location.hash.replace('#','')||'home';
+  if(r.startsWith('cat-')){
+    const c=DATA.find(x=>x.no==r.slice(4));
+    c.mids.forEach(m=>m.reqs.filter(reqVisible).forEach(q=>{
+      const el=document.querySelector('#rq-'+CSS.escape(q.no)+' .req-prog'); if(!el)return;
+      const qc=counts(visibleCrit(q));
+      el.textContent=`${qc.ok}/${qc.eff}`;
+      el.className='req-prog '+(qc.pct===100&&qc.eff>0?'done':(qc.ok+qc.wip>0?'part':''));
+    }));
+    const cc=counts(allCrits(c));
+    const bar=document.querySelector('.pg-progress .bar');
+    if(bar) bar.innerHTML=`<i class="b-ok" style="width:${cc.eff?cc.ok/cc.eff*100:0}%"></i><i class="b-wip" style="width:${cc.eff?cc.wip/cc.eff*100:0}%"></i>`;
+    const lbl=document.querySelector('.pg-progress .pp-lbl');
+    if(lbl) lbl.innerHTML=`<span>対応済 ${cc.ok} ／ 対応中 ${cc.wip} ／ 未対応 ${cc.no} ／ 対象外 ${cc.na}</span><b>${cc.pct}%</b>`;
+  }
+  buildNav();
+}
+
+/* ====== gantt ====== */
+function renderGantt(){
+  const items=[];
+  DATA.forEach(c=>c.mids.forEach(m=>m.reqs.filter(reqVisible).forEach(q=>{
+    const p=S.plan[q.no];
+    if(p&&p.s&&p.e) items.push({cat:c,q,p});
+  })));
+  let h=`<div class="pg-head"><div class="ph-no" style="background:var(--indigo)">📅</div>
+    <div><h2>対応工程表（ガントチャート）</h2><div class="ph-sub">各要求事項に「開始日・完了予定日」を設定すると、ここに表示されます。バーの色は配下の評価基準の進捗です。</div></div></div>`;
+  if(!items.length){
+    h+=`<div class="gantt-wrap"><div class="g-empty">まだ計画が登録されていません。<br>各分類ページの要求事項を開き、「開始」「完了予定」の日付を設定してください。</div></div>`;
+    return h;
+  }
+  let min=items.reduce((a,x)=>x.p.s<a?x.p.s:a, items[0].p.s);
+  let max=items.reduce((a,x)=>x.p.e>a?x.p.e:a, items[0].p.e);
+  let d0=new Date(min.slice(0,7)+'-01');
+  let d1=new Date(max.slice(0,7)+'-01'); d1.setMonth(d1.getMonth()+1);
+  const months=[]; let d=new Date(d0);
+  while(d<d1){ months.push(new Date(d)); d.setMonth(d.getMonth()+1); }
+  const span=d1-d0;
+  const pos=ds=>{const t=new Date(ds)-d0; return Math.max(0,Math.min(100,t/span*100));};
+  const monthHTML=`<div class="g-months">${months.map(m=>`<div class="g-month">${m.getFullYear()%100}/${m.getMonth()+1}</div>`).join('')}</div>`;
+  const today=new Date(); const todayHTML=(today>=d0&&today<d1)?`<div class="g-today" style="left:${(today-d0)/span*100}%"></div>`:'';
+  h+=`<div class="gantt-wrap"><div class="gantt-grid">`;
+  h+=`<div class="g-row g-cat"><div class="g-label">期間: ${min} 〜 ${max}</div><div class="g-track">${monthHTML}${todayHTML}</div></div>`;
+  let lastCat=null;
+  items.sort((a,b)=> a.cat.no-b.cat.no || (a.p.s<b.p.s?-1:1));
+  items.forEach(it=>{
+    if(it.cat.no!==lastCat){
+      lastCat=it.cat.no;
+      h+=`<div class="g-row g-cat" style="--cc:var(${CATC[it.cat.no]})"><div class="g-label" style="color:var(--cc)">${it.cat.no}. ${esc(it.cat.name)}</div><div class="g-track">${monthHTML}${todayHTML}</div></div>`;
+    }
+    const qc=counts(visibleCrit(it.q));
+    const l=pos(it.p.s), r=pos(it.p.e), w=Math.max(1.2,r-l);
+    h+=`<div class="g-row" style="--cc:var(${CATC[it.cat.no]})">
+      <div class="g-label"><span class="req-no">${it.q.no}</span><a href="#cat-${it.cat.no}" onclick="S._open='${it.q.no}'" title="${esc(it.q.name)}${it.p.who?'（'+esc(it.p.who)+'）':''}">${esc(it.q.name)}</a></div>
+      <div class="g-track">${monthHTML}${todayHTML}
+        <div class="g-bar" style="left:${l}%;width:${w}%;background:var(--line-soft)" title="${esc(it.q.name)} ${it.p.s}〜${it.p.e} 進捗${qc.pct}%">
+          <i style="width:${qc.eff?qc.ok/qc.eff*100:0}%;background:var(--ok)"></i><i style="width:${qc.eff?qc.wip/qc.eff*100:0}%;background:var(--wip)"></i>
+        </div>
+      </div></div>`;
+  });
+  h+=`</div></div>
+  <div class="legend"><span><i style="background:var(--ok)"></i>対応済</span><span><i style="background:var(--wip)"></i>対応中</span><span><i style="background:var(--line-soft)"></i>未対応（計画のみ）</span><span style="color:var(--shu)">｜ 今日</span></div>`;
+  return h;
+}
+
+/* ====== export/import ====== */
+function exportJSON(){
+  const blob=new Blob([JSON.stringify({app:'scsNavi',ver:1,saved:new Date().toISOString(),state:S},null,1)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`scs_shindan_${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+  toast('診断データを書き出しました');
+}
+function importJSON(inp){
+  const f=inp.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+      const d=JSON.parse(r.result);
+      if(!d.state||d.app!=='scsNavi') throw 0;
+      S=d.state; saveState(); render(); toast('診断データを読み込みました');
+    }catch(e){ toast('読込失敗: ファイル形式が不正です'); } };
+  r.readAsText(f); inp.value='';
+}
+function resetAll(){
+  if(!confirm('チェック状況・メモ・計画をすべて初期化します。よろしいですか？'))return;
+  S={mode:S.mode,crit:{},memo:{},plan:{}}; saveState(); render(); toast('初期化しました');
+}
+
+/* ====== Securio guide ====== */
+const SQ_CAT_TIPS = {
+ 1:'ガバナンスは<b>「誰が責任者か」を紙に書く</b>ところから。CISOがいなくても、担当役員と担当部署を決めて文書化すれば前進だよ。年1回の点検を忘れずに！',
+ 2:'取引先管理のコツは<b>機密情報を「誰と共有しているか」の一覧づくり</b>。秘密保持契約（NDA)の有無もあわせて棚卸ししよう。',
+ 3:'まずは<b>IT資産台帳とネットワーク構成図</b>。PCやサーバー、使っているクラウドサービスを書き出すだけで、この分類の半分は見えてくるよ。',
+ 4:'いちばん項目が多い分類だね。あせらず<b>「ID・パスワード」「アップデート」「マルウェア対策」</b>の基礎3点から固めるのがおすすめ！',
+ 5:'検知は「気づける仕組み」づくり。UTMやEDRのログ・通知設定を確認しよう。<b>守箱みたいな監視ツール</b>の出番でもあるね！',
+ 6:'インシデント対応手順は<b>「誰に・何を・どの順で連絡するか」の1枚紙</b>から。緊急連絡先リストを作るだけでも大きな一歩！',
+ 7:'復旧の要は<b>バックアップ</b>。「取っている」だけでなく「戻せるか」を年1回テストしよう。復旧にかかる時間も測っておくと★4にもつながるよ。',
+};
+const SQ_RANDOM = [
+ 'ぼくの誕生日は2月2日。情報セキュリティの日なんだ🦊',
+ '「対象外」にした項目は、理由をメモに残しておくと専門家確認のときスムーズだよ。',
+ 'メモ欄には<b>証跡の保管場所</b>（規程名・フォルダパス）を書いておくと評価準備が楽になるよ。',
+ '★3の取得にはセキュリティ専門家の確認・署名が必要。早めに相談先を見つけておこう！',
+ '評価ガイド（実装例集）は2026年秋頃に公表予定。公表されたらまた一緒に確認しよう！',
+ 'こまめに「保存(JSON)」でバックアップしてね。ブラウザのデータは消えることもあるから。',
+ '迷ったらまず「対応中」にして先へ進もう。完璧主義より前進だよ！',
+];
+let sqIdx=0, sqHidden=false;
+function sqSay(html){ if(sqHidden)return;
+  const b=document.getElementById('sqBubble');
+  document.getElementById('sqText').innerHTML=html;
+  b.style.display=''; b.style.animation='none'; void b.offsetWidth; b.style.animation='';
+}
+function sqHide(){ document.getElementById('sqBubble').style.display='none'; sqHidden=true; }
+function sqTap(){ sqHidden=false; sqSay(SQ_RANDOM[sqIdx++ % SQ_RANDOM.length]); }
+function sqGuide(){
+  sqHidden=false;
+  const r=location.hash.replace('#','')||'home';
+  if(r==='gantt'){ sqSay('完了予定日は<b>取引先からの要請時期</b>や申請受付開始（2026年度末頃）から逆算して決めるといいよ！'); return; }
+  if(r.startsWith('cat-')){ sqSay(SQ_CAT_TIPS[+r.slice(4)]||'いっしょにひとつずつ確認していこう！'); return; }
+  const all=[]; DATA.forEach(c=>all.push(...allCrits(c)));
+  const cs=counts(all);
+  if(cs.ok===0&&cs.wip===0) sqSay('はじめまして、案内役の<b>セキュリオ</b>だよ！まずは気になる分類を開いて、できている項目に「対応済」を付けてみよう。<b>だいじょうぶ！いっしょに守ろう！</b>');
+  else if(cs.pct<30) sqSay(`いいスタート！いまは<b>現状把握</b>の段階だから、正直に付けるのがいちばん大事だよ。`);
+  else if(cs.pct<70) sqSay(`${cs.pct}%まで来たね！未対応の項目は工程表に日付を入れて、計画的に進めていこう。`);
+  else if(cs.pct<100) sqSay(`あと少しで${S.mode===3?'★3':'★4'}の自己診断コンプリート！残り${cs.eff-cs.ok}項目、がんばろう！`);
+  else sqSay(`<b>全項目クリア！すごい！</b>次は${S.mode===3?'セキュリティ専門家の確認':'評価機関への第三者評価依頼'}に進もう。だいじょうぶ！いっしょに守ろう！`);
+}
+let sqDone={};
+function sqCheckComplete(){
+  DATA.forEach(c=>{
+    const cc=counts(allCrits(c));
+    if(cc.pct===100&&cc.eff>0&&!sqDone[c.no]){
+      sqDone[c.no]=1; sqHidden=false;
+      sqSay(`🎉 <b>「${esc(c.name)}」コンプリート！</b>達成の判子を押しておいたよ。だいじょうぶ！いっしょに守ろう！`);
+    } else if(cc.pct<100){ sqDone[c.no]=0; }
+  });
+}
+
+/* ====== router ====== */
+function render(){
+  paintMode();
+  const r=location.hash.replace('#','')||'home';
+  const m=document.getElementById('main');
+  if(r==='home') m.innerHTML=renderHome();
+  else if(r==='gantt') m.innerHTML=renderGantt();
+  else if(r.startsWith('cat-')) m.innerHTML=renderCat(r.slice(4));
+  else m.innerHTML=renderHome();
+  buildNav();
+  sqGuide();
+  window.scrollTo(0,0);
+  if(S._open){ const el=document.getElementById('rq-'+S._open); if(el) el.scrollIntoView({block:'center'}); }
+}
+window.addEventListener('hashchange',render);
+render();
+
+</script>
+</body>
+</html>

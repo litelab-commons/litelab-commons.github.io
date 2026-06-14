@@ -24,6 +24,7 @@ ITリテラシー向上に使える教材・ミニアプリ・ミニツールの
 | プロンプト匿名化メーカー | Tool | 公開中 | https://litelab-commons.github.io/prompt-anonymizer/ |
 | AIセーフ・チェッカー | Tool | 公開中 | https://litelab-commons.github.io/ai-safe-checker/ |
 | Site Checker: 不審サイト確認ミニツール | Tool | 公開中 | https://litelab-commons.github.io/site-checker/ |
+| SCS自己診断ナビ（非公式） | Tool | 公開中 | https://litelab-commons.github.io/scs-self-check/ |
 | ITリテラシー診断アンケート | Tool | 準備中 | - |
 
 ## ライセンス
