@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>mystery-server — ターミナル宝探し</title>
+<style>
+  :root{
+    --bg:#070a08;
+    --panel:#0d1410;
+    --text:#3fe07a;
+    --text-dim:#1f7a47;
+    --text-faint:#155233;
+    --amber:#ffb454;
+    --gold:#ffd76a;
+    --line:#163322;
+  }
+  *{ box-sizing:border-box; }
+  html,body{
+    margin:0; padding:0; height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:Consolas,'Cascadia Mono','Courier New',monospace;
+    font-size:15px;
+    overflow:hidden;
+  }
+  #app{
+    position:relative;
+    height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  /* scanline / CRT atmosphere */
+  #crt{
+    position:fixed; inset:0; pointer-events:none; z-index:5;
+    background:repeating-linear-gradient(
+      to bottom,
+      rgba(0,0,0,0) 0px,
+      rgba(0,0,0,0) 2px,
+      rgba(0,255,120,0.025) 3px,
+      rgba(0,0,0,0) 4px
+    );
+    mix-blend-mode:screen;
+  }
+  #crt::after{
+    content:"";
+    position:absolute; inset:0;
+    box-shadow:inset 0 0 140px rgba(0,0,0,0.55);
+  }
+  @media (prefers-reduced-motion: no-preference){
+    #crt{ animation:flicker 6s infinite; }
+  }
+  @keyframes flicker{
+    0%,97%,100%{ opacity:1; }
+    98%{ opacity:0.93; }
+    99%{ opacity:0.97; }
+  }
+
+  header{
+    flex:0 0 auto;
+    display:flex; justify-content:space-between; align-items:center;
+    padding:8px 16px;
+    background:var(--panel);
+    border-bottom:1px solid var(--line);
+    font-size:12px;
+    color:var(--text-dim);
+    letter-spacing:0.02em;
+  }
+  header .title{ color:var(--text); display:flex; align-items:center; gap:8px;}
+  header .dot{
+    width:7px; height:7px; border-radius:50%;
+    background:var(--text);
+    box-shadow:0 0 6px var(--text);
+  }
+  @media (prefers-reduced-motion: no-preference){
+    header .dot{ animation:pulse 2s infinite; }
+  }
+  @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:0.35;} }
+  header .stats{ display:flex; gap:18px; }
+  .safety-note{
+    flex:0 0 auto;
+    padding:7px 16px;
+    border-bottom:1px solid var(--line);
+    background:#0a100d;
+    color:var(--text-dim);
+    font-size:12px;
+    z-index:2;
+  }
+
+  #screen{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:18px 18px 8px;
+    z-index:2;
+  }
+  #screen::-webkit-scrollbar{ width:8px; }
+  #screen::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+
+  .line{ white-space:pre-wrap; word-break:break-word; line-height:1.5; margin:0 0 2px; }
+  .line.prompt{ color:var(--text); }
+  .line.output{ color:var(--text); opacity:0.92; }
+  .line.error{ color:var(--amber); }
+  .line.boot{ color:var(--text-dim); }
+  .line.success{ color:var(--gold); }
+
+  .treasure-output{
+    white-space:pre-wrap; word-break:break-word; line-height:1.5;
+    color:var(--gold);
+    text-shadow:0 0 8px rgba(255,215,106,0.5);
+    margin:6px 0;
+  }
+
+  #inputRow{
+    flex:0 0 auto;
+    display:flex; align-items:center;
+    padding:10px 18px 16px;
+    border-top:1px solid var(--line);
+    background:var(--panel);
+    z-index:2;
+  }
+  #promptLabel{ color:var(--text); margin-right:8px; white-space:nowrap; }
+  #cmdInput{
+    flex:1;
+    background:transparent;
+    border:none;
+    outline:none;
+    color:var(--text);
+    font-family:inherit;
+    font-size:15px;
+    caret-color:var(--text);
+  }
+  #cmdInput::placeholder{ color:var(--text-faint); }
+
+  .banner{
+    font-family:Consolas,'Cascadia Mono','Courier New',monospace;
+    color:var(--text);
+    font-size:22px;
+    line-height:1.25;
+    margin-bottom:6px;
+    text-shadow:0 0 6px rgba(63,224,122,0.45);
+  }
+
+  @media (max-width:520px){
+    body{ font-size:13.5px; }
+    header{ font-size:10.5px; padding:6px 10px; align-items:flex-start; gap:6px; flex-direction:column; }
+    header .stats{ gap:12px; }
+    .safety-note{ font-size:11px; padding:6px 10px; }
+    #screen{ padding:12px 10px 6px; }
+    #inputRow{ padding:8px 10px 12px; align-items:flex-start; }
+    #promptLabel{ max-width:46vw; overflow:hidden; text-overflow:ellipsis; }
+    .banner{ font-size:18px; }
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="crt"></div>
+  <header>
+    <div class="title"><span class="dot"></span> mystery-server — guest セッション</div>
+    <div class="stats">
+      <span id="statCmd">コマンド: 0</span>
+      <span id="statTime">経過: 00:00</span>
+    </div>
+  </header>
+  <div class="safety-note">この教材はブラウザ内の仮想端末です。実際のPCやサーバーには接続しません。</div>
+  <div id="screen"></div>
+  <div id="inputRow">
+    <span id="promptLabel"></span>
+    <input id="cmdInput" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="コマンドを入力... (help / hint)">
+  </div>
+</div>
+
+<script>
+/* ============== ユニコード対応 base64 ============== */
+function b64EncodeUnicode(str){
+  return btoa(encodeURIComponent(str).replace(/%([0-9A-F]{2})/g,
+    (m,p1)=>String.fromCharCode('0x'+p1)));
+}
+function b64DecodeUnicode(str){
+  return decodeURIComponent(atob(str).split('').map(
+    c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)
+  ).join(''));
+}
+
+/* ============== ファイルシステム定義 ============== */
+function dirNode(children, owner='guest', perm='drwxr-xr-x'){
+  return { type:'dir', children, owner, perm };
+}
+function fileNode(content, owner='guest', perm='-rw-r--r--', archive=false){
+  return { type:'file', content, owner, perm, archive };
+}
+
+const ENCRYPTED_PLAIN = "次の場所は /var/log/whispers だ。そこにあるログファイルの中から 'grep -r' を使って TREASURE_HINT という文字列を含むものを探し出せ。";
+
+const fsRoot = dirNode({
+  home: dirNode({
+    guest: dirNode({
+      'readme.txt': fileNode(
+`=================================
+  ようこそ、新しい管理者へ
+=================================
+
+私はこのサーバーを長年管理してきた者だ。
+もう長くはログインしていられない。
+
+このマシンの奥深くに、私が本当に大切にしてきた
+『宝』を隠した。見つけられるかどうかは
+お前の探索眼次第だ。
+
+ヒント:
+  ・見えるものだけがすべてではない。隠しファイルを探せ。
+  ・困ったときは 'help' か 'hint' を使うといい。
+
+— 旧管理者`),
+      '.secret': dirNode({
+        'notes.txt': fileNode(
+`よくここまで来た。
+
+'key.lock' には大切な手がかりが書かれているが、
+権限がなくて読めないようになっている。
+
+それは私自身がかけた鍵だ。お前がオーナーなら、
+権限を変える方法があるはずだ。
+
+例: chmod 644 key.lock`),
+        'key.lock': fileNode(
+`鍵を開けたな、上出来だ。
+
+次の手がかりは暗号化されている。
+'encrypted.txt' を 'base64 -d' で解読してみろ。
+
+例: base64 -d encrypted.txt`,
+          'guest', '----------'),
+        'encrypted.txt': fileNode(b64EncodeUnicode(ENCRYPTED_PLAIN))
+      }, 'guest', 'drwx------')
+    })
+  }, 'root', 'drwxr-xr-x'),
+  var: dirNode({
+    log: dirNode({
+      whispers: dirNode({
+        'access.log': fileNode(
+`192.168.1.10 - - [01/Jan/2026:03:14:22] "GET /index.html" 200
+192.168.1.23 - - [01/Jan/2026:03:15:01] "GET /favicon.ico" 404
+192.168.1.10 - - [01/Jan/2026:03:16:40] "GET /about.html" 200
+192.168.1.55 - - [01/Jan/2026:04:02:11] "POST /login" 401`, 'root'),
+        'error.log': fileNode(
+`[error] 2026-01-01 03:16:00 disk I/O warning on /dev/sda1
+[error] 2026-01-01 04:02:11 connection timeout from 192.168.1.55
+[error] 2026-01-01 05:30:09 cron job failed: backup.sh`, 'root'),
+        'system.log': fileNode(
+`2026-01-01 03:14:22 [INFO] system boot completed
+2026-01-01 03:20:45 [INFO] backup job finished
+2026-01-01 04:11:09 [NOTICE] TREASURE_HINT: 最後の鍵は /opt/vault.tar.gz の中にある。'tar -xzf vault.tar.gz' で展開せよ。
+2026-01-01 04:11:10 [NOTICE] ROOTパスワードは server_room_42 だ。忘れるなよ。
+2026-01-01 05:00:00 [INFO] system idle`, 'root')
+      }, 'root', 'drwxr-xr-x')
+    }, 'root', 'drwxr-xr-x')
+  }, 'root', 'drwxr-xr-x'),
+  opt: dirNode({
+    'vault.tar.gz': fileNode(
+      '[これはバイナリファイルです。展開するには次を実行してください: tar -xzf vault.tar.gz]',
+      'guest', '-rw-r--r--', true)
+  }, 'root', 'drwxr-xr-x'),
+  root: dirNode({
+    'treasure.txt': fileNode(
+`   .-""""""-.
+  /  宝の箱   \\
+ |____________|
+  \\__________/
+
+おめでとう、推定相続人よ。
+お前は老管理者が残した最後の謎を解き明かした。
+
+このサーバーの奥に眠っていた本当の『宝』とは——
+何十年もかけて書き溜めた、若き技術者たちへの
+言葉の数々だった。
+
+『技術は人を助けるためにある。
+  鍵をかけた知識より、開かれた知恵を残したい』
+
+  — 老管理者、最後の言葉`,
+      'root', '-rw-------')
+  }, 'root', 'drwx------')
+}, 'root', 'drwxr-xr-x');
+
+const ROOT_PASSWORD = 'server_room_42';
+
+/* ============== ゲーム状態 ============== */
+let cwd = ['home','guest'];
+let cmdHistory = [];
+let historyPos = -1;
+let mode = 'normal'; // 'normal' | 'awaiting_password'
+let commandCount = 0;
+const startTime = Date.now();
+const flags = {
+  readReadme:false, openedSecret:false, unlockedKeyLock:false,
+  decodedMessage:false, foundTreasureClueInLogs:false,
+  extractedVault:false, won:false
+};
+
+/* ============== パス解決 ============== */
+function resolvePath(input){
+  if(!input) return cwd.slice();
+  let segs = input.startsWith('/') ? [] : cwd.slice();
+  if(input === '~') return ['home','guest'];
+  for(const part of input.split('/')){
+    if(part==='' || part==='.') continue;
+    if(part==='..'){ if(segs.length) segs.pop(); continue; }
+    if(part==='~'){ segs = ['home','guest']; continue; }
+    segs.push(part);
+  }
+  return segs;
+}
+function getNode(segs){
+  let node = fsRoot;
+  for(const s of segs){
+    if(!node.children || !node.children[s]) return null;
+    node = node.children[s];
+  }
+  return node;
+}
+function permCheck(node, action){
+  const isOwner = node.owner === 'guest';
+  if(action==='r') return isOwner ? node.perm[1]==='r' : node.perm[7]==='r';
+  if(action==='x') return isOwner ? node.perm[3]==='x' : node.perm[9]==='x';
+}
+function canRead(node){ return permCheck(node,'r'); }
+function displayAbs(segs){ return '/'+segs.join('/'); }
+function cwdDisplay(){
+  if(cwd.length>=2 && cwd[0]==='home' && cwd[1]==='guest'){
+    const rest = cwd.slice(2);
+    return '~' + (rest.length ? '/'+rest.join('/') : '');
+  }
+  return cwd.length ? '/'+cwd.join('/') : '/';
+}
+function promptString(){ return `guest@mystery-server:${cwdDisplay()}$ `; }
+
+/* ============== トークナイズ ============== */
+function tokenize(str){
+  const tokens = [];
+  const re = /"([^"]*)"|'([^']*)'|(\S+)/g;
+  let m;
+  while((m = re.exec(str))){
+    tokens.push(m[1] !== undefined ? m[1] : (m[2] !== undefined ? m[2] : m[3]));
+  }
+  return tokens;
+}
+function globToRegex(glob){
+  const esc = glob.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+  return new RegExp('^' + esc.replace(/\*/g,'.*').replace(/\?/g,'.') + '$', 'i');
+}
+
+/* ============== 画面出力 ============== */
+const screen = document.getElementById('screen');
+function printLine(cls, text){
+  const div = document.createElement('div');
+  div.className = 'line ' + cls;
+  div.textContent = text;
+  screen.appendChild(div);
+  screen.scrollTop = screen.scrollHeight;
+}
+function clearScreen(){ screen.innerHTML = ''; }
+
+/* ============== コマンド実装 ============== */
+function cmdHelp(){
+  printLine('output',
+`利用可能なコマンド:
+  ls [-a] [-l] [path]        ファイル一覧を表示
+  cd [path]                  ディレクトリ移動
+  pwd                        現在の場所を表示
+  cat <file>                 ファイル内容を表示
+  grep [-i] [-r] PATTERN [path]  文字列検索
+  find [path] -name "pattern"    ファイル検索
+  chmod <mode> <file>        権限変更 (例: chmod 644 file)
+  base64 -d <file>           base64デコード
+  tar -xzf <file>            アーカイブ展開
+  sudo cat <file>            管理者権限で閲覧
+  tree [-a]                  ディレクトリ構造を表示
+  history                    コマンド履歴を表示
+  hint                       次にすべきことのヒント
+  clear                      画面をクリア`);
+}
+
+function cmdLs(args){
+  const flagsSet = new Set(); let pathArg = null;
+  for(const a of args){
+    if(a.startsWith('-')) for(const ch of a.slice(1)) flagsSet.add(ch);
+    else pathArg = a;
+  }
+  const target = resolvePath(pathArg || '.');
+  const node = getNode(target);
+  if(!node){ printLine('error', `ls: '${pathArg}' にアクセスできません: そのようなファイルやディレクトリはありません`); return; }
+  if(node.type === 'file'){ printLine('output', pathArg); return; }
+  if(!permCheck(node,'r')){ printLine('error', `ls: '${pathArg||'.'}' を開けません: Permission denied`); return; }
+  let names = Object.keys(node.children);
+  if(!flagsSet.has('a')) names = names.filter(n=>!n.startsWith('.'));
+  names.sort();
+  if(flagsSet.has('l')){
+    const lines = names.map(n=>{
+      const c = node.children[n];
+      return `${c.type==='dir'?'d':'-'}${c.perm.slice(1)}  ${c.owner.padEnd(6)} ${n}${c.type==='dir'?'/':''}`;
+    });
+    printLine('output', lines.join('\n') || '(空のディレクトリ)');
+  } else {
+    printLine('output', names.map(n=>node.children[n].type==='dir'?n+'/':n).join('   ') || '(空のディレクトリ)');
+  }
+}
+
+function cmdCd(args){
+  const pathArg = args[0] || '~';
+  const target = resolvePath(pathArg);
+  const node = getNode(target);
+  if(!node){ printLine('error', `cd: ${pathArg}: そのようなファイルやディレクトリはありません`); return; }
+  if(node.type !== 'dir'){ printLine('error', `cd: ${pathArg}: ディレクトリではありません`); return; }
+  if(!permCheck(node,'x')){ printLine('error', `cd: ${pathArg}: Permission denied`); return; }
+  cwd = target;
+  if(target.join('/') === 'home/guest/.secret') flags.openedSecret = true;
+}
+
+function cmdPwd(){ printLine('output', cwd.length ? '/'+cwd.join('/') : '/'); }
+
+function onFileRead(segs){
+  const p = segs.join('/');
+  if(p === 'home/guest/readme.txt') flags.readReadme = true;
+  if(p === 'home/guest/.secret/key.lock') flags.unlockedKeyLock = true;
+  if(p === 'var/log/whispers/system.log') flags.foundTreasureClueInLogs = true;
+}
+
+function cmdCat(args){
+  if(args.length===0){ printLine('error','使い方: cat <file>'); return; }
+  for(const a of args){
+    const target = resolvePath(a);
+    const node = getNode(target);
+    if(!node){ printLine('error', `cat: ${a}: そのようなファイルやディレクトリはありません`); continue; }
+    if(node.type==='dir'){ printLine('error', `cat: ${a}: ディレクトリです`); continue; }
+    if(!canRead(node)){ printLine('error', `cat: ${a}: Permission denied`); continue; }
+    printLine('output', node.content);
+    onFileRead(target);
+  }
+}
+
+function walkFiles(baseSegs, node, cb){
+  for(const [name, child] of Object.entries(node.children)){
+    const segs = baseSegs.concat([name]);
+    if(child.type==='dir') walkFiles(segs, child, cb);
+    else cb(segs, child);
+  }
+}
+
+function searchInFile(segs, node, pattern, ci){
+  if(!canRead(node)){ printLine('error', `grep: ${displayAbs(segs)}: Permission denied`); return false; }
+  const needle = ci ? pattern.toLowerCase() : pattern;
+  let found = false;
+  for(const line of node.content.split('\n')){
+    const hay = ci ? line.toLowerCase() : line;
+    if(hay.includes(needle)){
+      printLine('output', `${displayAbs(segs)}: ${line}`);
+      found = true;
+    }
+  }
+  if(found && node.content.includes('TREASURE_HINT')) flags.foundTreasureClueInLogs = true;
+  return found;
+}
+
+function cmdGrep(args){
+  const flagsSet = new Set(); const rest = [];
+  for(const a of args){
+    if(a.startsWith('-') && a !== '-') for(const ch of a.slice(1)) flagsSet.add(ch);
+    else rest.push(a);
+  }
+  if(rest.length===0){ printLine('error','使い方: grep [-i] [-r] PATTERN [path...]'); return; }
+  const pattern = rest[0];
+  const paths = rest.length > 1 ? rest.slice(1) : ['.'];
+  const ci = flagsSet.has('i'); const recursive = flagsSet.has('r');
+  for(const p of paths){
+    const target = resolvePath(p);
+    const node = getNode(target);
+    if(!node){ printLine('error', `grep: ${p}: そのようなファイルやディレクトリはありません`); continue; }
+    if(node.type==='dir'){
+      if(!recursive){ printLine('error', `grep: ${p}: ディレクトリです (再帰検索には -r を使う)`); continue; }
+      walkFiles(target, node, (segs, f)=>searchInFile(segs, f, pattern, ci));
+    } else {
+      searchInFile(target, node, pattern, ci);
+    }
+  }
+}
+
+function cmdFind(args){
+  let pathArg = '.', pattern = '*';
+  for(let i=0;i<args.length;i++){
+    if(args[i]==='-name'){ pattern = args[i+1] || '*'; i++; }
+    else pathArg = args[i];
+  }
+  const target = resolvePath(pathArg);
+  const node = getNode(target);
+  if(!node){ printLine('error', `find: '${pathArg}': そのようなファイルやディレクトリはありません`); return; }
+  const re = globToRegex(pattern);
+  const results = [];
+  function walk(segs, n){
+    if(!permCheck(n,'r')) return;
+    for(const [name, child] of Object.entries(n.children)){
+      const cs = segs.concat([name]);
+      if(re.test(name)) results.push(cs);
+      if(child.type==='dir') walk(cs, child);
+    }
+  }
+  if(node.type==='dir') walk(target, node);
+  else if(re.test(target[target.length-1])) results.push(target);
+  if(results.length) printLine('output', results.map(r=>displayAbs(r)).join('\n'));
+}
+
+function cmdChmod(args){
+  if(args.length<2){ printLine('error','使い方: chmod <mode> <file>'); return; }
+  const modeStr = args[0], fileArg = args[1];
+  if(!/^[0-7]{3}$/.test(modeStr)){ printLine('error', `chmod: 無効なモード: '${modeStr}'`); return; }
+  const target = resolvePath(fileArg);
+  const node = getNode(target);
+  if(!node){ printLine('error', `chmod: '${fileArg}' にアクセスできません: そのようなファイルやディレクトリはありません`); return; }
+  if(node.owner !== 'guest'){ printLine('error', `chmod: '${fileArg}' の権限を変更できません: Operation not permitted`); return; }
+  const rwx = d=>{ const n=Number(d); return (n&4?'r':'-')+(n&2?'w':'-')+(n&1?'x':'-'); };
+  node.perm = '-' + rwx(modeStr[0]) + rwx(modeStr[1]) + rwx(modeStr[2]);
+  printLine('output', `権限を変更しました: ${fileArg} -> ${modeStr}`);
+  if(target.join('/') === 'home/guest/.secret/key.lock' && canRead(node)) flags.unlockedKeyLock = true;
+}
+
+function cmdBase64(args){
+  if(args[0] !== '-d' || !args[1]){ printLine('error','使い方: base64 -d <file>'); return; }
+  const target = resolvePath(args[1]);
+  const node = getNode(target);
+  if(!node){ printLine('error', `base64: ${args[1]}: そのようなファイルやディレクトリはありません`); return; }
+  if(node.type==='dir'){ printLine('error', `base64: ${args[1]}: ディレクトリです`); return; }
+  if(!canRead(node)){ printLine('error', `base64: ${args[1]}: Permission denied`); return; }
+  try{
+    printLine('output', b64DecodeUnicode(node.content));
+    if(target.join('/') === 'home/guest/.secret/encrypted.txt') flags.decodedMessage = true;
+  }catch(e){ printLine('error','base64: デコードに失敗しました'); }
+}
+
+function cmdTar(args){
+  const fileArg = args.find(a=>a.endsWith('.tar.gz')) || args[args.length-1];
+  if(!fileArg){ printLine('error','使い方: tar -xzf <file>'); return; }
+  const target = resolvePath(fileArg);
+  const node = getNode(target);
+  if(!node || node.type!=='file' || !node.archive){ printLine('error', `tar: ${fileArg}: ファイルが見つからない、またはアーカイブではありません`); return; }
+  const parent = getNode(target.slice(0,-1));
+  if(!parent.children['vault']){
+    parent.children['vault'] = dirNode({
+      'final_message.txt': fileNode(
+`ここまで来れば、もうゴールは目の前だ。
+
+最後のファイルは /root/treasure.txt にある。
+だが root 権限が必要だ。
+
+試してみろ: sudo cat /root/treasure.txt
+
+パスワードは、ログファイルのどこかに書いてあったはずだ。`)
+    });
+  }
+  printLine('output', `vault.tar.gz を展開しました:\nvault/\nvault/final_message.txt`);
+  flags.extractedVault = true;
+}
+
+function cmdTree(args){
+  const flagsSet = new Set();
+  for(const a of args) if(a.startsWith('-')) for(const ch of a.slice(1)) flagsSet.add(ch);
+  const target = resolvePath('.');
+  const node = getNode(target);
+  const lines = [cwdDisplay()];
+  function walk(n, prefix){
+    if(n.type!=='dir') return;
+    if(!permCheck(n,'r')){ lines.push(prefix + '[error opening dir]'); return; }
+    let names = Object.keys(n.children);
+    if(!flagsSet.has('a')) names = names.filter(x=>!x.startsWith('.'));
+    names.sort();
+    names.forEach((name, idx)=>{
+      const last = idx===names.length-1;
+      const child = n.children[name];
+      lines.push(prefix + (last?'└── ':'├── ') + name + (child.type==='dir'?'/':''));
+      if(child.type==='dir') walk(child, prefix + (last?'    ':'│   '));
+    });
+  }
+  walk(node, '');
+  printLine('output', lines.join('\n'));
+}
+
+function cmdHistoryShow(){
+  if(!cmdHistory.length){ printLine('output','(履歴はありません)'); return; }
+  printLine('output', cmdHistory.map((c,i)=>`${i+1}  ${c}`).join('\n'));
+}
+
+function cmdHint(){
+  let msg;
+  if(!flags.readReadme) msg = "まずは 'cat readme.txt' を実行して、老管理者からのメッセージを読もう。";
+  else if(!flags.openedSecret) msg = "見えるものだけがすべてではない。'ls -a' で隠しファイルを探してみよう。";
+  else if(!flags.unlockedKeyLock) msg = "'.secret' フォルダの notes.txt を読もう。key.lock の権限を変える方法が書いてある。";
+  else if(!flags.decodedMessage) msg = "key.lock を読んだら、encrypted.txt を 'base64 -d' でデコードしてみよう。";
+  else if(!flags.foundTreasureClueInLogs) msg = "/var/log/whispers のログを 'grep -r' で探索しよう。キーワードは TREASURE_HINT だ。";
+  else if(!flags.extractedVault) msg = "/opt の vault.tar.gz を 'tar -xzf vault.tar.gz' で展開しよう。";
+  else if(!flags.won) msg = "vault フォルダの final_message.txt を読んだら、'sudo cat /root/treasure.txt' を試そう。パスワードはログにあったはずだ。";
+  else msg = "すべての謎を解いた。お前は真の宝を見つけた探偵だ。";
+  printLine('output', msg);
+}
+
+function cmdSudo(args){
+  if(args[0]==='cat' && args[1]){
+    const target = resolvePath(args[1]);
+    if(target.join('/') === 'root/treasure.txt'){
+      printLine('output', '[sudo] password for guest: ');
+      mode = 'awaiting_password';
+      cmdInput.type = 'password';
+      return;
+    }
+  }
+  printLine('error', 'guest は sudoers ファイルに登録されていません。この件は報告されます。');
+}
+
+function revealTreasure(){
+  flags.won = true;
+  const node = getNode(['root','treasure.txt']);
+  const elapsed = Math.floor((Date.now()-startTime)/1000);
+  const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const ss = String(elapsed%60).padStart(2,'0');
+  const finalText = node.content + `\n\n[ GAME CLEAR ]\n使用コマンド数: ${commandCount}\n経過時間: ${mm}:${ss}`;
+  const div = document.createElement('div');
+  div.className = 'treasure-output';
+  screen.appendChild(div);
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduceMotion){
+    div.textContent = finalText;
+    screen.scrollTop = screen.scrollHeight;
+    return;
+  }
+  const chars = '!<>-_\\/[]{}—=+*^?#________';
+  let frame = 0;
+  const totalFrames = 14;
+  const interval = setInterval(()=>{
+    frame++;
+    if(frame >= totalFrames){
+      clearInterval(interval);
+      div.textContent = finalText;
+    } else {
+      div.textContent = finalText.split('').map(c=>{
+        if(c==='\n' || c===' ') return c;
+        return Math.random() < 0.55 ? chars[Math.floor(Math.random()*chars.length)] : c;
+      }).join('');
+    }
+    screen.scrollTop = screen.scrollHeight;
+  }, 45);
+}
+
+function handlePasswordAttempt(pw){
+  printLine('prompt', '[sudo] password for guest: ' + '*'.repeat(pw.length));
+  mode = 'normal';
+  cmdInput.type = 'text';
+  if(pw === ROOT_PASSWORD){
+    revealTreasure();
+  } else {
+    printLine('error', 'Sorry, try again.\nsudo: 1 incorrect password attempt');
+  }
+}
+
+/* ============== コマンドディスパッチ ============== */
+function execute(raw){
+  const trimmed = raw.trim();
+  if(mode === 'awaiting_password'){ handlePasswordAttempt(trimmed); return; }
+  if(trimmed === '') return;
+  cmdHistory.push(trimmed); historyPos = cmdHistory.length;
+  commandCount++;
+  document.getElementById('statCmd').textContent = `コマンド: ${commandCount}`;
+  printLine('prompt', promptString() + trimmed);
+
+  const tokens = tokenize(trimmed);
+  const cmd = tokens[0]; const args = tokens.slice(1);
+  switch(cmd){
+    case 'help': cmdHelp(); break;
+    case 'ls': cmdLs(args); break;
+    case 'cd': cmdCd(args); break;
+    case 'pwd': cmdPwd(); break;
+    case 'cat': cmdCat(args); break;
+    case 'grep': cmdGrep(args); break;
+    case 'find': cmdFind(args); break;
+    case 'chmod': cmdChmod(args); break;
+    case 'base64': cmdBase64(args); break;
+    case 'tar': cmdTar(args); break;
+    case 'sudo': cmdSudo(args); break;
+    case 'tree': cmdTree(args); break;
+    case 'history': cmdHistoryShow(); break;
+    case 'hint': cmdHint(); break;
+    case 'whoami': printLine('output','guest'); break;
+    case 'echo': printLine('output', args.join(' ')); break;
+    case 'clear': clearScreen(); break;
+    default: printLine('error', `bash: ${cmd}: command not found`);
+  }
+}
+
+/* ============== 入力欄 ============== */
+const cmdInput = document.getElementById('cmdInput');
+const promptLabel = document.getElementById('promptLabel');
+function refreshPrompt(){
+  promptLabel.textContent = mode==='awaiting_password' ? '' : promptString();
+}
+cmdInput.addEventListener('keydown', e=>{
+  if(e.key === 'Enter'){
+    const val = cmdInput.value;
+    cmdInput.value = '';
+    execute(val);
+    refreshPrompt();
+  } else if(e.key === 'ArrowUp' && mode==='normal'){
+    e.preventDefault();
+    if(cmdHistory.length){
+      historyPos = Math.max(0, historyPos-1);
+      cmdInput.value = cmdHistory[historyPos] || '';
+    }
+  } else if(e.key === 'ArrowDown' && mode==='normal'){
+    e.preventDefault();
+    historyPos = Math.min(cmdHistory.length, historyPos+1);
+    cmdInput.value = cmdHistory[historyPos] || '';
+  }
+});
+document.getElementById('app').addEventListener('click', ()=>cmdInput.focus());
+
+/* ============== タイマー表示 ============== */
+setInterval(()=>{
+  const elapsed = Math.floor((Date.now()-startTime)/1000);
+  const mm = String(Math.floor(elapsed/60)).padStart(2,'0');
+  const ss = String(elapsed%60).padStart(2,'0');
+  document.getElementById('statTime').textContent = `経過: ${mm}:${ss}`;
+}, 1000);
+
+/* ============== ブート演出 ============== */
+const bootLines = [
+  ['boot','Initializing connection...'],
+  ['boot','Connecting to mystery-server (192.168.0.1)... OK'],
+  ['boot','Authenticating as guest... OK'],
+  ['boot',''],
+  ['boot','Welcome to mystery-server'],
+  ['boot','Last login: Tue Jun 16 23:58:01 2026 from 10.0.0.5'],
+  ['boot',''],
+  ['boot',"老管理者からのメッセージが届いています。'cat readme.txt' を実行してください。"],
+  ['boot','']
+];
+let bi = 0;
+function bootStep(){
+  if(bi < bootLines.length){
+    printLine(bootLines[bi][0], bootLines[bi][1]);
+    bi++;
+    setTimeout(bootStep, 180);
+  } else {
+    refreshPrompt();
+    cmdInput.disabled = false;
+    cmdInput.focus();
+  }
+}
+const titleDiv = document.createElement('div');
+titleDiv.className = 'banner';
+titleDiv.textContent = '$ ターミナル宝探し: 失われたサーバーの秘密';
+screen.appendChild(titleDiv);
+cmdInput.disabled = true;
+bootStep();
+</script>
+<!-- Cloudflare Web Analytics --><script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token":"2a407e01ef7944938b627c3b61b6370e"}'></script><!-- End Cloudflare Web Analytics -->
+</body>
+</html>
